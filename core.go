@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 )
@@ -21,4 +22,9 @@ func getEnvVarOrExit(varName string) string {
 	}
 
 	return value
+}
+func printOutStruct(input []string) {
+	kJson, err := json.Marshal(input)
+	onErrorFail(err, "Json Marshal Failed")
+	fmt.Println(string(kJson))
 }
