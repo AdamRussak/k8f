@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
@@ -20,7 +21,8 @@ var (
 	resourcesClient resources.Client
 )
 
-func main() {
+func mainAKS() {
+	var allResouces []rgAndResouce
 	subscriptionID = getEnvVarOrExit("AZURE_SUBSCRIPTION_ID")
 	cred, err := azidentity.NewAzureCLICredential(nil)
 	onErrorFail(err, "Authentication Failed")
@@ -31,8 +33,13 @@ func main() {
 	for _, resource := range resourceGroups {
 		log.Printf("Resource Group Name: %s, Location: %s", *resource.Name, *resource.Location)
 		rgList = append(rgList, ResourceGroup{resource.Location, resource.ManagedBy, resource.Tags, resource.ID, resource.Name, resource.Type})
-		listResource(*resource.Name, cred)
+		r := listResource(*resource.Name, cred)
+		if len(r) != 0 {
+			allResouces = append(allResouces, rgAndResouce{RGName: *resource.Name, Resources: r})
+		}
 	}
+	kJson, _ := json.Marshal(allResouces)
+	fmt.Println(string(kJson))
 
 }
 
@@ -51,21 +58,19 @@ func listResourceGroup(ctx context.Context, cred azcore.TokenCredential) ([]*arm
 	return resourceGroups, nil
 }
 
-//works!! need to start orgenizing the input and output
-func listResource(rg string, cred azcore.TokenCredential) {
+func listResource(rg string, cred azcore.TokenCredential) []resource {
+	var lR []resource
 	resourceClient, err := armresources.NewClient(subscriptionID, cred, nil)
 	onErrorFail(err, "Failed to create Resource Client")
-	// s := "$filter=eq(Microsoft.ContainerService/ManagedClusters, resourceType)"
-	// s := "substringof('dev', name)"
-	// op := armresources.ClientListByResourceGroupOptions{nil, &s, nil}
-	resp := resourceClient.NewListByResourceGroupPager(rg, &armresources.ClientListByResourceGroupOptions{nil, nil, nil})
-	resources := make([]*armresources.GenericResourceExpanded, 0)
+	s := "resourceType eq 'Microsoft.ContainerService/ManagedClusters'"
+	resp := resourceClient.NewListByResourceGroupPager(rg, &armresources.ClientListByResourceGroupOptions{nil, &s, nil})
 	for resp.More() {
 		pageResp, err := resp.NextPage(context.Background())
+		for _, res := range pageResp.ResourceListResult.Value {
+			ListResources := resource{Id: *res.ID, Location: *res.Location, Name: *res.Name, Type: *res.Type}
+			lR = append(lR, ListResources)
+		}
 		onErrorFail(err, "Next Page Failed")
-		resources = append(resources, pageResp.ResourceListResult.Value...)
-		kJson, _ := json.Marshal(pageResp.ResourceListResult.Value)
-		log.Println(string(kJson))
 	}
-	log.Println(resources)
+	return lR
 }

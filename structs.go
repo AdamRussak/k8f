@@ -38,3 +38,13 @@ type ResourceGroup struct {
 	// READ-ONLY; The type of the resource group.
 	Type *string `json:"type,omitempty" azure:"ro"`
 }
+type resource struct {
+	Id       string `json:"id,omitempty"`
+	Location string `json:"location,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Type     string `json:"type,omitempty"`
+}
+type rgAndResouce struct {
+	RGName    string     `json:"resource_group_name,omitempty"`
+	Resources []resource `json:"resources,omitempty"`
+}

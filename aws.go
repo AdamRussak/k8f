@@ -6,6 +6,8 @@ package main
 
 // TODO: add count of total clusters
 // TODO: add recomendation to upgrade / everyting is ok for each cluster
+
+// TODO:Investigate sending resoult to DD
 import (
 	"encoding/json"
 	"fmt"
@@ -21,7 +23,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func main() {
+func mainAWS() {
 	var f []account
 	l := getLatestEKS(getVersion())
 	profiles := GetLocalAwsProfiles()
