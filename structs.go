@@ -50,3 +50,7 @@ type rgAndResouce struct {
 	RGName    string     `json:"resource_group_name,omitempty"`
 	Resources []resource `json:"resources,omitempty"`
 }
+type subs struct {
+	Name string `json:"name,omitempty"`
+	Id   string `json:"id,omitempty"`
+}
