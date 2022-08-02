@@ -24,9 +24,9 @@ var (
 
 func mainAKS() {
 	subs := listSubscriptions()
-	for n, _ := range subs {
-		log.Println("starting: ", subs[n].Name)
-		l := getAllAKS(subs[n].Id)
+	for _, s := range subs {
+		log.Println("starting: ", s.Name)
+		l := getAllAKS(s.Id)
 		kJson, _ := json.Marshal(l)
 		fmt.Println(string(kJson))
 	}
