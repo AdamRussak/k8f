@@ -1,7 +1,13 @@
+/*
+Copyright © 2022 NAME HERE <EMAIL ADDRESS>
+
+*/
 package main
 
-// TODO: add add EKS/AKS options (set Cluster name and it will add it.)
+import "k8-upgrade/cmd"
+
 func main() {
-	mainAKS()
+	cmd.Execute()
+	// mainAKS()
 	// mainAWS()
 }
