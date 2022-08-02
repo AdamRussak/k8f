@@ -19,7 +19,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/hashicorp/go-version"
 	"gopkg.in/ini.v1"
 )
 
@@ -78,32 +77,6 @@ func getLatestEKS(addons *eks.DescribeAddonVersionsOutput) string {
 		}
 	}
 	return evaluateVersion(supportList)
-}
-
-// evaluate latest version from addon version list
-func evaluateVersion(list []string) string {
-	var latest string
-	for _, v := range list {
-		var lt *version.Version
-		var err error
-		v1, err := version.NewVersion(v)
-		if err != nil {
-			fmt.Println(err)
-		}
-		if latest == "" {
-			lt, err = version.NewVersion("0.0")
-		} else {
-			lt, err = version.NewVersion(latest)
-		}
-		if err != nil {
-			fmt.Println(err)
-		}
-		// Options availabe
-		if v1.GreaterThan(lt) {
-			latest = v
-		} // GreaterThen
-	}
-	return latest
 }
 
 // get installed Version on existing Clusters

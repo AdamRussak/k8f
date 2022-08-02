@@ -39,10 +39,12 @@ type ResourceGroup struct {
 	Type *string `json:"type,omitempty" azure:"ro"`
 }
 type resource struct {
-	Id       string `json:"id,omitempty"`
-	Location string `json:"location,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Type     string `json:"type,omitempty"`
+	Id            string `json:"id,omitempty"`
+	Location      string `json:"location,omitempty"`
+	Name          string `json:"name,omitempty"`
+	Type          string `json:"type,omitempty"`
+	Version       string `json:"version,omitempty"`
+	LatestVersion string `json:"latest_version,omitempty"`
 }
 type rgAndResouce struct {
 	RGName    string     `json:"resource_group_name,omitempty"`

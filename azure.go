@@ -7,12 +7,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice"
 )
 
 var (
@@ -22,55 +21,46 @@ var (
 )
 
 func mainAKS() {
-	var allResouces []rgAndResouce
 	subscriptionID = getEnvVarOrExit("AZURE_SUBSCRIPTION_ID")
-	cred, err := azidentity.NewAzureCLICredential(nil)
-	onErrorFail(err, "Authentication Failed")
-	ctx := context.Background()
-	resourceGroups, err := listResourceGroup(ctx, cred)
-	onErrorFail(err, "ResourceGroup List Failed")
-	var rgList []ResourceGroup
-	for _, resource := range resourceGroups {
-		log.Printf("Resource Group Name: %s, Location: %s", *resource.Name, *resource.Location)
-		rgList = append(rgList, ResourceGroup{resource.Location, resource.ManagedBy, resource.Tags, resource.ID, resource.Name, resource.Type})
-		r := listResource(*resource.Name, cred)
-		if len(r) != 0 {
-			allResouces = append(allResouces, rgAndResouce{RGName: *resource.Name, Resources: r})
-		}
-	}
-	kJson, _ := json.Marshal(allResouces)
+	kJson, _ := json.Marshal(getAllAKS())
 	fmt.Println(string(kJson))
 
 }
 
-func listResourceGroup(ctx context.Context, cred azcore.TokenCredential) ([]*armresources.ResourceGroup, error) {
-	resourceGroupClient, err := armresources.NewResourceGroupsClient(subscriptionID, cred, nil)
-	onErrorFail(err, "Resource Client Authentication Failed")
+// this is the only path we need to get the aks, now need to get latest version.
+func getAllAKS() []resource {
+	var r []resource
+	subscriptionID = getEnvVarOrExit("AZURE_SUBSCRIPTION_ID")
+	cred, err := azidentity.NewAzureCLICredential(nil)
+	onErrorFail(err, "Authentication Failed")
+	ctx := context.Background()
+	client, err := armcontainerservice.NewManagedClustersClient(subscriptionID, cred, nil)
+	onErrorFail(err, "failed to create client")
+	pager := client.NewListPager(nil)
+	for pager.More() {
+		nextResult, err := pager.NextPage(ctx)
+		onErrorFail(err, "failed to advance page")
+		for _, v := range nextResult.Value {
+			s := strings.Split(*v.ID, "/")
+			l := getUpgrade(s[4], *v.Name)
+			r = append(r, resource{*v.ID, *v.Location, *v.Name, *v.Type, *v.Properties.KubernetesVersion, l})
+		}
 
-	resultPager := resourceGroupClient.NewListPager(nil)
-
-	resourceGroups := make([]*armresources.ResourceGroup, 0)
-	for resultPager.More() {
-		pageResp, err := resultPager.NextPage(ctx)
-		onErrorFail(err, "Next Page Failed")
-		resourceGroups = append(resourceGroups, pageResp.ResourceGroupListResult.Value...)
 	}
-	return resourceGroups, nil
+	return r
 }
 
-func listResource(rg string, cred azcore.TokenCredential) []resource {
-	var lR []resource
-	resourceClient, err := armresources.NewClient(subscriptionID, cred, nil)
-	onErrorFail(err, "Failed to create Resource Client")
-	s := "resourceType eq 'Microsoft.ContainerService/ManagedClusters'"
-	resp := resourceClient.NewListByResourceGroupPager(rg, &armresources.ClientListByResourceGroupOptions{nil, &s, nil})
-	for resp.More() {
-		pageResp, err := resp.NextPage(context.Background())
-		for _, res := range pageResp.ResourceListResult.Value {
-			ListResources := resource{Id: *res.ID, Location: *res.Location, Name: *res.Name, Type: *res.Type}
-			lR = append(lR, ListResources)
-		}
-		onErrorFail(err, "Next Page Failed")
+func getUpgrade(resourceGroup string, resourceName string) string {
+	var supportList []string
+	subscriptionID = getEnvVarOrExit("AZURE_SUBSCRIPTION_ID")
+	cred, err := azidentity.NewAzureCLICredential(nil)
+	onErrorFail(err, "Authentication Failed")
+	ctx := context.Background()
+	client, err := armcontainerservice.NewManagedClustersClient(subscriptionID, cred, nil)
+	profile, err := client.GetUpgradeProfile(ctx, resourceGroup, resourceName, nil)
+	onErrorFail(err, "Update Profile Failed")
+	for _, a := range profile.Properties.ControlPlaneProfile.Upgrades {
+		supportList = append(supportList, *a.KubernetesVersion)
 	}
-	return lR
+	return evaluateVersion(supportList)
 }
