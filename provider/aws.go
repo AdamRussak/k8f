@@ -1,13 +1,5 @@
-// TODO: create discovery mode (to find all known EKS Clustesr)
-// TODO: add auto configuration of Regions (if not in env var or if requested auto descovery)
-// TODO: cli commands to be used with Nagios (or other monitoring system)
-// TODO: add Same funcionality to Azure
-package main
+package provider
 
-// TODO: add count of total clusters
-// TODO: add recomendation to upgrade / everyting is ok for each cluster
-
-// TODO:Investigate sending resoult to DD
 import (
 	"encoding/json"
 	"fmt"
@@ -22,7 +14,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func mainAWS() {
+func MainAWS() {
 	var f []account
 	l := getLatestEKS(getVersion())
 	profiles := GetLocalAwsProfiles()

@@ -1,7 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See License.txt in the project root for license information.
-
-package main
+package provider
 
 import (
 	"context"
@@ -22,7 +19,7 @@ var (
 	ctx             = context.Background()
 )
 
-func mainAKS() {
+func MainAKS() {
 	subs := listSubscriptions()
 	for _, s := range subs {
 		log.Println("starting: ", s.Name)
