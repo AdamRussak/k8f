@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"k8-upgrade/core"
 	"log"
 	"strings"
 
@@ -30,17 +31,17 @@ func MainAKS() {
 }
 func auth() *azidentity.AzureCLICredential {
 	cred, err := azidentity.NewAzureCLICredential(nil)
-	onErrorFail(err, "Authentication Failed")
+	core.OnErrorFail(err, "Authentication Failed")
 	return cred
 }
 func listSubscriptions() []subs {
 	var res []subs
 	client, err := armsubscriptions.NewClient(auth(), nil)
-	onErrorFail(err, "Failed to Auth")
+	core.OnErrorFail(err, "Failed to Auth")
 	r := client.NewListPager(nil)
 	for r.More() {
 		nextResult, err := r.NextPage(ctx)
-		onErrorFail(err, "failed to advance page")
+		core.OnErrorFail(err, "failed to advance page")
 		for _, v := range nextResult.Value {
 			res = append(res, subs{*v.DisplayName, *v.SubscriptionID})
 
@@ -53,11 +54,11 @@ func listSubscriptions() []subs {
 func getAllAKS(subscription string) []resource {
 	var r []resource
 	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(), nil)
-	onErrorFail(err, "failed to create client")
+	core.OnErrorFail(err, "failed to create client")
 	pager := client.NewListPager(nil)
 	for pager.More() {
 		nextResult, err := pager.NextPage(ctx)
-		onErrorFail(err, "failed to advance page")
+		core.OnErrorFail(err, "failed to advance page")
 		for _, v := range nextResult.Value {
 			s := strings.Split(*v.ID, "/")
 			l := getUpgrade(s[4], *v.Name, subscription)
@@ -71,7 +72,7 @@ func getUpgrade(resourceGroup string, resourceName string, subscription string) 
 	var supportList []string
 	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(), nil)
 	profile, err := client.GetUpgradeProfile(ctx, resourceGroup, resourceName, nil)
-	onErrorFail(err, "Update Profile Failed")
+	core.OnErrorFail(err, "Update Profile Failed")
 	for _, a := range profile.Properties.ControlPlaneProfile.Upgrades {
 		supportList = append(supportList, *a.KubernetesVersion)
 	}

@@ -23,18 +23,12 @@ type cluster struct {
 }
 
 type ResourceGroup struct {
-	// REQUIRED; The location of the resource group. It cannot be changed after the resource group has been created. It must be
-	Location *string `json:"location,omitempty"`
-	// The ID of the resource that manages this resource group.
-	ManagedBy *string `json:"managedBy,omitempty"`
-	// The tags attached to the resource group.
-	Tags map[string]*string `json:"tags,omitempty"`
-	// READ-ONLY; The ID of the resource group.
-	ID *string `json:"id,omitempty" azure:"ro"`
-	// READ-ONLY; The name of the resource group.
-	Name *string `json:"name,omitempty" azure:"ro"`
-	// READ-ONLY; The type of the resource group.
-	Type *string `json:"type,omitempty" azure:"ro"`
+	Location  *string            `json:"location,omitempty"`
+	ManagedBy *string            `json:"managedBy,omitempty"`
+	Tags      map[string]*string `json:"tags,omitempty"`
+	ID        *string            `json:"id,omitempty" azure:"ro"`
+	Name      *string            `json:"name,omitempty" azure:"ro"`
+	Type      *string            `json:"type,omitempty" azure:"ro"`
 }
 
 type resource struct {

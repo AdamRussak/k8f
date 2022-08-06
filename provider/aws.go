@@ -1,5 +1,6 @@
 package provider
 
+//TODO: get regions from the AWS CLI CONFIG
 import (
 	"encoding/json"
 	"fmt"
