@@ -89,12 +89,11 @@ func getLatestEKS(addons *eks.DescribeAddonVersionsOutput) string {
 }
 
 // get installed Version on existing Clusters
-func getEksCurrentVersion(cluster string, s *session.Session) string {
+func getEksCurrentVersion(cluster string, s *session.Session, c3 chan []string) {
 	svc := eks.New(s)
 	input := &eks.DescribeClusterInput{
 		Name: aws.String(cluster),
 	}
-
 	result, err := svc.DescribeCluster(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -115,10 +114,8 @@ func getEksCurrentVersion(cluster string, s *session.Session) string {
 			// Message from an error.
 			fmt.Println(err.Error())
 		}
-		return "err"
 	}
-
-	return *result.Cluster.Version
+	c3 <- []string{cluster, *result.Cluster.Version}
 }
 
 //get all Regions avilable
@@ -179,9 +176,13 @@ func printOutResult(reg string, latest string, profile string, c chan region) {
 	}
 	fmt.Println("We are In Region: ", reg)
 	if len(result.Clusters) > 0 {
+		c3 := make(chan []string)
 		for _, element := range result.Clusters {
-			c := getEksCurrentVersion(*element, sess)
-			loc = append(loc, cluster{*element, c, latest})
+			go getEksCurrentVersion(*element, sess, c3)
+		}
+		for i := 0; i < len(result.Clusters); i++ {
+			res := <-c3
+			loc = append(loc, cluster{res[0], res[1], latest})
 		}
 	}
 	c <- region{reg, loc, len(loc)}
