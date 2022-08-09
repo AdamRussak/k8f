@@ -19,26 +19,42 @@ func MainAWS() {
 	var f []account
 	l := getLatestEKS(getVersion())
 	profiles := GetLocalAwsProfiles()
+	c := make(chan account)
 	for _, profile := range profiles {
-		var re []region
-		var count int
-		fmt.Println("Using this profile: ", profile)
-		opt := session.Options{Profile: profile}
-		conf, err := session.NewSessionWithOptions(opt)
-		if err != nil {
-			fmt.Println(err)
-		}
-		s := session.Must(conf, err)
-		regions := listRegions(s)
-		for _, reg := range regions {
-			aRegion := printOutResult(reg, l, profile)
-			if aRegion.TotalCount > 0 {
-				log.Println("Region:", reg, " Cluster Count: ", aRegion.TotalCount)
-				re = append(re, aRegion)
-				count = count + aRegion.TotalCount
+		go func(c chan account, profile string, l string) {
+			var re []region
+			var count int
+			log.Println("Using this profile: ", profile)
+			opt := session.Options{Profile: profile}
+			conf, err := session.NewSessionWithOptions(opt)
+			if err != nil {
+				fmt.Println(err)
 			}
+			s := session.Must(conf, err)
+			regions := listRegions(s)
+			c2 := make(chan region)
+			for _, reg := range regions {
+				go printOutResult(reg, l, profile, c2)
+			}
+			for i := 0; i < len(regions); i++ {
+				aRegion := <-c2
+				if aRegion.TotalCount > 0 {
+					re = append(re, aRegion)
+					count = count + aRegion.TotalCount
+					log.Println("Region:", aRegion.Region, " Cluster Count: ", aRegion.TotalCount, "Total Count:", count)
+				}
+			}
+			c <- account{profile, report{re, count}}
+		}(c, profile, l)
+
+	}
+	for i := 0; i < len(profiles); i++ {
+		res := <-c
+
+		if res.Report.TotalCount != 0 {
+			f = append(f, res)
 		}
-		f = append(f, account{profile, report{re, count}})
+
 	}
 	kJson, _ := json.Marshal(f)
 	fmt.Println(string(kJson))
@@ -130,7 +146,7 @@ func listRegions(s *session.Session) []string {
 	return reg
 }
 
-func printOutResult(reg string, latest string, profile string) region {
+func printOutResult(reg string, latest string, profile string, c chan region) {
 	var loc []cluster
 	opt := session.Options{Profile: profile, Config: aws.Config{Region: aws.String(reg)}}
 	conf, err := session.NewSessionWithOptions(opt)
@@ -168,7 +184,7 @@ func printOutResult(reg string, latest string, profile string) region {
 			loc = append(loc, cluster{*element, c, latest})
 		}
 	}
-	return region{reg, loc, len(loc)}
+	c <- region{reg, loc, len(loc)}
 }
 
 func GetLocalAwsProfiles() []string {
