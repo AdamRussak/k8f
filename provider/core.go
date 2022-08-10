@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/go-version"
@@ -30,4 +31,9 @@ func evaluateVersion(list []string) string {
 		} // GreaterThen
 	}
 	return latest
+}
+
+func runResult(p Provider) string {
+	kJson, _ := json.Marshal(p)
+	return string(kJson)
 }

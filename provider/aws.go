@@ -2,7 +2,6 @@ package provider
 
 //TODO: get regions from the AWS CLI CONFIG
 import (
-	"encoding/json"
 	"k8-upgrade/core"
 	"log"
 
@@ -22,7 +21,6 @@ func MainAWS() string {
 	for _, profile := range profiles {
 		go func(c chan Account, profile string, l string) {
 			var re []Cluster
-			// var count int
 			log.Println("Using this profile: ", profile)
 			opt := session.Options{Profile: profile}
 			conf, err := session.NewSessionWithOptions(opt)
@@ -36,12 +34,10 @@ func MainAWS() string {
 			for i := 0; i < len(regions); i++ {
 				aRegion := <-c2
 				if len(aRegion) > 0 {
-					for _, c := range aRegion {
-						re = append(re, c)
-					}
+					re = append(re, aRegion...)
 				}
 			}
-			c <- Account{profile, re}
+			c <- Account{profile, re, len(re)}
 		}(c, profile, l)
 
 	}
@@ -51,8 +47,11 @@ func MainAWS() string {
 			f = append(f, res)
 		}
 	}
-	kJson, _ := json.Marshal(Provider{"aws", f})
-	return string(kJson)
+	var count int
+	for _, a := range f {
+		count = count + a.TotalCount
+	}
+	return runResult(Provider{"aws", f, count})
 }
 
 //get Addons Supported EKS versions

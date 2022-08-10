@@ -2,27 +2,23 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"k8-upgrade/core"
 	"log"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
 )
 
 var (
-	groupsClient    resources.GroupsClient
-	resourcesClient resources.Client
-	ctx             = context.Background()
+	ctx = context.Background()
 )
 
 func MainAKS() string {
-	var list []AzAKSList
+	var list []Account
 	subs := listSubscriptions()
-	c1 := make(chan AzAKSList)
+	c1 := make(chan Account)
 	for _, s := range subs {
 		log.Println("starting: ", s.Name)
 		go getAllAKS(s, c1)
@@ -31,9 +27,11 @@ func MainAKS() string {
 		res := <-c1
 		list = append(list, res)
 	}
-
-	kJson, _ := json.Marshal(list)
-	return string(kJson)
+	var count int
+	for _, c := range list {
+		count = count + c.TotalCount
+	}
+	return runResult(Provider{"azure", list, count})
 }
 func auth() *azidentity.AzureCLICredential {
 	cred, err := azidentity.NewAzureCLICredential(nil)
@@ -57,8 +55,8 @@ func listSubscriptions() []subs {
 }
 
 // this is the only path we need to get the aks, now need to get latest version.
-func getAllAKS(subscription subs, c1 chan AzAKSList) {
-	var r []resource
+func getAllAKS(subscription subs, c1 chan Account) {
+	var r []Cluster
 	client, err := armcontainerservice.NewManagedClustersClient(subscription.Id, auth(), nil)
 	core.OnErrorFail(err, "failed to create client")
 	pager := client.NewListPager(nil)
@@ -68,10 +66,10 @@ func getAllAKS(subscription subs, c1 chan AzAKSList) {
 		for _, v := range nextResult.Value {
 			s := strings.Split(*v.ID, "/")
 			l := getUpgrade(s[4], *v.Name, subscription.Id)
-			r = append(r, resource{*v.ID, *v.Location, *v.Name, *v.Type, *v.Properties.KubernetesVersion, l})
+			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location})
 		}
 	}
-	c1 <- AzAKSList{subscription.Name, subAks{r, len(r)}}
+	c1 <- Account{subscription.Name, r, len(r)}
 }
 
 func getUpgrade(resourceGroup string, resourceName string, subscription string) string {
