@@ -25,7 +25,3 @@ type Provider struct {
 	Accounts   []Account `json:"accounts,omitempty"`
 	TotalCount int       `json:"totalCount,omitempty"`
 }
-
-type FullK8S struct {
-	Providers []Provider `json:"providers,omitempty"`
-}
