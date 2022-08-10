@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"k8-upgrade/core"
 	"log"
 	"strings"
@@ -20,14 +19,21 @@ var (
 	ctx             = context.Background()
 )
 
-func MainAKS() {
+func MainAKS() string {
+	var list []AzAKSList
 	subs := listSubscriptions()
+	c1 := make(chan AzAKSList)
 	for _, s := range subs {
 		log.Println("starting: ", s.Name)
-		l := getAllAKS(s.Id)
-		kJson, _ := json.Marshal(l)
-		fmt.Println(string(kJson))
+		go getAllAKS(s, c1)
 	}
+	for i := 0; i < len(subs); i++ {
+		res := <-c1
+		list = append(list, res)
+	}
+
+	kJson, _ := json.Marshal(list)
+	return string(kJson)
 }
 func auth() *azidentity.AzureCLICredential {
 	cred, err := azidentity.NewAzureCLICredential(nil)
@@ -51,9 +57,9 @@ func listSubscriptions() []subs {
 }
 
 // this is the only path we need to get the aks, now need to get latest version.
-func getAllAKS(subscription string) []resource {
+func getAllAKS(subscription subs, c1 chan AzAKSList) {
 	var r []resource
-	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(), nil)
+	client, err := armcontainerservice.NewManagedClustersClient(subscription.Id, auth(), nil)
 	core.OnErrorFail(err, "failed to create client")
 	pager := client.NewListPager(nil)
 	for pager.More() {
@@ -61,11 +67,11 @@ func getAllAKS(subscription string) []resource {
 		core.OnErrorFail(err, "failed to advance page")
 		for _, v := range nextResult.Value {
 			s := strings.Split(*v.ID, "/")
-			l := getUpgrade(s[4], *v.Name, subscription)
+			l := getUpgrade(s[4], *v.Name, subscription.Id)
 			r = append(r, resource{*v.ID, *v.Location, *v.Name, *v.Type, *v.Properties.KubernetesVersion, l})
 		}
 	}
-	return r
+	c1 <- AzAKSList{subscription.Name, subAks{r, len(r)}}
 }
 
 func getUpgrade(resourceGroup string, resourceName string, subscription string) string {

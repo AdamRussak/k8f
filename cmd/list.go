@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"k8-upgrade/core"
 	"k8-upgrade/provider"
+	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -27,34 +28,45 @@ to quickly create a Cobra application.`,
 		if len(args) < 1 {
 			return errors.New("requires cloud provider")
 		}
-		if core.IfXinY(args[0], []string{"azure", "aws"}) {
+		if core.IfXinY(args[0], []string{"azure", "aws", "all"}) {
 			return nil
 		}
 		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
 	},
+	Example: `k8-upgrade list {aws/azure}`,
 	Run: func(cmd *cobra.Command, args []string) {
+		cProviders := []string{"azure", "aws"}
+		var list []string
+		//TODO: check interfaces to replace this block
 		if args[0] == "azure" {
-			provider.MainAKS()
+			fmt.Println(provider.MainAKS())
 		} else if args[0] == "aws" {
-			provider.MainAWS()
+			fmt.Println(provider.MainAWS())
+		} else if args[0] == "all" {
+			c0 := make(chan string)
+			for _, s := range cProviders {
+				log.Println("starting: ", s)
+				go func(c0 chan string, s string) {
+					var r string
+					if s == "azure" {
+						r = provider.MainAKS()
+					} else if s == "aws" {
+						r = provider.MainAWS()
+					}
+					c0 <- r
+				}(c0, s)
+			}
+			for i := 0; i < len(cProviders); i++ {
+				res := <-c0
+				list = append(list, res)
+			}
+			fmt.Println(list)
 		} else {
 			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 		}
-		// c, _ := cmd.Flags().GetString("cloud")
-		// if c == "" {
-		// 	core.OnErrorFail(errors.New("no Provider Selected"), "No Provider Selected")
-		// } else if c == "aws" {
-		// 	provider.MainAWS()
-		// } else if c == "azure" {
-		// 	provider.MainAKS()
-		// } else {
-		// 	core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
-		// }
-
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.PersistentFlags().StringP("cloud", "c", "", "Select cloud provider")
 }
