@@ -37,3 +37,11 @@ func runResult(p Provider) string {
 	kJson, _ := json.Marshal(p)
 	return string(kJson)
 }
+
+func countTotal(f []Account) int {
+	var count int
+	for _, a := range f {
+		count = count + a.TotalCount
+	}
+	return count
+}

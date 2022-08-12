@@ -27,11 +27,7 @@ func MainAKS() string {
 		res := <-c1
 		list = append(list, res)
 	}
-	var count int
-	for _, c := range list {
-		count = count + c.TotalCount
-	}
-	return runResult(Provider{"azure", list, count})
+	return runResult(Provider{"azure", list, countTotal(list)})
 }
 func auth() *azidentity.AzureCLICredential {
 	cred, err := azidentity.NewAzureCLICredential(nil)
@@ -66,7 +62,7 @@ func getAllAKS(subscription subs, c1 chan Account) {
 		for _, v := range nextResult.Value {
 			s := strings.Split(*v.ID, "/")
 			l := getUpgrade(s[4], *v.Name, subscription.Id)
-			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location})
+			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID})
 		}
 	}
 	c1 <- Account{subscription.Name, r, len(r)}
@@ -75,6 +71,7 @@ func getAllAKS(subscription subs, c1 chan Account) {
 func getUpgrade(resourceGroup string, resourceName string, subscription string) string {
 	var supportList []string
 	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(), nil)
+	core.OnErrorFail(err, "Create Client Failed")
 	profile, err := client.GetUpgradeProfile(ctx, resourceGroup, resourceName, nil)
 	core.OnErrorFail(err, "Update Profile Failed")
 	for _, a := range profile.Properties.ControlPlaneProfile.Upgrades {

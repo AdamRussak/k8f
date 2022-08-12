@@ -12,6 +12,7 @@ type Cluster struct {
 	Version string `json:"version,omitempty"`
 	Latest  string `json:"latest,omitempty"`
 	Region  string `json:"region,omitempty"`
+	Id      string `json:"id,omitempty"`
 }
 
 type Account struct {
