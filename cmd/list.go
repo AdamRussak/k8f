@@ -5,6 +5,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"k8-upgrade/core"
@@ -39,26 +40,27 @@ to quickly create a Cobra application.`,
 		var list []string
 		//TODO: check interfaces to replace this block
 		if args[0] == "azure" {
-			fmt.Println(provider.MainAKS())
+			fmt.Println(provider.RunResult(provider.FullAzureList()))
 		} else if args[0] == "aws" {
-			fmt.Println(provider.MainAWS())
+			fmt.Println(provider.RunResult(provider.FullAwsList()))
 		} else if args[0] == "all" {
-			c0 := make(chan string)
+			c0 := make(chan provider.Provider)
 			for _, s := range cProviders {
 				log.Println("starting: ", s)
-				go func(c0 chan string, s string) {
-					var r string
+				go func(c0 chan provider.Provider, s string) {
+					var r provider.Provider
 					if s == "azure" {
-						r = provider.MainAKS()
+						r = provider.FullAzureList()
 					} else if s == "aws" {
-						r = provider.MainAWS()
+						r = provider.FullAwsList()
 					}
 					c0 <- r
 				}(c0, s)
 			}
 			for i := 0; i < len(cProviders); i++ {
 				res := <-c0
-				list = append(list, res)
+				kJson, _ := json.Marshal(res)
+				list = append(list, string(kJson))
 			}
 			fmt.Println(list)
 		} else {

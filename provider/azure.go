@@ -15,7 +15,7 @@ var (
 	ctx = context.Background()
 )
 
-func MainAKS() string {
+func FullAzureList() Provider {
 	var list []Account
 	subs := listSubscriptions()
 	c1 := make(chan Account)
@@ -27,7 +27,7 @@ func MainAKS() string {
 		res := <-c1
 		list = append(list, res)
 	}
-	return runResult(Provider{"azure", list, countTotal(list)})
+	return Provider{"azure", list, countTotal(list)}
 }
 func auth() *azidentity.AzureCLICredential {
 	cred, err := azidentity.NewAzureCLICredential(nil)

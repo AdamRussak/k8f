@@ -12,11 +12,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"gopkg.in/ini.v1"
-	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func MainAWS() string {
+func FullAwsList() Provider {
 	var f []Account
 	l := getLatestEKS(getVersion())
 	profiles := GetLocalAwsProfiles()
@@ -50,7 +49,7 @@ func MainAWS() string {
 			f = append(f, res)
 		}
 	}
-	return runResult(Provider{"aws", f, countTotal(f)})
+	return Provider{"aws", f, countTotal(f)}
 }
 
 //get Addons Supported EKS versions
@@ -78,7 +77,7 @@ func getLatestEKS(addons *eks.DescribeAddonVersionsOutput) string {
 }
 
 // get installed Version on existing Clusters
-func getEksCurrentVersion(cluster string, s *session.Session, c3 chan []string) {
+func getEksCurrentVersion(cluster string, s *session.Session, reg string, c3 chan []string) {
 	svc := eks.New(s)
 	input := &eks.DescribeClusterInput{
 		Name: aws.String(cluster),
@@ -116,7 +115,7 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 	if len(result.Clusters) > 0 {
 		c3 := make(chan []string)
 		for _, element := range result.Clusters {
-			go getEksCurrentVersion(*element, sess, c3)
+			go getEksCurrentVersion(*element, sess, reg, c3)
 		}
 		for i := 0; i < len(result.Clusters); i++ {
 			res := <-c3
@@ -140,43 +139,54 @@ func GetLocalAwsProfiles() []string {
 	return (arr) // Create JSON string response
 }
 
-//Create AWS Config
-func TetsKubeConfig() {
-	name := "NMS-EKS"
-	region := "eu-central-1"
-	opt := session.Options{Profile: "default", Config: aws.Config{
-		Region: aws.String(region),
-	}}
-	sess := session.Must(session.NewSessionWithOptions(opt))
-	eksSvc := eks.New(sess)
+// Connect Logic
+func ConnectAllEks() {
+	auth := make(map[string]*clientcmdapi.AuthInfo)
+	context := make(map[string]*clientcmdapi.Context)
+	clusters := make(map[string]*clientcmdapi.Cluster)
+	var arnContext string
+	p := FullAwsList()
+	for _, a := range p.Accounts {
+		for _, c := range a.Clusters {
+			opt := session.Options{Profile: a.Name, Config: aws.Config{
+				Region: aws.String(c.Region),
+			}}
+			sess := session.Must(session.NewSessionWithOptions(opt))
+			eksSvc := eks.New(sess)
 
-	input := &eks.DescribeClusterInput{
-		Name: aws.String(name),
+			input := &eks.DescribeClusterInput{
+				Name: aws.String(c.Name),
+			}
+			result, err := eksSvc.DescribeCluster(input)
+			core.OnErrorFail(err, "Error calling DescribeCluster")
+			a := GenerateKubeConfiguration(result.Cluster, c.Region)
+			arnContext = *result.Cluster.Arn
+			auth[arnContext] = a.Authinfo
+			context[arnContext] = a.Context
+			clusters[arnContext] = a.Cluster
+		}
+
 	}
-	result, err := eksSvc.DescribeCluster(input)
-	if err != nil {
-		log.Fatalf("Error calling DescribeCluster: %v", err)
-	}
-	GenerateKubeConfiguration(result.Cluster, region)
+	Merge(AllConfig{auth, context, clusters}, arnContext)
+
 }
 
-func GenerateKubeConfiguration(cluster *eks.Cluster, r string) {
-	ca, _ := base64.StdEncoding.DecodeString(aws.StringValue(cluster.CertificateAuthority.Data))
+//Create AWS Config
 
-	clusters := make(map[string]*clientcmdapi.Cluster)
-	clusters[*cluster.Arn] = &clientcmdapi.Cluster{
+func GenerateKubeConfiguration(cluster *eks.Cluster, r string) LocalConfig {
+	ca, err := base64.StdEncoding.DecodeString(aws.StringValue(cluster.CertificateAuthority.Data))
+	core.OnErrorFail(err, "Failed to set data as base64")
+	clusters := &clientcmdapi.Cluster{
 		Server:                   *cluster.Endpoint,
 		CertificateAuthorityData: ca,
 	}
 
-	contexts := make(map[string]*clientcmdapi.Context)
-	contexts[*cluster.Arn] = &clientcmdapi.Context{
+	contexts := &clientcmdapi.Context{
 		Cluster:  *cluster.Arn,
 		AuthInfo: *cluster.Arn,
 	}
 
-	authinfos := make(map[string]*clientcmdapi.AuthInfo)
-	authinfos[*cluster.Arn] = &clientcmdapi.AuthInfo{
+	authinfos := &clientcmdapi.AuthInfo{
 		Exec: &clientcmdapi.ExecConfig{
 			APIVersion: "client.authentication.k8s.io/v1alpha1",
 			Args: []string{
@@ -190,14 +200,24 @@ func GenerateKubeConfiguration(cluster *eks.Cluster, r string) {
 			Command: "aws",
 		},
 	}
+	return LocalConfig{authinfos, contexts, clusters}
 
-	clientConfig := clientcmdapi.Config{
-		Kind:           "Config",
-		APIVersion:     "v1",
-		Clusters:       clusters,
-		Contexts:       contexts,
-		CurrentContext: *cluster.Arn,
-		AuthInfos:      authinfos,
+}
+
+// Internal testing Module
+func TetsKubeConfig() {
+	name := "NMS-EKS"
+	region := "eu-central-1"
+	opt := session.Options{Profile: "default", Config: aws.Config{
+		Region: aws.String(region),
+	}}
+	sess := session.Must(session.NewSessionWithOptions(opt))
+	eksSvc := eks.New(sess)
+
+	input := &eks.DescribeClusterInput{
+		Name: aws.String(name),
 	}
-	clientcmd.WriteToFile(clientConfig, "testconfig/kubeconfig")
+	result, err := eksSvc.DescribeCluster(input)
+	core.OnErrorFail(err, "Error calling DescribeCluster")
+	GenerateKubeConfiguration(result.Cluster, region)
 }

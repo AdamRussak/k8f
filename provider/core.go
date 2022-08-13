@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/go-version"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 // evaluate latest version from addon version list
@@ -33,7 +35,7 @@ func evaluateVersion(list []string) string {
 	return latest
 }
 
-func runResult(p Provider) string {
+func RunResult(p Provider) string {
 	kJson, _ := json.Marshal(p)
 	return string(kJson)
 }
@@ -44,4 +46,16 @@ func countTotal(f []Account) int {
 		count = count + a.TotalCount
 	}
 	return count
+}
+
+func Merge(configs AllConfig, arn string) {
+	clientConfig := clientcmdapi.Config{
+		Kind:           "Config",
+		APIVersion:     "v1",
+		Clusters:       configs.Clusters,
+		Contexts:       configs.Contexts,
+		CurrentContext: arn,
+		AuthInfos:      configs.Authinfos,
+	}
+	clientcmd.WriteToFile(clientConfig, "testconfig/fullConfig")
 }
