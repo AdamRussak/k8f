@@ -2,7 +2,6 @@ package provider
 
 //TODO: get regions from the AWS CLI CONFIG
 import (
-	"encoding/base64"
 	"k8-upgrade/core"
 	"log"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"gopkg.in/ini.v1"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 func FullAwsList() Provider {
@@ -141,9 +139,9 @@ func GetLocalAwsProfiles() []string {
 
 // Connect Logic
 func ConnectAllEks() {
-	auth := make(map[string]*clientcmdapi.AuthInfo)
-	context := make(map[string]*clientcmdapi.Context)
-	clusters := make(map[string]*clientcmdapi.Cluster)
+	var auth []Users
+	var context []Contexts
+	var clusters []Clusters
 	var arnContext string
 	p := FullAwsList()
 	for _, a := range p.Accounts {
@@ -161,33 +159,27 @@ func ConnectAllEks() {
 			core.OnErrorFail(err, "Error calling DescribeCluster")
 			a := GenerateKubeConfiguration(result.Cluster, c.Region)
 			arnContext = *result.Cluster.Arn
-			auth[arnContext] = a.Authinfo
-			context[arnContext] = a.Context
-			clusters[arnContext] = a.Cluster
+			auth = append(auth, Users{Name: arnContext, User: a.Authinfo})
+			context = append(context, Contexts{Name: arnContext, Context: a.Context})
+			clusters = append(clusters, Clusters{Name: arnContext, Cluster: a.Cluster})
 		}
-
 	}
 	Merge(AllConfig{auth, context, clusters}, arnContext)
-
 }
 
 //Create AWS Config
-
 func GenerateKubeConfiguration(cluster *eks.Cluster, r string) LocalConfig {
-	ca, err := base64.StdEncoding.DecodeString(aws.StringValue(cluster.CertificateAuthority.Data))
-	core.OnErrorFail(err, "Failed to set data as base64")
-	clusters := &clientcmdapi.Cluster{
+	clusters := CCluster{
 		Server:                   *cluster.Endpoint,
-		CertificateAuthorityData: ca,
+		CertificateAuthorityData: *cluster.CertificateAuthority.Data,
+	}
+	contexts := Context{
+		Cluster: *cluster.Arn,
+		User:    *cluster.Arn,
 	}
 
-	contexts := &clientcmdapi.Context{
-		Cluster:  *cluster.Arn,
-		AuthInfo: *cluster.Arn,
-	}
-
-	authinfos := &clientcmdapi.AuthInfo{
-		Exec: &clientcmdapi.ExecConfig{
+	authinfos := User{
+		Exec: Exec{
 			APIVersion: "client.authentication.k8s.io/v1alpha1",
 			Args: []string{
 				"--region",
@@ -201,23 +193,4 @@ func GenerateKubeConfiguration(cluster *eks.Cluster, r string) LocalConfig {
 		},
 	}
 	return LocalConfig{authinfos, contexts, clusters}
-
-}
-
-// Internal testing Module
-func TetsKubeConfig() {
-	name := "NMS-EKS"
-	region := "eu-central-1"
-	opt := session.Options{Profile: "default", Config: aws.Config{
-		Region: aws.String(region),
-	}}
-	sess := session.Must(session.NewSessionWithOptions(opt))
-	eksSvc := eks.New(sess)
-
-	input := &eks.DescribeClusterInput{
-		Name: aws.String(name),
-	}
-	result, err := eksSvc.DescribeCluster(input)
-	core.OnErrorFail(err, "Error calling DescribeCluster")
-	GenerateKubeConfiguration(result.Cluster, region)
 }

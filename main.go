@@ -12,6 +12,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 // TODO:Investigate sending resoult to DD
 
 //TODO: add output flag for: json,csv,toTerminal,pdf
+// TODO: investigate on GOlang AUTOMAPER
 
 package main
 

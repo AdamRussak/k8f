@@ -1,14 +1,13 @@
 package provider
 
-import clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-
+// URGENT: set singel kubeconfig for aws & azure Structs
 // Azure
 type subs struct {
 	Name string `json:"name,omitempty"`
 	Id   string `json:"id,omitempty"`
 }
 
-// Standard of Cluster Output
+// Standard of Cluster Info Output
 
 type Cluster struct {
 	Name    string `json:"name,omitempty"`
@@ -31,20 +30,62 @@ type Provider struct {
 }
 
 // AWS Kubeconfig
-type clusterConfigInfo struct {
-	Cluster     string      `json:"cluster,omitempty"`
-	Version     string      `json:"version,omitempty"`
-	LocalConfig LocalConfig `json:"localConfig,omitempty"`
-}
 
 type LocalConfig struct {
-	Authinfo *clientcmdapi.AuthInfo `json:"authinfo,omitempty"`
-	Context  *clientcmdapi.Context  `json:"context,omitempty"`
-	Cluster  *clientcmdapi.Cluster  `json:"cluster,omitempty"`
+	Authinfo User     `json:"authinfo,omitempty"`
+	Context  Context  `json:"context,omitempty"`
+	Cluster  CCluster `json:"cluster,omitempty"`
+}
+type AllConfig struct {
+	auth     []Users
+	context  []Contexts
+	clusters []Clusters
 }
 
-type AllConfig struct {
-	Authinfos map[string]*clientcmdapi.AuthInfo `json:"authinfos,omitempty"`
-	Contexts  map[string]*clientcmdapi.Context  `json:"contexts,omitempty"`
-	Clusters  map[string]*clientcmdapi.Cluster  `json:"clusters,omitempty"`
+// merged config struct
+type Config struct {
+	APIVersion     string      `yaml:"apiVersion,omitempty"`
+	Clusters       []Clusters  `yaml:"clusters,omitempty"`
+	Contexts       []Contexts  `yaml:"contexts,omitempty"`
+	CurrentContext string      `yaml:"current-context,omitempty"`
+	Kind           string      `yaml:"kind,omitempty"`
+	Preferences    Preferences `yaml:"preferences,omitempty"`
+	Users          []Users     `yaml:"users,omitempty"`
+}
+type Clusters struct {
+	Cluster CCluster `yaml:"cluster,omitempty"`
+	Name    string   `yaml:"name,omitempty"`
+}
+
+type CCluster struct {
+	CertificateAuthorityData string `yaml:"certificate-authority-data,omitempty"`
+	Server                   string `yaml:"server,omitempty"`
+}
+
+type Context struct {
+	Cluster string `yaml:"cluster,omitempty"`
+	User    string `yaml:"user,omitempty"`
+}
+type Contexts struct {
+	Context Context `yaml:"context,omitempty"`
+	Name    string  `yaml:"name,omitempty"`
+}
+type Preferences struct {
+}
+type Exec struct {
+	APIVersion         string      `yaml:"apiVersion,omitempty"`
+	Args               []string    `yaml:"args,omitempty"`
+	Command            string      `yaml:"command,omitempty"`
+	Env                interface{} `yaml:"env,omitempty"`
+	ProvideClusterInfo bool        `yaml:"provideClusterInfo,omitempty"`
+}
+type User struct {
+	Exec                  Exec   `yaml:"exec,omitempty"`
+	ClientCertificateData string `yaml:"client-certificate-data,omitempty"`
+	ClientKeyData         string `yaml:"client-key-data,omitempty"`
+	Token                 string `yaml:"token,omitempty"`
+}
+type Users struct {
+	Name string `yaml:"name,omitempty"`
+	User User   `yaml:"user,omitempty"`
 }

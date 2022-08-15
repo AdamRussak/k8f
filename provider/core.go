@@ -3,10 +3,11 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"k8-upgrade/core"
 
 	"github.com/hashicorp/go-version"
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"gopkg.in/yaml.v2"
 )
 
 // evaluate latest version from addon version list
@@ -49,13 +50,17 @@ func countTotal(f []Account) int {
 }
 
 func Merge(configs AllConfig, arn string) {
-	clientConfig := clientcmdapi.Config{
+	clientConfig := Config{
 		Kind:           "Config",
 		APIVersion:     "v1",
-		Clusters:       configs.Clusters,
-		Contexts:       configs.Contexts,
+		Clusters:       configs.clusters,
+		Contexts:       configs.context,
 		CurrentContext: arn,
-		AuthInfos:      configs.Authinfos,
+		Preferences:    Preferences{},
+		Users:          configs.auth,
 	}
-	clientcmd.WriteToFile(clientConfig, "testconfig/fullConfig")
+	y, _ := yaml.Marshal(clientConfig)
+	err := ioutil.WriteFile("testconfig/words.yaml", y, 0777)
+	core.OnErrorFail(err, "failed to save config")
+	// clientcmd.WriteToFile(res, "testconfig/fullConfig")
 }

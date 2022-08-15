@@ -5,7 +5,9 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"k8-upgrade/core"
 	"k8-upgrade/provider"
 
 	"github.com/spf13/cobra"
@@ -21,9 +23,23 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("requires cloud provider")
+		}
+		if core.IfXinY(args[0], []string{"azure", "aws", "all"}) {
+			return nil
+		}
+		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		provider.ConnectAllEks()
-		fmt.Println("connect called")
+		if args[0] == "azure" {
+			provider.ConnectAllAks()
+		} else if args[0] == "aws" {
+			provider.ConnectAllEks()
+		} else {
+			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
+		}
 	},
 }
 
