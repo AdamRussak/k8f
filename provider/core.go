@@ -64,3 +64,18 @@ func Merge(configs AllConfig, arn string) {
 	core.OnErrorFail(err, "failed to save config")
 	// clientcmd.WriteToFile(res, "testconfig/fullConfig")
 }
+func FullCloudConfig(combined string) {
+	var auth []Users
+	var context []Contexts
+	var clusters []Clusters
+	aws, awcntx := ConnectAllEks(combined)
+	auth = append(auth, aws.auth...)
+	context = append(context, aws.context...)
+	clusters = append(clusters, aws.clusters...)
+	azure, _ := ConnectAllAks(combined)
+	auth = append(auth, azure.auth...)
+	context = append(context, azure.context...)
+	clusters = append(clusters, azure.clusters...)
+	Merge(AllConfig{auth: auth, context: context, clusters: clusters}, awcntx)
+
+}

@@ -34,9 +34,11 @@ to quickly create a Cobra application.`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if args[0] == "azure" {
-			provider.ConnectAllAks()
+			provider.ConnectAllAks(args[0])
 		} else if args[0] == "aws" {
-			provider.ConnectAllEks()
+			provider.ConnectAllEks(args[0])
+		} else if args[0] == "all" {
+			provider.FullCloudConfig(args[0])
 		} else {
 			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 		}

@@ -138,7 +138,7 @@ func GetLocalAwsProfiles() []string {
 }
 
 // Connect Logic
-func ConnectAllEks() {
+func ConnectAllEks(combined string) (AllConfig, string) {
 	var auth []Users
 	var context []Contexts
 	var clusters []Clusters
@@ -151,7 +151,6 @@ func ConnectAllEks() {
 			}}
 			sess := session.Must(session.NewSessionWithOptions(opt))
 			eksSvc := eks.New(sess)
-
 			input := &eks.DescribeClusterInput{
 				Name: aws.String(c.Name),
 			}
@@ -164,7 +163,12 @@ func ConnectAllEks() {
 			clusters = append(clusters, Clusters{Name: arnContext, Cluster: a.Cluster})
 		}
 	}
-	Merge(AllConfig{auth, context, clusters}, arnContext)
+	if combined == "aws" {
+		Merge(AllConfig{auth, context, clusters}, arnContext)
+		return AllConfig{}, ""
+	} else {
+		return AllConfig{auth, context, clusters}, arnContext
+	}
 }
 
 //Create AWS Config

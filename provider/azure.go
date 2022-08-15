@@ -93,7 +93,7 @@ func getAksProfile(client *armcontainerservice.ManagedClustersClient, resourceGr
 	return AllConfig{auth: y.Users, context: y.Contexts, clusters: y.Clusters}
 }
 
-func ConnectAllAks() {
+func ConnectAllAks(combined string) (AllConfig, string) {
 	var authe []Users
 	var context []Contexts
 	var clusters []Clusters
@@ -102,7 +102,6 @@ func ConnectAllAks() {
 	for _, a := range p.Accounts {
 		for _, c := range a.Clusters {
 			client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(), nil)
-
 			core.OnErrorFail(err, "get user creds Failed")
 			aks := getAksProfile(client, SplitAzIDAndGiveItem(c.Id, 4), c.Name)
 			arnContext = c.Name
@@ -111,7 +110,12 @@ func ConnectAllAks() {
 			clusters = append(clusters, aks.clusters...)
 		}
 	}
-	Merge(AllConfig{authe, context, clusters}, arnContext)
+	if combined == "azure" {
+		Merge(AllConfig{authe, context, clusters}, arnContext)
+		return AllConfig{}, ""
+	} else {
+		return AllConfig{authe, context, clusters}, arnContext
+	}
 
 }
 
