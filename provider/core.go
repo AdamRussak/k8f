@@ -64,6 +64,7 @@ func Merge(configs AllConfig, arn string) {
 	core.OnErrorFail(err, "failed to save config")
 	// clientcmd.WriteToFile(res, "testconfig/fullConfig")
 }
+
 func FullCloudConfig(combined string) {
 	var auth []Users
 	var context []Contexts
@@ -79,3 +80,4 @@ func FullCloudConfig(combined string) {
 	Merge(AllConfig{auth: auth, context: context, clusters: clusters}, awcntx)
 
 }
+

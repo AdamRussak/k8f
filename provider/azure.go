@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"k8-upgrade/core"
 	"log"
 	"strings"
@@ -30,14 +32,32 @@ func FullAzureList() Provider {
 	}
 	return Provider{"azure", list, countTotal(list)}
 }
-func auth() *azidentity.AzureCLICredential {
-	cred, err := azidentity.NewAzureCLICredential(nil)
+
+func auth(tenantid string) *azidentity.AzureCLICredential {
+	cred, err := azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{TenantID: tenantid})
 	core.OnErrorFail(err, "Authentication Failed")
 	return cred
 }
+
+// get full list of tenants user got permissions to.
+// URGENT: add multi-tenant support
+func GetTenentList() {
+	tenants, err := armsubscriptions.NewTenantsClient(auth(""), nil)
+	core.OnErrorFail(err, "Failed to get Tenants")
+	tenant := tenants.NewListPager(nil)
+	for tenant.More() {
+		nextResult, err := tenant.NextPage(ctx)
+		core.OnErrorFail(err, "failed to advance page")
+		for _, v := range nextResult.Value {
+			kJson, _ := json.Marshal(v)
+			fmt.Println(string(kJson))
+		}
+	}
+}
+
 func listSubscriptions() []subs {
 	var res []subs
-	client, err := armsubscriptions.NewClient(auth(), nil)
+	client, err := armsubscriptions.NewClient(auth(""), nil)
 	core.OnErrorFail(err, "Failed to Auth")
 	r := client.NewListPager(nil)
 	for r.More() {
@@ -54,7 +74,7 @@ func listSubscriptions() []subs {
 // this is the only path we need to get the aks, now need to get latest version.
 func getAllAKS(subscription subs, c1 chan Account) {
 	var r []Cluster
-	client, err := armcontainerservice.NewManagedClustersClient(subscription.Id, auth(), nil)
+	client, err := armcontainerservice.NewManagedClustersClient(subscription.Id, auth(""), nil)
 	core.OnErrorFail(err, "failed to create client")
 	pager := client.NewListPager(nil)
 	for pager.More() {
@@ -71,7 +91,7 @@ func getAllAKS(subscription subs, c1 chan Account) {
 // Getting a single
 func getAksConfig(resourceGroup string, resourceName string, subscription string) string {
 	var supportList []string
-	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(), nil)
+	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(""), nil)
 	core.OnErrorFail(err, "Create Client Failed")
 	profile, err := client.GetUpgradeProfile(ctx, resourceGroup, resourceName, nil)
 	core.OnErrorFail(err, "Update Profile Failed")
@@ -101,7 +121,7 @@ func ConnectAllAks(combined string) (AllConfig, string) {
 	p := FullAzureList()
 	for _, a := range p.Accounts {
 		for _, c := range a.Clusters {
-			client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(), nil)
+			client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(""), nil)
 			core.OnErrorFail(err, "get user creds Failed")
 			aks := getAksProfile(client, SplitAzIDAndGiveItem(c.Id, 4), c.Name)
 			arnContext = c.Name

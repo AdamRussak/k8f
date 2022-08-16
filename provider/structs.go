@@ -1,6 +1,5 @@
 package provider
 
-// URGENT: set singel kubeconfig for aws & azure Structs
 // Azure
 type subs struct {
 	Name string `json:"name,omitempty"`
@@ -8,7 +7,6 @@ type subs struct {
 }
 
 // Standard of Cluster Info Output
-
 type Cluster struct {
 	Name    string `json:"name,omitempty"`
 	Version string `json:"version,omitempty"`
@@ -30,12 +28,12 @@ type Provider struct {
 }
 
 // AWS Kubeconfig
-
 type LocalConfig struct {
 	Authinfo User     `json:"authinfo,omitempty"`
 	Context  Context  `json:"context,omitempty"`
 	Cluster  CCluster `json:"cluster,omitempty"`
 }
+
 type AllConfig struct {
 	auth     []Users
 	context  []Contexts
@@ -52,6 +50,7 @@ type Config struct {
 	Preferences    Preferences `yaml:"preferences,omitempty"`
 	Users          []Users     `yaml:"users,omitempty"`
 }
+
 type Clusters struct {
 	Cluster CCluster `yaml:"cluster,omitempty"`
 	Name    string   `yaml:"name,omitempty"`
@@ -66,12 +65,15 @@ type Context struct {
 	Cluster string `yaml:"cluster,omitempty"`
 	User    string `yaml:"user,omitempty"`
 }
+
 type Contexts struct {
 	Context Context `yaml:"context,omitempty"`
 	Name    string  `yaml:"name,omitempty"`
 }
+
 type Preferences struct {
 }
+
 type Exec struct {
 	APIVersion         string      `yaml:"apiVersion,omitempty"`
 	Args               []string    `yaml:"args,omitempty"`
@@ -79,12 +81,14 @@ type Exec struct {
 	Env                interface{} `yaml:"env,omitempty"`
 	ProvideClusterInfo bool        `yaml:"provideClusterInfo,omitempty"`
 }
+
 type User struct {
 	Exec                  Exec   `yaml:"exec,omitempty"`
 	ClientCertificateData string `yaml:"client-certificate-data,omitempty"`
 	ClientKeyData         string `yaml:"client-key-data,omitempty"`
 	Token                 string `yaml:"token,omitempty"`
 }
+
 type Users struct {
 	Name string `yaml:"name,omitempty"`
 	User User   `yaml:"user,omitempty"`
