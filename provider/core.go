@@ -36,7 +36,7 @@ func evaluateVersion(list []string) string {
 	return latest
 }
 
-func RunResult(p Provider) string {
+func RunResult(p interface{}) string {
 	kJson, _ := json.Marshal(p)
 	return string(kJson)
 }
@@ -59,10 +59,13 @@ func (c CommandOptions) Merge(configs AllConfig, arn string) {
 		Preferences:    Preferences{},
 		Users:          configs.auth,
 	}
-	y, _ := yaml.Marshal(clientConfig)
-	err := ioutil.WriteFile("testconfig/words.yaml", y, 0777)
-	core.OnErrorFail(err, "failed to save config")
-	// clientcmd.WriteToFile(res, "testconfig/fullConfig")
+	if c.DryRun {
+		fmt.Println(RunResult(clientConfig))
+	} else {
+		y, _ := yaml.Marshal(clientConfig)
+		err := ioutil.WriteFile("testconfig/words.yaml", y, 0777)
+		core.OnErrorFail(err, "failed to save config")
+	}
 }
 
 func (c CommandOptions) FullCloudConfig() {
