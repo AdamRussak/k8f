@@ -1,5 +1,15 @@
 package provider
 
+type CommandOptions struct {
+	Path      string
+	Output    string
+	Overwrite bool
+	Combined  bool
+	Backup    bool
+	DryRun    bool
+	Version   bool
+}
+
 // Azure
 type subs struct {
 	Name string `json:"name,omitempty"`

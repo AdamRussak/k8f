@@ -138,36 +138,45 @@ func GetLocalAwsProfiles() []string {
 }
 
 // Connect Logic
-func ConnectAllEks(combined string) (AllConfig, string) {
+func (c CommandOptions) ConnectAllEks() AllConfig {
 	var auth []Users
 	var context []Contexts
 	var clusters []Clusters
 	var arnContext string
 	p := FullAwsList()
 	for _, a := range p.Accounts {
+		r := make(chan LocalConfig)
 		for _, c := range a.Clusters {
-			opt := session.Options{Profile: a.Name, Config: aws.Config{
-				Region: aws.String(c.Region),
-			}}
-			sess := session.Must(session.NewSessionWithOptions(opt))
-			eksSvc := eks.New(sess)
-			input := &eks.DescribeClusterInput{
-				Name: aws.String(c.Name),
-			}
-			result, err := eksSvc.DescribeCluster(input)
-			core.OnErrorFail(err, "Error calling DescribeCluster")
-			a := GenerateKubeConfiguration(result.Cluster, c.Region)
-			arnContext = *result.Cluster.Arn
-			auth = append(auth, Users{Name: arnContext, User: a.Authinfo})
-			context = append(context, Contexts{Name: arnContext, Context: a.Context})
-			clusters = append(clusters, Clusters{Name: arnContext, Cluster: a.Cluster})
+			go func(r chan LocalConfig, c Cluster, a Account) {
+				opt := session.Options{Profile: a.Name, Config: aws.Config{
+					Region: aws.String(c.Region),
+				}}
+				sess := session.Must(session.NewSessionWithOptions(opt))
+				eksSvc := eks.New(sess)
+				input := &eks.DescribeClusterInput{
+					Name: aws.String(c.Name),
+				}
+				result, err := eksSvc.DescribeCluster(input)
+				core.OnErrorFail(err, "Error calling DescribeCluster")
+				r <- GenerateKubeConfiguration(result.Cluster, c.Region)
+			}(r, c, a)
 		}
+		for i := 0; i < len(a.Clusters); i++ {
+			result := <-r
+			arnContext = result.Context.Cluster
+			auth = append(auth, Users{Name: arnContext, User: result.Authinfo})
+			context = append(context, Contexts{Name: arnContext, Context: result.Context})
+			clusters = append(clusters, Clusters{Name: arnContext, Cluster: result.Cluster})
+		}
+
 	}
-	if combined == "aws" {
-		Merge(AllConfig{auth, context, clusters}, arnContext)
-		return AllConfig{}, ""
+	if c.Combined == false {
+		log.Println("Started aws only config creation")
+		c.Merge(AllConfig{auth, context, clusters}, arnContext)
+		return AllConfig{}
 	} else {
-		return AllConfig{auth, context, clusters}, arnContext
+		log.Println("Started aws combined config creation")
+		return AllConfig{auth, context, clusters}
 	}
 }
 

@@ -1,6 +1,5 @@
 package provider
 
-type K8sList interface {
-	FullAzureList()
-	FullAwsList()
+type GetConfig interface {
+	
 }

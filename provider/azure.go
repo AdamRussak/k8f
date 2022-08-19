@@ -113,28 +113,38 @@ func getAksProfile(client *armcontainerservice.ManagedClustersClient, resourceGr
 	return AllConfig{auth: y.Users, context: y.Contexts, clusters: y.Clusters}
 }
 
-func ConnectAllAks(combined string) (AllConfig, string) {
+func (c CommandOptions) ConnectAllAks() AllConfig {
+	kJson, _ := json.Marshal(c)
+	fmt.Println(string(kJson))
 	var authe []Users
 	var context []Contexts
 	var clusters []Clusters
 	var arnContext string
 	p := FullAzureList()
 	for _, a := range p.Accounts {
+		chanel := make(chan AllConfig)
 		for _, c := range a.Clusters {
-			client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(""), nil)
-			core.OnErrorFail(err, "get user creds Failed")
-			aks := getAksProfile(client, SplitAzIDAndGiveItem(c.Id, 4), c.Name)
-			arnContext = c.Name
-			authe = append(authe, aks.auth...)
-			context = append(context, aks.context...)
-			clusters = append(clusters, aks.clusters...)
+			go func(chanel chan AllConfig, c Cluster) {
+				client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(""), nil)
+				core.OnErrorFail(err, "get user creds Failed")
+				chanel <- getAksProfile(client, SplitAzIDAndGiveItem(c.Id, 4), c.Name)
+			}(chanel, c)
+		}
+		for i := 0; i < len(a.Clusters); i++ {
+			response := <-chanel
+			arnContext = response.context[0].Context.User
+			authe = append(authe, response.auth...)
+			context = append(context, response.context...)
+			clusters = append(clusters, response.clusters...)
 		}
 	}
-	if combined == "azure" {
-		Merge(AllConfig{authe, context, clusters}, arnContext)
-		return AllConfig{}, ""
+	if c.Combined == false {
+		log.Println("Started azure only config creation")
+		c.Merge(AllConfig{authe, context, clusters}, arnContext)
+		return AllConfig{}
 	} else {
-		return AllConfig{authe, context, clusters}, arnContext
+		log.Println("Started azure combined config creation")
+		return AllConfig{authe, context, clusters}
 	}
 
 }

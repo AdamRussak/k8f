@@ -49,7 +49,7 @@ func countTotal(f []Account) int {
 	return count
 }
 
-func Merge(configs AllConfig, arn string) {
+func (c CommandOptions) Merge(configs AllConfig, arn string) {
 	clientConfig := Config{
 		Kind:           "Config",
 		APIVersion:     "v1",
@@ -65,19 +65,27 @@ func Merge(configs AllConfig, arn string) {
 	// clientcmd.WriteToFile(res, "testconfig/fullConfig")
 }
 
-func FullCloudConfig(combined string) {
+func (c CommandOptions) FullCloudConfig() {
 	var auth []Users
 	var context []Contexts
 	var clusters []Clusters
-	aws, awcntx := ConnectAllEks(combined)
-	auth = append(auth, aws.auth...)
-	context = append(context, aws.context...)
-	clusters = append(clusters, aws.clusters...)
-	azure, _ := ConnectAllAks(combined)
-	auth = append(auth, azure.auth...)
-	context = append(context, azure.context...)
-	clusters = append(clusters, azure.clusters...)
-	Merge(AllConfig{auth: auth, context: context, clusters: clusters}, awcntx)
-
+	r := make(chan AllConfig)
+	for _, cloud := range []string{"azure", "aws"} {
+		go func(cloud string, r chan AllConfig, c CommandOptions) {
+			var res AllConfig
+			if cloud == "azure" {
+				res = c.ConnectAllAks()
+			} else if cloud == "aws" {
+				res = c.ConnectAllEks()
+			}
+			r <- res
+		}(cloud, r, c)
+	}
+	for i := 0; i < len([]string{"azure", "aws"}); i++ {
+		response := <-r
+		auth = append(auth, response.auth...)
+		context = append(context, response.context...)
+		clusters = append(clusters, response.clusters...)
+	}
+	c.Merge(AllConfig{auth: auth, context: context, clusters: clusters}, context[0].Context.User)
 }
-

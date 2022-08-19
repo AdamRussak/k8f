@@ -14,38 +14,51 @@ import (
 )
 
 // connectCmd represents the connect command
-var connectCmd = &cobra.Command{
-	Use:   "connect",
-	Short: "Connect to a specific cluster",
-	Long: `A longer description that spans multiple lines and likely contains examples
+var (
+	connectCmd = &cobra.Command{
+		Use:   "connect",
+		Short: "Connect to a specific cluster",
+		Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("requires cloud provider")
-		}
-		if core.IfXinY(args[0], []string{"azure", "aws", "all"}) {
-			return nil
-		}
-		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		if args[0] == "azure" {
-			provider.ConnectAllAks(args[0])
-		} else if args[0] == "aws" {
-			provider.ConnectAllEks(args[0])
-		} else if args[0] == "all" {
-			provider.FullCloudConfig(args[0])
-		} else {
-			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
-		}
-	},
-}
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return errors.New("requires cloud provider")
+			}
+			if core.IfXinY(args[0], []string{"azure", "aws", "all"}) {
+				return nil
+			}
+			return fmt.Errorf("invalid cloud provider specified: %s", args[0])
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			var combine bool
+			if core.IfXinY(args[0], supportedProvider) {
+				combine = false
+			} else {
+				combine = true
+			}
+			options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: combine, Backup: o.Backup, DryRun: o.DryRun, Version: o.Version}
+			if args[0] == "azure" {
+				options.ConnectAllAks()
+			} else if args[0] == "aws" {
+				options.ConnectAllEks()
+			} else if args[0] == "all" {
+				options.FullCloudConfig()
+			} else {
+				core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
+			}
+		},
+	}
+)
 
 func init() {
+	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "Merged kubeconfig output type(json or yaml)")
+	connectCmd.Flags().StringVar(&o.Path, "path", confPath, "Merged kubeconfig output name and path")
+	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force merge kubeconfig")
+	connectCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "If true, backup $HOME/.kube/config file to $HOME/.kube/config.bk")
 	rootCmd.AddCommand(connectCmd)
 
 	// Here you will define your flags and configuration settings.
