@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"k8-upgrade/core"
 	"log"
 	"strings"
@@ -18,7 +16,7 @@ var (
 	ctx = context.Background()
 )
 
-func FullAzureList() Provider {
+func (c CommandOptions) FullAzureList() Provider {
 	var list []Account
 	c0 := make(chan string)
 	tenant := GetTenentList()
@@ -52,7 +50,6 @@ func auth(tenantid string) *azidentity.AzureCLICredential {
 }
 
 // get full list of tenants user got permissions to.
-// URGENT: add multi-tenant support
 func GetTenentList() []armsubscriptions.TenantIDDescription {
 	var res []armsubscriptions.TenantIDDescription
 	tenants, err := armsubscriptions.NewTenantsClient(auth(""), nil)
@@ -62,8 +59,6 @@ func GetTenentList() []armsubscriptions.TenantIDDescription {
 		nextResult, err := tenant.NextPage(ctx)
 		core.OnErrorFail(err, "failed to advance page")
 		for _, v := range nextResult.Value {
-			kJson, _ := json.Marshal(v)
-			fmt.Println(string(kJson))
 			res = append(res, *v)
 		}
 	}
@@ -129,13 +124,11 @@ func getAksProfile(client *armcontainerservice.ManagedClustersClient, resourceGr
 }
 
 func (c CommandOptions) ConnectAllAks() AllConfig {
-	kJson, _ := json.Marshal(c)
-	fmt.Println(string(kJson))
 	var authe []Users
 	var context []Contexts
 	var clusters []Clusters
 	var arnContext string
-	p := FullAzureList()
+	p := c.FullAzureList()
 	for _, a := range p.Accounts {
 		chanel := make(chan AllConfig)
 		for _, c := range a.Clusters {

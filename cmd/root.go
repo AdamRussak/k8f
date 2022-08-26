@@ -13,6 +13,9 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var (
 	supportedProvider = []string{"azure", "aws"}
+	configYAML        = "yml"
+	listOutput        = "json"
+	confPath          = "/tmp/test.yml"
 	o                 FlagsOptions
 	rootCmd           = &cobra.Command{
 		Use:   "k8s-upgrade",

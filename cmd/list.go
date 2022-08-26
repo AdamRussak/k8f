@@ -38,10 +38,12 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cProviders := []string{"azure", "aws"}
 		var list []string
+		var p interface{}
+		options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version}
 		if args[0] == "azure" {
-			fmt.Println(provider.RunResult(provider.FullAzureList()))
+			p = options.FullAzureList()
 		} else if args[0] == "aws" {
-			fmt.Println(provider.RunResult(provider.FullAwsList()))
+			p = options.FullAwsList()
 		} else if args[0] == "all" {
 			c0 := make(chan provider.Provider)
 			for _, s := range cProviders {
@@ -49,9 +51,9 @@ to quickly create a Cobra application.`,
 				go func(c0 chan provider.Provider, s string) {
 					var r provider.Provider
 					if s == "azure" {
-						r = provider.FullAzureList()
+						r = options.FullAzureList()
 					} else if s == "aws" {
-						r = provider.FullAwsList()
+						r = options.FullAwsList()
 					}
 					c0 <- r
 				}(c0, s)
@@ -61,13 +63,17 @@ to quickly create a Cobra application.`,
 				kJson, _ := json.Marshal(res)
 				list = append(list, string(kJson))
 			}
-			fmt.Println(list)
+			p = list
 		} else {
 			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 		}
+		fmt.Println(provider.RunResult(p, options.Output))
+
 	},
 }
 
 func init() {
+	listCmd.Flags().StringVarP(&o.Output, "output", "o", listOutput, "Set output type(json or yaml)")
 	rootCmd.AddCommand(listCmd)
+
 }

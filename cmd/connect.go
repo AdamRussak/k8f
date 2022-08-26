@@ -34,13 +34,7 @@ to quickly create a Cobra application.`,
 			return fmt.Errorf("invalid cloud provider specified: %s", args[0])
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			var combine bool
-			if core.IfXinY(args[0], supportedProvider) {
-				combine = false
-			} else {
-				combine = true
-			}
-			options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: combine, Backup: o.Backup, DryRun: o.DryRun, Version: o.Version}
+			options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version}
 			if args[0] == "azure" {
 				options.ConnectAllAks()
 			} else if args[0] == "aws" {

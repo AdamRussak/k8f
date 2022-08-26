@@ -13,9 +13,7 @@ import (
 
 // getCmd represents the get command
 var (
-	configYAML = "yml"
-	confPath   = "/tmp/test.yml"
-	getCmd     = &cobra.Command{
+	getCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Get a Specific K8S in Azure/AWS or Both",
 		Long: `A longer description that spans multiple lines and likely contains examples

@@ -12,13 +12,13 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func FullAwsList() Provider {
+func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
 	l := getLatestEKS(getVersion())
 	profiles := GetLocalAwsProfiles()
-	c := make(chan Account)
+	c0 := make(chan Account)
 	for _, profile := range profiles {
-		go func(c chan Account, profile string, l string) {
+		go func(c0 chan Account, profile string, l string) {
 			var re []Cluster
 			log.Println("Using this profile: ", profile)
 			opt := session.Options{Profile: profile}
@@ -36,12 +36,12 @@ func FullAwsList() Provider {
 					re = append(re, aRegion...)
 				}
 			}
-			c <- Account{profile, re, len(re)}
-		}(c, profile, l)
+			c0 <- Account{profile, re, len(re)}
+		}(c0, profile, l)
 
 	}
 	for i := 0; i < len(profiles); i++ {
-		res := <-c
+		res := <-c0
 		if len(res.Clusters) != 0 {
 			f = append(f, res)
 		}
@@ -142,7 +142,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 	var context []Contexts
 	var clusters []Clusters
 	var arnContext string
-	p := FullAwsList()
+	p := c.FullAwsList()
 	for _, a := range p.Accounts {
 		r := make(chan LocalConfig)
 		for _, c := range a.Clusters {

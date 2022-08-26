@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"k8-upgrade/core"
+	"log"
 
 	"github.com/hashicorp/go-version"
 	"gopkg.in/yaml.v2"
@@ -17,17 +18,13 @@ func evaluateVersion(list []string) string {
 		var lt *version.Version
 		var err error
 		v1, err := version.NewVersion(v)
-		if err != nil {
-			fmt.Println(err)
-		}
+		core.OnErrorFail(err, "Error Evaluating Version")
 		if latest == "" {
 			lt, err = version.NewVersion("0.0")
 		} else {
 			lt, err = version.NewVersion(latest)
 		}
-		if err != nil {
-			fmt.Println(err)
-		}
+		core.OnErrorFail(err, "Error Evaluating Version")
 		// Options availabe
 		if v1.GreaterThan(lt) {
 			latest = v
@@ -36,8 +33,19 @@ func evaluateVersion(list []string) string {
 	return latest
 }
 
-func RunResult(p interface{}) string {
-	kJson, _ := json.Marshal(p)
+func RunResult(p interface{}, output string) string {
+	var kJson []byte
+	log.Println("start RunResult Func")
+	if output == "json" {
+		log.Println("start Json Marshal")
+		kJson, _ = json.Marshal(p)
+	} else if output == "yaml" {
+		log.Println("start yaml Marshal")
+		kJson, _ = yaml.Marshal(p)
+	} else {
+		return "Requested Output is not supported"
+	}
+	log.Println("returning Output Marshal")
 	return string(kJson)
 }
 
@@ -60,7 +68,7 @@ func (c CommandOptions) Merge(configs AllConfig, arn string) {
 		Users:          configs.auth,
 	}
 	if c.DryRun {
-		fmt.Println(RunResult(clientConfig))
+		fmt.Println(RunResult(clientConfig, c.Output))
 	} else {
 		y, _ := yaml.Marshal(clientConfig)
 		err := ioutil.WriteFile("testconfig/words.yaml", y, 0777)

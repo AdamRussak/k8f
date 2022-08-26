@@ -30,3 +30,7 @@ func IfXinY(x string, y []string) bool {
 	}
 	return false
 }
+
+func BoolCombine(arg string, supportedProvider []string) bool {
+	return !IfXinY(arg, supportedProvider)
+}
