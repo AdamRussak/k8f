@@ -20,21 +20,28 @@ var (
 
 func FullAzureList() Provider {
 	var list []Account
+	c0 := make(chan string)
 	tenant := GetTenentList()
 	for _, t := range tenant {
-		subs := listSubscriptions(*t.TenantID)
-		c1 := make(chan Account)
-		for _, s := range subs {
-			log.Println("starting: ", s.Name)
-			go getAllAKS(s, c1, *t.TenantID)
-		}
-		for i := 0; i < len(subs); i++ {
-			res := <-c1
-			list = append(list, res)
-		}
+		go func(c0 chan string, t armsubscriptions.TenantIDDescription) {
+			subs := listSubscriptions(*t.TenantID)
+			c1 := make(chan Account)
+			for _, s := range subs {
+				log.Println("starting: ", s.Name)
+				go getAllAKS(s, c1, *t.TenantID)
+			}
+			for i := 0; i < len(subs); i++ {
+				res := <-c1
+				list = append(list, res)
+			}
+			c0 <- "tenant is done"
+		}(c0, t)
 
 	}
-
+	for i := 0; i < len(tenant); i++ {
+		res := <-c0
+		log.Println(res)
+	}
 	return Provider{"azure", list, countTotal(list)}
 }
 
