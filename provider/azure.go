@@ -20,16 +20,21 @@ var (
 
 func FullAzureList() Provider {
 	var list []Account
-	subs := listSubscriptions()
-	c1 := make(chan Account)
-	for _, s := range subs {
-		log.Println("starting: ", s.Name)
-		go getAllAKS(s, c1)
+	tenant := GetTenentList()
+	for _, t := range tenant {
+		subs := listSubscriptions(*t.TenantID)
+		c1 := make(chan Account)
+		for _, s := range subs {
+			log.Println("starting: ", s.Name)
+			go getAllAKS(s, c1, *t.TenantID)
+		}
+		for i := 0; i < len(subs); i++ {
+			res := <-c1
+			list = append(list, res)
+		}
+
 	}
-	for i := 0; i < len(subs); i++ {
-		res := <-c1
-		list = append(list, res)
-	}
+
 	return Provider{"azure", list, countTotal(list)}
 }
 
@@ -41,7 +46,8 @@ func auth(tenantid string) *azidentity.AzureCLICredential {
 
 // get full list of tenants user got permissions to.
 // URGENT: add multi-tenant support
-func GetTenentList() {
+func GetTenentList() []armsubscriptions.TenantIDDescription {
+	var res []armsubscriptions.TenantIDDescription
 	tenants, err := armsubscriptions.NewTenantsClient(auth(""), nil)
 	core.OnErrorFail(err, "Failed to get Tenants")
 	tenant := tenants.NewListPager(nil)
@@ -51,13 +57,15 @@ func GetTenentList() {
 		for _, v := range nextResult.Value {
 			kJson, _ := json.Marshal(v)
 			fmt.Println(string(kJson))
+			res = append(res, *v)
 		}
 	}
+	return res
 }
 
-func listSubscriptions() []subs {
+func listSubscriptions(id string) []subs {
 	var res []subs
-	client, err := armsubscriptions.NewClient(auth(""), nil)
+	client, err := armsubscriptions.NewClient(auth(id), nil)
 	core.OnErrorFail(err, "Failed to Auth")
 	r := client.NewListPager(nil)
 	for r.More() {
@@ -72,16 +80,16 @@ func listSubscriptions() []subs {
 }
 
 // this is the only path we need to get the aks, now need to get latest version.
-func getAllAKS(subscription subs, c1 chan Account) {
+func getAllAKS(subscription subs, c1 chan Account, id string) {
 	var r []Cluster
-	client, err := armcontainerservice.NewManagedClustersClient(subscription.Id, auth(""), nil)
+	client, err := armcontainerservice.NewManagedClustersClient(subscription.Id, auth(id), nil)
 	core.OnErrorFail(err, "failed to create client")
 	pager := client.NewListPager(nil)
 	for pager.More() {
 		nextResult, err := pager.NextPage(ctx)
 		core.OnErrorFail(err, "failed to advance page")
 		for _, v := range nextResult.Value {
-			l := getAksConfig(SplitAzIDAndGiveItem(*v.ID, 4), *v.Name, subscription.Id)
+			l := getAksConfig(SplitAzIDAndGiveItem(*v.ID, 4), *v.Name, subscription.Id, id)
 			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID})
 		}
 	}
@@ -89,9 +97,9 @@ func getAllAKS(subscription subs, c1 chan Account) {
 }
 
 // Getting a single
-func getAksConfig(resourceGroup string, resourceName string, subscription string) string {
+func getAksConfig(resourceGroup string, resourceName string, subscription string, id string) string {
 	var supportList []string
-	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(""), nil)
+	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(id), nil)
 	core.OnErrorFail(err, "Create Client Failed")
 	profile, err := client.GetUpgradeProfile(ctx, resourceGroup, resourceName, nil)
 	core.OnErrorFail(err, "Update Profile Failed")
@@ -125,7 +133,7 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 		chanel := make(chan AllConfig)
 		for _, c := range a.Clusters {
 			go func(chanel chan AllConfig, c Cluster) {
-				client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(""), nil)
+				client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(c.Id), nil)
 				core.OnErrorFail(err, "get user creds Failed")
 				chanel <- getAksProfile(client, SplitAzIDAndGiveItem(c.Id, 4), c.Name)
 			}(chanel, c)

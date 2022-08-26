@@ -38,7 +38,6 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cProviders := []string{"azure", "aws"}
 		var list []string
-		//TODO: check interfaces to replace this block
 		if args[0] == "azure" {
 			fmt.Println(provider.RunResult(provider.FullAzureList()))
 		} else if args[0] == "aws" {

@@ -1,6 +1,5 @@
 package provider
 
-//TODO: get regions from the AWS CLI CONFIG
 import (
 	"k8-upgrade/core"
 	"log"
