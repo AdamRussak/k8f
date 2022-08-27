@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"k8-upgrade/core"
 	"k8-upgrade/provider"
-	"log"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -35,19 +35,24 @@ to quickly create a Cobra application.`,
 		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
 	},
 	Example: `k8-upgrade list {aws/azure}`,
+	PreRun:  core.ToggleDebug,
 	Run: func(cmd *cobra.Command, args []string) {
 		cProviders := []string{"azure", "aws"}
 		var list []string
 		var p interface{}
 		options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version}
+		log.WithFields(core.LoggerCostumeFields(o)).Debug("Command Options persets")
 		if args[0] == "azure" {
+			log.Debug("Starting Azure List")
 			p = options.FullAzureList()
 		} else if args[0] == "aws" {
+			log.Debug("Starting AWS List")
 			p = options.FullAwsList()
 		} else if args[0] == "all" {
+			log.Debug("Starting all List")
 			c0 := make(chan provider.Provider)
 			for _, s := range cProviders {
-				log.Println("starting: ", s)
+				log.Info("starting: ", s)
 				go func(c0 chan provider.Provider, s string) {
 					var r provider.Provider
 					if s == "azure" {

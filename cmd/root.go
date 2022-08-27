@@ -5,6 +5,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"k8-upgrade/core"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -43,7 +44,8 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "Run the task as Dry-run, no action is done")
+	rootCmd.PersistentFlags().BoolVarP(&core.Verbosity, "verbose", "v", false, "verbose logging")
+
 	rootCmd.Flags().BoolVar(&o.Version, "version", false, "Show Cli version")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

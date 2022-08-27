@@ -3,12 +3,12 @@ package provider
 import (
 	"context"
 	"k8-upgrade/core"
-	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -17,6 +17,7 @@ var (
 )
 
 func (c CommandOptions) FullAzureList() Provider {
+	log.Debug("Starting Azure Full List")
 	var list []Account
 	c0 := make(chan string)
 	tenant := GetTenentList()
