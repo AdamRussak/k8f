@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"k8-upgrade/core"
-	"log"
 
 	"github.com/hashicorp/go-version"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -35,17 +35,18 @@ func evaluateVersion(list []string) string {
 
 func RunResult(p interface{}, output string) string {
 	var kJson []byte
-	log.Println("start RunResult Func")
+	log.Debug("start RunResult Func")
 	if output == "json" {
-		log.Println("start Json Marshal")
+		log.Info("start Json Marshal")
 		kJson, _ = json.Marshal(p)
 	} else if output == "yaml" {
-		log.Println("start yaml Marshal")
+		log.Info("start YAML Marshal")
 		kJson, _ = yaml.Marshal(p)
 	} else {
 		return "Requested Output is not supported"
 	}
-	log.Println("returning Output Marshal")
+	log.Info("returning Output Marshal")
+	log.Debug("returning Output Marshal")
 	return string(kJson)
 }
 

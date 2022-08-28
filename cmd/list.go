@@ -5,7 +5,6 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"k8-upgrade/core"
@@ -37,11 +36,10 @@ to quickly create a Cobra application.`,
 	Example: `k8-upgrade list {aws/azure}`,
 	PreRun:  core.ToggleDebug,
 	Run: func(cmd *cobra.Command, args []string) {
-		cProviders := []string{"azure", "aws"}
-		var list []string
+		var list []provider.Provider
 		var p interface{}
 		options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version}
-		log.WithFields(core.LoggerCostumeFields(o)).Debug("Command Options persets")
+		log.Debug("CommandOptions Used")
 		if args[0] == "azure" {
 			log.Debug("Starting Azure List")
 			p = options.FullAzureList()
@@ -49,29 +47,33 @@ to quickly create a Cobra application.`,
 			log.Debug("Starting AWS List")
 			p = options.FullAwsList()
 		} else if args[0] == "all" {
-			log.Debug("Starting all List")
+			log.Debug("Starting All List")
+
 			c0 := make(chan provider.Provider)
-			for _, s := range cProviders {
-				log.Info("starting: ", s)
+			for _, s := range supportedProvider {
+				log.Debug(string("Starting " + s + " Provider"))
 				go func(c0 chan provider.Provider, s string) {
 					var r provider.Provider
 					if s == "azure" {
+						log.Trace(string("triggered " + s))
 						r = options.FullAzureList()
 					} else if s == "aws" {
+						log.Trace(string("triggered " + s))
 						r = options.FullAwsList()
 					}
 					c0 <- r
 				}(c0, s)
 			}
-			for i := 0; i < len(cProviders); i++ {
+			for i := 0; i < len(supportedProvider); i++ {
 				res := <-c0
-				kJson, _ := json.Marshal(res)
-				list = append(list, string(kJson))
+				log.Trace(string("Recived A response from: " + supportedProvider[i]))
+				list = append(list, res)
 			}
 			p = list
 		} else {
 			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 		}
+		log.Debug(string("Outputing List as " + options.Output + " Format"))
 		fmt.Println(provider.RunResult(p, options.Output))
 
 	},

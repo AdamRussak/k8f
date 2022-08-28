@@ -3,12 +3,13 @@ package core
 import (
 	"fmt"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func OnErrorFail(err error, message string) {
 	if err != nil {
-		fmt.Printf("%s: %s\n", message, err)
-		os.Exit(1)
+		log.Fatalf("%s: %s\n", message, err)
 	}
 }
 

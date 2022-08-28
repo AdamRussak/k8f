@@ -2,13 +2,13 @@ package provider
 
 import (
 	"k8-upgrade/core"
-	"log"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/eks"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/ini.v1"
 )
 
@@ -20,7 +20,7 @@ func (c CommandOptions) FullAwsList() Provider {
 	for _, profile := range profiles {
 		go func(c0 chan Account, profile string, l string) {
 			var re []Cluster
-			log.Println("Using this profile: ", profile)
+			log.Info(string("Using AWS profile: " + profile))
 			opt := session.Options{Profile: profile}
 			conf, err := session.NewSessionWithOptions(opt)
 			core.OnErrorFail(err, "Failed to create new session")
@@ -108,7 +108,7 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 	input := &eks.ListClustersInput{}
 	result, err := svc.ListClusters(input)
 	core.OnErrorFail(err, "Failed to list Clusters")
-	log.Println("We are In Region: ", reg, "Profile", profile)
+	log.Debug(string("We are In Region: " + reg + " Profile " + profile))
 	if len(result.Clusters) > 0 {
 		c3 := make(chan []string)
 		for _, element := range result.Clusters {

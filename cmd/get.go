@@ -25,7 +25,8 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
-			log.WithFields(core.LoggerCostumeFields(o)).Debug("Command Options persets")
+			log.Debug("Get start on Debug Mode")
+			log.Info("Get Command Starting")
 			fmt.Println("get called")
 		},
 	}

@@ -17,7 +17,7 @@ var (
 )
 
 func (c CommandOptions) FullAzureList() Provider {
-	log.Debug("Starting Azure Full List")
+	log.Info("Starting Azure Full List")
 	var list []Account
 	c0 := make(chan string)
 	tenant := GetTenentList()
@@ -26,7 +26,7 @@ func (c CommandOptions) FullAzureList() Provider {
 			subs := listSubscriptions(*t.TenantID)
 			c1 := make(chan Account)
 			for _, s := range subs {
-				log.Println("starting: ", s.Name)
+				log.Info(string("starting: " + s.Name))
 				go getAllAKS(s, c1, *t.TenantID)
 			}
 			for i := 0; i < len(subs); i++ {
@@ -39,7 +39,7 @@ func (c CommandOptions) FullAzureList() Provider {
 	}
 	for i := 0; i < len(tenant); i++ {
 		res := <-c0
-		log.Println(res)
+		log.Info(string(*tenant[i].DisplayName + " " + res))
 	}
 	return Provider{"azure", list, countTotal(list)}
 }
@@ -148,11 +148,11 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 		}
 	}
 	if c.Combined == false {
-		log.Println("Started azure only config creation")
+		log.Debug("Started azure only config creation")
 		c.Merge(AllConfig{authe, context, clusters}, arnContext)
 		return AllConfig{}
 	} else {
-		log.Println("Started azure combined config creation")
+		log.Debug("Started azure combined config creation")
 		return AllConfig{authe, context, clusters}
 	}
 

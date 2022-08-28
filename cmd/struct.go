@@ -8,3 +8,6 @@ type FlagsOptions struct {
 	DryRun    bool   `json:"dry-run,omitempty"`
 	Version   bool   `json:"version,omitempty"`
 }
+type loggingStruct struct {
+	Provider string
+}
