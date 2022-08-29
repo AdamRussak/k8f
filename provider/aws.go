@@ -14,6 +14,7 @@ import (
 
 func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
+	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	l := getLatestEKS(getVersion())
 	profiles := GetLocalAwsProfiles()
 	c0 := make(chan Account)
@@ -142,6 +143,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 	var context []Contexts
 	var clusters []Clusters
 	var arnContext string
+	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	p := c.FullAwsList()
 	for _, a := range p.Accounts {
 		r := make(chan LocalConfig)

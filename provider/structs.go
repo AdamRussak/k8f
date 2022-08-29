@@ -1,6 +1,7 @@
 package provider
 
 type CommandOptions struct {
+	AwsRegion string
 	Path      string
 	Output    string
 	Overwrite bool

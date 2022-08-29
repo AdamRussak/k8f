@@ -14,6 +14,7 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var (
 	supportedProvider = []string{"azure", "aws"}
+	AwsRegion         = "eu-west-1"
 	configYAML        = "yml"
 	listOutput        = "json"
 	confPath          = "/tmp/test.yml"
@@ -45,6 +46,7 @@ func Execute() {
 func init() {
 	rootCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "Run the task as Dry-run, no action is done")
 	rootCmd.PersistentFlags().BoolVarP(&core.Verbosity, "verbose", "v", false, "verbose logging")
+	rootCmd.PersistentFlags().StringVar(&AwsRegion, "aws-region", AwsRegion, "Set Default AWS Region")
 
 	rootCmd.Flags().BoolVar(&o.Version, "version", false, "Show Cli version")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

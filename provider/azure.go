@@ -22,36 +22,41 @@ func (c CommandOptions) FullAzureList() Provider {
 	c0 := make(chan string)
 	tenant := GetTenentList()
 	for _, t := range tenant {
+		log.Info("Start Tenanat: " + *t.DisplayName)
 		go func(c0 chan string, t armsubscriptions.TenantIDDescription) {
 			subs := listSubscriptions(*t.TenantID)
 			c1 := make(chan Account)
 			for _, s := range subs {
-				log.Info(string("starting: " + s.Name))
+				log.Info("Start Subscription: " + s.Name)
 				go getAllAKS(s, c1, *t.TenantID)
 			}
 			for i := 0; i < len(subs); i++ {
 				res := <-c1
 				list = append(list, res)
+				log.Debug("Finished Subscription: " + subs[i].Name)
 			}
-			c0 <- "tenant is done"
+			c0 <- "Finished Tenanat:"
 		}(c0, t)
 
 	}
 	for i := 0; i < len(tenant); i++ {
 		res := <-c0
-		log.Info(string(*tenant[i].DisplayName + " " + res))
+		log.Debug(res + " " + *tenant[i].DisplayName)
 	}
 	return Provider{"azure", list, countTotal(list)}
 }
 
 func auth(tenantid string) *azidentity.AzureCLICredential {
+	log.Debug("Start Authentication for tenant ID: " + tenantid)
 	cred, err := azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{TenantID: tenantid})
 	core.OnErrorFail(err, "Authentication Failed")
+	log.Debug("Finished Authentication for tenant ID: " + tenantid)
 	return cred
 }
 
 // get full list of tenants user got permissions to.
 func GetTenentList() []armsubscriptions.TenantIDDescription {
+	log.Debug("Start getting tenant list")
 	var res []armsubscriptions.TenantIDDescription
 	tenants, err := armsubscriptions.NewTenantsClient(auth(""), nil)
 	core.OnErrorFail(err, "Failed to get Tenants")
@@ -63,10 +68,12 @@ func GetTenentList() []armsubscriptions.TenantIDDescription {
 			res = append(res, *v)
 		}
 	}
+	log.Debug("Finished getting tenant list")
 	return res
 }
 
 func listSubscriptions(id string) []subs {
+	log.Debug("Start getting Subscription list")
 	var res []subs
 	client, err := armsubscriptions.NewClient(auth(id), nil)
 	core.OnErrorFail(err, "Failed to Auth")
@@ -79,6 +86,7 @@ func listSubscriptions(id string) []subs {
 
 		}
 	}
+	log.Debug("Finished getting Subscription list")
 	return res
 }
 

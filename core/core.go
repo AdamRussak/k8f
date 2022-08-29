@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -14,14 +13,16 @@ func OnErrorFail(err error, message string) {
 }
 
 // getEnvVarOrExit returns the value of specified environment variable or terminates if it's not defined.
-func GetEnvVarOrExit(varName string) string {
-	value := os.Getenv(varName)
-	if value == "" {
-		fmt.Printf("Missing environment variable %s\n", varName)
-		os.Exit(1)
+func CheckEnvVarOrSitIt(varName string, varKey string) {
+	val, present := os.LookupEnv(varName)
+	if present {
+		log.Debug("Variable " + varName + " Was Pre-set with Value: " + val)
+	} else {
+		err := os.Setenv(varName, varKey)
+		val = os.Getenv(varName)
+		log.Debug("Variable " + varName + " is Set with Value: " + val)
+		OnErrorFail(err, "Issue setting the 'AWS_REGION' Enviroment Variable")
 	}
-
-	return value
 }
 func IfXinY(x string, y []string) bool {
 	for _, t := range y {
