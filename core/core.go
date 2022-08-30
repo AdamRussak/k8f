@@ -24,6 +24,7 @@ func CheckEnvVarOrSitIt(varName string, varKey string) {
 		OnErrorFail(err, "Issue setting the 'AWS_REGION' Enviroment Variable")
 	}
 }
+
 func IfXinY(x string, y []string) bool {
 	for _, t := range y {
 		if x == t {

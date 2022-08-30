@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -17,7 +18,7 @@ var (
 	AwsRegion         = "eu-west-1"
 	configYAML        = "yml"
 	listOutput        = "json"
-	confPath          = "/tmp/test.yml"
+	confPath          = clientcmd.RecommendedHomeFile
 	o                 FlagsOptions
 	rootCmd           = &cobra.Command{
 		Use:   "k8s-upgrade",

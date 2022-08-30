@@ -10,6 +10,7 @@ import (
 	"k8-upgrade/core"
 	"k8-upgrade/provider"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -33,8 +34,10 @@ to quickly create a Cobra application.`,
 			}
 			return fmt.Errorf("invalid cloud provider specified: %s", args[0])
 		},
+		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
-			options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version}
+			options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version, AwsRegion: AwsRegion}
+			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if args[0] == "azure" {
 				options.ConnectAllAks()
 			} else if args[0] == "aws" {
