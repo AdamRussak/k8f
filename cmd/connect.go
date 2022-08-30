@@ -18,7 +18,7 @@ import (
 var (
 	connectCmd = &cobra.Command{
 		Use:   "connect",
-		Short: "Connect to a specific cluster",
+		Short: "Connect to the clusters of a provider or all Supported Providers",
 		Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -38,6 +38,13 @@ to quickly create a Cobra application.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version, AwsRegion: AwsRegion}
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
+			if !options.Overwrite && core.Exists(options.Path) {
+				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
+			}
+			if !core.Exists(options.Path) {
+				log.Warn("Path Created")
+				core.CreatDIrectoryt(options.Path)
+			}
 			if args[0] == "azure" {
 				options.ConnectAllAks()
 			} else if args[0] == "aws" {
@@ -53,18 +60,12 @@ to quickly create a Cobra application.`,
 
 func init() {
 	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "Merged kubeconfig output type(json or yaml)")
-	connectCmd.Flags().StringVar(&o.Path, "path", confPath, "Merged kubeconfig output name and path")
+	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "Merged kubeconfig output path")
 	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force merge kubeconfig")
-	connectCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "If true, backup $HOME/.kube/config file to $HOME/.kube/config.bk")
+	connectCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "If true, only run a dry-run with cli output")
+	connectCmd.Flags().BoolVar(&o.Backup, "Backup", false, "If true, backup config file to $HOME/.kube/config.bk")
+	// rootCmd.MarkFlagsRequiredTogether("username", "password")
+	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "overwrite")
+	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "Backup")
 	rootCmd.AddCommand(connectCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// connectCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// connectCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

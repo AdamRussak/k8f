@@ -72,8 +72,9 @@ func (c CommandOptions) Merge(configs AllConfig, arn string) {
 		fmt.Println(RunResult(clientConfig, c.Output))
 	} else {
 		y, _ := yaml.Marshal(clientConfig)
-		err := ioutil.WriteFile(c.Path, y, 0777)
+		err := ioutil.WriteFile(c.Path, y, 0666)
 		core.OnErrorFail(err, "failed to save config")
+
 	}
 }
 

@@ -8,7 +8,7 @@
 			// Update the VARIANT arg to pick a version of Go: 1, 1.18, 1.17
 			// Append -bullseye or -buster to pin to an OS version.
 			// Use -bullseye variants on local arm64/Apple Silicon.
-			"VARIANT": "1.17-bullseye",
+			"VARIANT": "1.18-bullseye",
 			// Options
 			"NODE_VERSION": "lts/*"
 		}
@@ -28,7 +28,11 @@
 			
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
-				"golang.Go"
+				"golang.Go",
+				"rangav.vscode-thunder-client",
+				"Gruntfuggly.todo-tree"
+				
+
 			]
 		}
 	},
