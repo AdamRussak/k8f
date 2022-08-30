@@ -42,8 +42,8 @@ to quickly create a Cobra application.`,
 				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
 			}
 			if !core.Exists(options.Path) {
-				log.Warn("Path Created")
 				core.CreatDIrectoryt(options.Path)
+				log.Warn("Path directorys were created")
 			}
 			if args[0] == "azure" {
 				options.ConnectAllAks()
