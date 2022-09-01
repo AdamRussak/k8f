@@ -4,3 +4,4 @@ testAws.go.not
 testconfig/
 .ssh/
 .vscode/
+k8-upgrade*

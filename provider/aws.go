@@ -147,20 +147,20 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 	p := c.FullAwsList()
 	for _, a := range p.Accounts {
 		r := make(chan LocalConfig)
-		for _, c := range a.Clusters {
-			go func(r chan LocalConfig, c Cluster, a Account) {
+		for _, clus := range a.Clusters {
+			go func(r chan LocalConfig, clus Cluster, a Account, commandOptions CommandOptions) {
 				opt := session.Options{Profile: a.Name, Config: aws.Config{
-					Region: aws.String(c.Region),
+					Region: aws.String(clus.Region),
 				}}
 				sess := session.Must(session.NewSessionWithOptions(opt))
 				eksSvc := eks.New(sess)
 				input := &eks.DescribeClusterInput{
-					Name: aws.String(c.Name),
+					Name: aws.String(clus.Name),
 				}
 				result, err := eksSvc.DescribeCluster(input)
 				core.OnErrorFail(err, "Error calling DescribeCluster")
-				r <- GenerateKubeConfiguration(result.Cluster, c.Region)
-			}(r, c, a)
+				r <- GenerateKubeConfiguration(result.Cluster, clus.Region, a, commandOptions)
+			}(r, clus, a, c)
 		}
 		for i := 0; i < len(a.Clusters); i++ {
 			result := <-r
@@ -182,7 +182,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 }
 
 //Create AWS Config
-func GenerateKubeConfiguration(cluster *eks.Cluster, r string) LocalConfig {
+func GenerateKubeConfiguration(cluster *eks.Cluster, r string, a Account, c CommandOptions) LocalConfig {
 	clusters := CCluster{
 		Server:                   *cluster.Endpoint,
 		CertificateAuthorityData: *cluster.CertificateAuthority.Data,
@@ -194,17 +194,56 @@ func GenerateKubeConfiguration(cluster *eks.Cluster, r string) LocalConfig {
 
 	authinfos := User{
 		Exec: Exec{
-			APIVersion: "client.authentication.k8s.io/v1alpha1",
-			Args: []string{
-				"--region",
-				r,
-				"eks",
-				"get-token",
-				"--cluster-name",
-				*cluster.Name,
-			},
-			Command: "aws",
+			APIVersion: "client.authentication.k8s.io/v1beta1",
+			Args:       c.AwsArgs(r, *cluster.Name),
+			Env:        c.AwsEnvs(a.Name),
+			Command:    c.setCommand(),
 		},
 	}
 	return LocalConfig{authinfos, contexts, clusters}
 }
+
+//TODO: Add options to authenticate From CLI (what is currently set)
+//TODO: Add options to Authneticate with IAM Authenticator
+//TODO: Add options for Env profile
+//TODO: Add options for role seetings profile
+func (c CommandOptions) setCommand() string {
+	if c.AwsAuth {
+		return "aws-iam-authenticator"
+	}
+	return "aws"
+}
+func (c CommandOptions) AwsArgs(region string, clusterName string) []string {
+	var args []string
+	if c.AwsAssumeRole && !c.AwsAuth {
+		args = []string{"--region", region, "'eks'", "get-token", "--cluster-name", clusterName, "- --role-arn", c.AwsRoleString}
+	} else if c.AwsAssumeRole && c.AwsAuth {
+		args = []string{"token", "-i", clusterName, "- --role-arn", c.AwsRoleString}
+	} else {
+		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName}
+	}
+	return args
+}
+
+func (c CommandOptions) AwsEnvs(profile string) []Env {
+	var env Env
+	if c.AwsEnvProfile {
+		env = Env{Name: "AWS_PROFILE", Value: profile}
+	}
+	return []Env{env}
+}
+
+// The format for the config
+// https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html
+// args:
+// - --region
+// - $region_code
+// - eks
+// - get-token
+// - --cluster-name
+// - $cluster_name
+// # - "- --role-arn"
+// # - "arn:aws:iam::$account_id:role/my-role"
+// # env:
+// # - name: "AWS_PROFILE"
+// #   value: "aws-profile"

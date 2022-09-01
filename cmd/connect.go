@@ -19,12 +19,6 @@ var (
 	connectCmd = &cobra.Command{
 		Use:   "connect",
 		Short: "Connect to the clusters of a provider or all Supported Providers",
-		Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("requires cloud provider")
@@ -36,7 +30,7 @@ to quickly create a Cobra application.`,
 		},
 		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
-			options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version, AwsRegion: AwsRegion}
+			options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsAssumeRole: o.AwsAssumeRole, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile, Version: o.Version}
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if !options.Overwrite && core.Exists(options.Path) {
 				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
@@ -64,7 +58,11 @@ func init() {
 	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force merge kubeconfig")
 	connectCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "If true, only run a dry-run with cli output")
 	connectCmd.Flags().BoolVar(&o.Backup, "Backup", false, "If true, backup config file to $HOME/.kube/config.bk")
-	// rootCmd.MarkFlagsRequiredTogether("username", "password")
+	connectCmd.Flags().BoolVar(&o.AwsAuth, "auth", false, "change from CLI Auth to AMI Auth, Default set to CLI")
+	connectCmd.Flags().BoolVar(&o.AwsAssumeRole, "isRole", false, "Add AWS Assume Role to EKS Config")
+	connectCmd.Flags().BoolVar(&o.AwsEnvProfile, "isEnv", false, "Add AWS Env Profile to the AWS Config")
+	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: '')")
+	connectCmd.MarkFlagsRequiredTogether("isRole", "role-name")
 	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "overwrite")
 	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "Backup")
 	rootCmd.AddCommand(connectCmd)

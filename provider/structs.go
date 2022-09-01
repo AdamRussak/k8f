@@ -1,14 +1,18 @@
 package provider
 
 type CommandOptions struct {
-	AwsRegion string
-	Path      string
-	Output    string
-	Overwrite bool
-	Combined  bool
-	Backup    bool
-	DryRun    bool
-	Version   bool
+	AwsRegion     string
+	Path          string
+	Output        string
+	Overwrite     bool
+	Combined      bool
+	Backup        bool
+	DryRun        bool
+	AwsAuth       bool
+	AwsAssumeRole bool
+	AwsRoleString string
+	AwsEnvProfile bool
+	Version       bool
 }
 
 // Azure
@@ -103,4 +107,9 @@ type User struct {
 type Users struct {
 	Name string `yaml:"name,omitempty"`
 	User User   `yaml:"user,omitempty"`
+}
+
+type Env struct {
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
 }
