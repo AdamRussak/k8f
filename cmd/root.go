@@ -22,13 +22,13 @@ var (
 	o                 FlagsOptions
 	rootCmd           = &cobra.Command{
 		Use:   "k8s-upgrade",
-		Short: "A ClI tool to List, Connect, Search and Monitor K8S Clusters",
-		Long: `A longer description that spans multiple lines and likely contains
-		examples and usage of using your application. For example:
-
-		Cobra is a CLI library for Go that empowers applications.
-		This application is a tool to generate the needed files
-		to quickly create a Cobra application.`,
+		Short: "A CLI tool to List, Connect, Search and check version for K8S Clusters in all your resources at once",
+		Long: `A CLI tool to find, list, connect, search and check version for K8S Clusters in all your resources at once,
+this tool supports Azure AKS and AWS EKS . For example:
+	to get List of all EKS:
+		k8-upgrade  list aws
+	to connect to all K8S:
+		k8-upgrade  connect all`,
 	}
 )
 

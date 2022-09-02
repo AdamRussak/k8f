@@ -17,7 +17,9 @@ import (
 var (
 	connectCmd = &cobra.Command{
 		Use:   "connect",
-		Short: "Connect to the clusters of a provider or all Supported Providers",
+		Short: "Connect to all the clusters of a provider or all Supported Providers",
+		Example: `k8s-upgrade connect aws -p ./testfiles/config --backup -v
+k8s-upgrade connect aws --isEnv -p ./testfiles/config --overwrite --backup --isRole --role-name "test role" -v`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("requires cloud provider")

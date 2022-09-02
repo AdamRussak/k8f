@@ -27,7 +27,7 @@ var listCmd = &cobra.Command{
 		}
 		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
 	},
-	Example: `k8-upgrade list {aws/azure}`,
+	Example: `k8-upgrade list {aws/azure/all}`,
 	PreRun:  core.ToggleDebug,
 	Run: func(cmd *cobra.Command, args []string) {
 		var list []provider.Provider
