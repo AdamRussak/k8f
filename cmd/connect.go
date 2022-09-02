@@ -1,6 +1,5 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -32,7 +31,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsAssumeRole: o.AwsAssumeRole, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile, Version: o.Version}
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
-			if !options.Overwrite && core.Exists(options.Path) {
+			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun {
 				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
 			}
 			if !core.Exists(options.Path) {

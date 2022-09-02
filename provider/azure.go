@@ -104,12 +104,13 @@ func getAllAKS(subscription subs, c1 chan Account, id string) {
 			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID})
 		}
 	}
-	c1 <- Account{subscription.Name, r, len(r)}
+	c1 <- Account{subscription.Name, r, len(r), id}
 }
 
 // Getting a single
 func getAksConfig(resourceGroup string, resourceName string, subscription string, id string) string {
 	var supportList []string
+	log.WithField("CommandOptions", log.Fields{"subscription": subscription, "tenantID": id, "resourceName": resourceName}).Debug("getAksConfig Variables and Values: ")
 	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(id), nil)
 	core.OnErrorFail(err, "Create Client Failed")
 	profile, err := client.GetUpgradeProfile(ctx, resourceGroup, resourceName, nil)
@@ -121,6 +122,7 @@ func getAksConfig(resourceGroup string, resourceName string, subscription string
 }
 
 func getAksProfile(client *armcontainerservice.ManagedClustersClient, resourceGroupName string, resourceName string) AllConfig {
+	log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(client), "resourceGroupName": resourceGroupName, "resourceName": resourceName}).Debug("getAksProfile Variables and Values: ")
 	l, err := client.ListClusterUserCredentials(ctx, resourceGroupName, resourceName, nil)
 	core.OnErrorFail(err, "get user creds Failed")
 	y := Config{}
@@ -141,11 +143,12 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 	for _, a := range p.Accounts {
 		chanel := make(chan AllConfig)
 		for _, c := range a.Clusters {
-			go func(chanel chan AllConfig, c Cluster) {
-				client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(c.Id), nil)
+			go func(chanel chan AllConfig, c Cluster, a Account) {
+				log.WithField("Cluster Struct", log.Fields{"struct": core.DebugWithInfo(c), "tenentAuth": core.DebugWithInfo(a)}).Debug("Creating NewManagedClustersClient")
+				client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(a.Tenanat), nil)
 				core.OnErrorFail(err, "get user creds Failed")
 				chanel <- getAksProfile(client, SplitAzIDAndGiveItem(c.Id, 4), c.Name)
-			}(chanel, c)
+			}(chanel, c, a)
 		}
 		for i := 0; i < len(a.Clusters); i++ {
 			response := <-chanel
@@ -155,7 +158,7 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 			clusters = append(clusters, response.clusters...)
 		}
 	}
-	if c.Combined == false {
+	if !c.Combined {
 		log.Debug("Started azure only config creation")
 		c.Merge(AllConfig{authe, context, clusters}, arnContext)
 		return AllConfig{}

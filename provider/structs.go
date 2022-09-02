@@ -34,6 +34,7 @@ type Account struct {
 	Name       string    `json:"name,omitempty"`
 	Clusters   []Cluster `json:"clusters,omitempty"`
 	TotalCount int       `json:"totalCount,omitempty"`
+	Tenanat    string    `json:"tenant,omitempty"`
 }
 
 type Provider struct {

@@ -37,7 +37,7 @@ func (c CommandOptions) FullAwsList() Provider {
 					re = append(re, aRegion...)
 				}
 			}
-			c0 <- Account{profile, re, len(re)}
+			c0 <- Account{profile, re, len(re), ""}
 		}(c0, profile, l)
 
 	}
@@ -203,10 +203,6 @@ func GenerateKubeConfiguration(cluster *eks.Cluster, r string, a Account, c Comm
 	return LocalConfig{authinfos, contexts, clusters}
 }
 
-//TODO: Add options to authenticate From CLI (what is currently set)
-//TODO: Add options to Authneticate with IAM Authenticator
-//TODO: Add options for Env profile
-//TODO: Add options for role seetings profile
 func (c CommandOptions) setCommand() string {
 	if c.AwsAuth {
 		return "aws-iam-authenticator"
@@ -216,7 +212,7 @@ func (c CommandOptions) setCommand() string {
 func (c CommandOptions) AwsArgs(region string, clusterName string) []string {
 	var args []string
 	if c.AwsAssumeRole && !c.AwsAuth {
-		args = []string{"--region", region, "'eks'", "get-token", "--cluster-name", clusterName, "- --role-arn", c.AwsRoleString}
+		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "- --role-arn", c.AwsRoleString}
 	} else if c.AwsAssumeRole && c.AwsAuth {
 		args = []string{"token", "-i", clusterName, "- --role-arn", c.AwsRoleString}
 	} else {
