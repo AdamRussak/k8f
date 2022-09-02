@@ -31,7 +31,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsAssumeRole: o.AwsAssumeRole, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile, Version: o.Version}
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
-			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun {
+			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup {
 				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
 			}
 			if !core.Exists(options.Path) {
@@ -56,13 +56,13 @@ func init() {
 	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "Merged kubeconfig output path")
 	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force merge kubeconfig")
 	connectCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "If true, only run a dry-run with cli output")
-	connectCmd.Flags().BoolVar(&o.Backup, "Backup", false, "If true, backup config file to $HOME/.kube/config.bk")
+	connectCmd.Flags().BoolVar(&o.Backup, "backup", false, "If true, backup config file to $HOME/.kube/config.bk")
 	connectCmd.Flags().BoolVar(&o.AwsAuth, "auth", false, "change from CLI Auth to AMI Auth, Default set to CLI")
 	connectCmd.Flags().BoolVar(&o.AwsAssumeRole, "isRole", false, "Add AWS Assume Role to EKS Config")
 	connectCmd.Flags().BoolVar(&o.AwsEnvProfile, "isEnv", false, "Add AWS Env Profile to the AWS Config")
 	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: '')")
 	connectCmd.MarkFlagsRequiredTogether("isRole", "role-name")
 	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "overwrite")
-	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "Backup")
+	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "backup")
 	rootCmd.AddCommand(connectCmd)
 }

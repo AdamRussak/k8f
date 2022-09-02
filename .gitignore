@@ -1,6 +1,6 @@
 local.prop
 testAws.go.not
-
+testfiles/
 testconfig/
 .ssh/
 .vscode/

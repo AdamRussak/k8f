@@ -111,6 +111,6 @@ type Users struct {
 }
 
 type Env struct {
-	Name  string `yaml:"name"`
-	Value string `yaml:"value"`
+	Name  string `yaml:"name,omitempty"`
+	Value string `yaml:"value,omitempty"`
 }

@@ -169,16 +169,15 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 			context = append(context, Contexts{Name: arnContext, Context: result.Context})
 			clusters = append(clusters, Clusters{Name: arnContext, Cluster: result.Cluster})
 		}
-
 	}
-	if c.Combined == false {
+	if !c.Combined {
 		log.Println("Started aws only config creation")
 		c.Merge(AllConfig{auth, context, clusters}, arnContext)
 		return AllConfig{}
-	} else {
-		log.Println("Started aws combined config creation")
-		return AllConfig{auth, context, clusters}
 	}
+	log.Println("Started aws combined config creation")
+	return AllConfig{auth, context, clusters}
+
 }
 
 //Create AWS Config
@@ -221,12 +220,12 @@ func (c CommandOptions) AwsArgs(region string, clusterName string) []string {
 	return args
 }
 
-func (c CommandOptions) AwsEnvs(profile string) []Env {
-	var env Env
+func (c CommandOptions) AwsEnvs(profile string) interface{} {
 	if c.AwsEnvProfile {
-		env = Env{Name: "AWS_PROFILE", Value: profile}
+		env := Env{Name: "AWS_PROFILE", Value: profile}
+		return env
 	}
-	return []Env{env}
+	return nil
 }
 
 // The format for the config

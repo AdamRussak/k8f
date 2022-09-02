@@ -3,8 +3,10 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"k8-upgrade/core"
+	"os"
 
 	"github.com/hashicorp/go-version"
 	log "github.com/sirupsen/logrus"
@@ -50,6 +52,7 @@ func RunResult(p interface{}, output string) string {
 	return string(kJson)
 }
 
+//func to count ammount of Cluster in an account
 func countTotal(f []Account) int {
 	var count int
 	for _, a := range f {
@@ -58,6 +61,7 @@ func countTotal(f []Account) int {
 	return count
 }
 
+//func to merge kubeconfig output to singe config file
 func (c CommandOptions) Merge(configs AllConfig, arn string) {
 	clientConfig := Config{
 		Kind:           "Config",
@@ -71,6 +75,10 @@ func (c CommandOptions) Merge(configs AllConfig, arn string) {
 	if c.DryRun {
 		fmt.Println(RunResult(clientConfig, c.Output))
 	} else {
+		if c.Backup {
+			log.Debug("calling copy file to bak")
+			c.Configcopy()
+		}
 		y, _ := yaml.Marshal(clientConfig)
 		err := ioutil.WriteFile(c.Path, y, 0666)
 		core.OnErrorFail(err, "failed to save config")
@@ -101,4 +109,20 @@ func (c CommandOptions) FullCloudConfig() {
 		clusters = append(clusters, response.clusters...)
 	}
 	c.Merge(AllConfig{auth: auth, context: context, clusters: clusters}, context[0].Context.User)
+}
+func (c CommandOptions) Configcopy() {
+	sourceFileStat, err := os.Stat(c.Path)
+	core.OnErrorFail(err, "Issue Findign the Files in the path: "+c.Path)
+	if !sourceFileStat.Mode().IsRegular() {
+		core.OnErrorFail(err, c.Path+" is not a regular file")
+	}
+	source, err := os.Open(c.Path)
+	core.OnErrorFail(err, "failed to Open target file")
+	defer source.Close()
+
+	destination, err := os.Create(c.Path + ".bak")
+	core.OnErrorFail(err, "failed to Copy target file")
+	defer destination.Close()
+	_, err = io.Copy(destination, source)
+	core.OnErrorFail(err, "failed to Copy target file")
 }
