@@ -6,7 +6,6 @@ type FlagsOptions struct {
 	Overwrite     bool   `json:"overwrite,omitempty"`
 	Backup        bool   `json:"backup,omitempty"`
 	DryRun        bool   `json:"dry-run,omitempty"`
-	Version       bool   `json:"version,omitempty"`
 	AwsAuth       bool   `json:"aws_auth,omitempty"`
 	AwsAssumeRole bool   `json:"aws_assume_role,omitempty"`
 	AwsRoleString string `json:"aws_role_string,omitempty"`

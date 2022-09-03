@@ -6,8 +6,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"k8-upgrade/core"
-	"k8-upgrade/provider"
+	"k8f/core"
+	"k8f/provider"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -18,8 +18,8 @@ var (
 	connectCmd = &cobra.Command{
 		Use:   "connect",
 		Short: "Connect to all the clusters of a provider or all Supported Providers",
-		Example: `k8s-upgrade connect aws -p ./testfiles/config --backup -v
-k8s-upgrade connect aws --isEnv -p ./testfiles/config --overwrite --backup --isRole --role-name "test role" -v`,
+		Example: `k8f connect aws -p ./testfiles/config --backup -v
+k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --isRole --role-name "test role" -v`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("requires cloud provider")
@@ -31,7 +31,7 @@ k8s-upgrade connect aws --isEnv -p ./testfiles/config --overwrite --backup --isR
 		},
 		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
-			options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsAssumeRole: o.AwsAssumeRole, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile, Version: o.Version}
+			options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsAssumeRole: o.AwsAssumeRole, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup {
 				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")

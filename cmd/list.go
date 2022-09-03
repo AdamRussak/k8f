@@ -7,8 +7,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"k8-upgrade/core"
-	"k8-upgrade/provider"
+	"k8f/core"
+	"k8f/provider"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -27,12 +27,12 @@ var listCmd = &cobra.Command{
 		}
 		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
 	},
-	Example: `k8-upgrade list {aws/azure/all}`,
+	Example: `k8f list {aws/azure/all}`,
 	PreRun:  core.ToggleDebug,
 	Run: func(cmd *cobra.Command, args []string) {
 		var list []provider.Provider
 		var p interface{}
-		options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, Version: o.Version, AwsRegion: AwsRegion}
+		options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsRegion: AwsRegion}
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Debug("CommandOptions Used")
 		if args[0] == "azure" {

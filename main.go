@@ -10,7 +10,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package main
 
 import (
-	"k8-upgrade/cmd"
+	"k8f/cmd"
 )
 
 func main() {

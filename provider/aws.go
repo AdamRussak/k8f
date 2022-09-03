@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"k8-upgrade/core"
+	"k8f/core"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go/aws"

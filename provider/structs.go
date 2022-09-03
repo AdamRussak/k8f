@@ -12,7 +12,6 @@ type CommandOptions struct {
 	AwsAssumeRole bool
 	AwsRoleString string
 	AwsEnvProfile bool
-	Version       bool
 }
 
 // Azure

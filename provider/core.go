@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"k8-upgrade/core"
+	"k8f/core"
 	"os"
 
 	"github.com/hashicorp/go-version"

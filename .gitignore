@@ -4,4 +4,4 @@ testfiles/
 testconfig/
 .ssh/
 .vscode/
-k8-upgrade*
+k8f*

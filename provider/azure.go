@@ -2,7 +2,7 @@ package provider
 
 import (
 	"context"
-	"k8-upgrade/core"
+	"k8f/core"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"

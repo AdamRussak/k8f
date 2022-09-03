@@ -6,8 +6,8 @@ package cmd
 
 // import (
 // 	"fmt"
-// 	"k8-upgrade/core"
-// 	"k8-upgrade/provider"
+// 	"k8f/core"
+// 	"k8f/provider"
 
 // 	log "github.com/sirupsen/logrus"
 // 	"github.com/spf13/cobra"

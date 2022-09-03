@@ -1,4 +1,4 @@
-module k8-upgrade
+module k8f
 
 go 1.18
 
