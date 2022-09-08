@@ -8,14 +8,36 @@ import (
 	"k8f/core"
 	"log"
 
+	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/container/v1"
+	"google.golang.org/api/option"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // register GCP auth provider
 )
 
+func gcpAuth() {
+	// resource manager auth
+	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx, option.WithScopes(cloudresourcemanager.CloudPlatformReadOnlyScope))
+	core.OnErrorFail(err, "Failed to create Auth client")
+	// get list of orginization Projects
+	projList := cloudresourcemanagerService.Projects.List()
+	resp, err := projList.Do()
+	core.OnErrorFail(err, "Failed to get projects list")
+	kJson, _ := json.Marshal(resp)
+	fmt.Println(string(kJson))
+}
+
+// TODO: add process to check and list all Projects user can see
+func listProjects() {}
+
+// TODO: add process to check what projects you got and scan all of them
+// TODO: add process to list all GKE
+// TODO: add process to map Latest Version per channel
+// TODO: add process to Create GKE Config
 var fProjectId = "playground-s-11-8be6d443"
 
 func GcpMain() {
 	flag.Parse()
+	gcpAuth()
 	if fProjectId == "" {
 		log.Fatal("must specific -projectId")
 	}
@@ -43,32 +65,5 @@ func getK8sClusterConfigs(ctx context.Context, projectId string) error {
 	test, _ := output.Do()
 	kJson, _ := json.Marshal(test)
 	fmt.Println(string(kJson))
-	// for _, f := range resp.Clusters {
-	// 	name := fmt.Sprintf("gke_%s_%s_%s", projectId, f.Zone, f.Name)
-	// 	cert, err := base64.StdEncoding.DecodeString(f.MasterAuth.ClusterCaCertificate)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("invalid certificate cluster=%s cert=%s: %w", name, f.MasterAuth.ClusterCaCertificate, err)
-	// 	}
-	// 	// example: gke_my-project_us-central1-b_cluster-1 => https://XX.XX.XX.XX
-	// 	ret.Clusters[name] = &api.Cluster{
-	// 		CertificateAuthorityData: cert,
-	// 		Server:                   "https://" + f.Endpoint,
-	// 	}
-	// 	// Just reuse the context name as an auth name.
-	// 	ret.Contexts[name] = &api.Context{
-	// 		Cluster:  name,
-	// 		AuthInfo: name,
-	// 	}
-	// 	// GCP specific configation; use cloud platform scope.
-	// 	ret.AuthInfos[name] = &api.AuthInfo{
-	// 		AuthProvider: &api.AuthProviderConfig{
-	// 			Name: "gcp",
-	// 			Config: map[string]string{
-	// 				"scopes": "https://www.googleapis.com/auth/cloud-platform",
-	// 			},
-	// 		},
-	// 	}
-	// }
-
 	return nil
 }

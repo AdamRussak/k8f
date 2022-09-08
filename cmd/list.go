@@ -1,6 +1,5 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -15,6 +14,7 @@ import (
 )
 
 // listCmd represents the list command
+
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all K8S in Azure/AWS or Both",
@@ -22,7 +22,9 @@ var listCmd = &cobra.Command{
 		if len(args) < 1 {
 			return errors.New("requires cloud provider")
 		}
-		if core.IfXinY(args[0], []string{"azure", "aws", "all"}) {
+		argouments = append(argouments, supportedProvider...)
+
+		if core.IfXinY(args[0], argouments) {
 			return nil
 		}
 		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
@@ -40,6 +42,9 @@ var listCmd = &cobra.Command{
 			p = options.FullAzureList()
 		} else if args[0] == "aws" {
 			log.Debug("Starting AWS List")
+			p = options.FullAwsList()
+		} else if args[0] == "gcp" {
+			log.Debug("Starting GCP List")
 			p = options.FullAwsList()
 		} else if args[0] == "all" {
 			log.Debug("Starting All List")

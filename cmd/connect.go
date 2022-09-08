@@ -24,7 +24,8 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --isRole --ro
 			if len(args) < 1 {
 				return errors.New("requires cloud provider")
 			}
-			if core.IfXinY(args[0], []string{"azure", "aws", "all"}) {
+			argouments = append(argouments, supportedProvider...)
+			if core.IfXinY(args[0], argouments) {
 				return nil
 			}
 			return fmt.Errorf("invalid cloud provider specified: %s", args[0])
