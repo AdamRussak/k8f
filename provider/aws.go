@@ -117,7 +117,7 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 		}
 		for i := 0; i < len(result.Clusters); i++ {
 			res := <-c3
-			loc = append(loc, Cluster{res[0], res[1], latest, reg, ""})
+			loc = append(loc, Cluster{res[0], res[1], latest, reg, "",""})
 		}
 	}
 	c <- loc

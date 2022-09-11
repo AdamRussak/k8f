@@ -14,7 +14,7 @@ type CommandOptions struct {
 	AwsEnvProfile bool
 }
 
-// Azure
+// Azure /GCP
 type subs struct {
 	Name string `json:"name,omitempty"`
 	Id   string `json:"id,omitempty"`
@@ -22,11 +22,12 @@ type subs struct {
 
 // Standard of Cluster Info Output
 type Cluster struct {
-	Name    string `json:"name,omitempty"`
-	Version string `json:"version,omitempty"`
-	Latest  string `json:"latest,omitempty"`
-	Region  string `json:"region,omitempty"`
-	Id      string `json:"id,omitempty"`
+	Name          string `json:"name,omitempty"`
+	Version       string `json:"version,omitempty"`
+	Latest        string `json:"latest,omitempty"`
+	Region        string `json:"region,omitempty"`
+	Id            string `json:"id,omitempty"`
+	CluserChannel string `json:"channel,omitempty"`
 }
 
 type Account struct {

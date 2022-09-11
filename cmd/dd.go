@@ -5,30 +5,41 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"k8f/core"
+	"k8f/tools"
 
 	"github.com/spf13/cobra"
 )
 
 // ddCmd represents the dd command
+var apikey string
+var appkey string
 var ddCmd = &cobra.Command{
 	Use:   "dd",
 	Short: "Send Metrics to Data Dog",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("requires cloud provider")
+		}
+		argouments = append(argouments, supportedProvider...)
+
+		if core.IfXinY(args[0], argouments) {
+			return nil
+		}
+		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
+	},
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("apikey: " + apikey + " appkey: " + appkey)
+		tools.DdMain()
 		fmt.Println("dd called")
 	},
 }
 
 func init() {
+	ddCmd.Flags().StringVar(&apikey, "apikey", "", "Set API Key for Datadog")
+	ddCmd.Flags().StringVar(&appkey, "appkey", "", "Set App Key for Datadog")
+	ddCmd.MarkFlagsRequiredTogether("appkey", "apikey")
 	rootCmd.AddCommand(ddCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// ddCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// ddCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

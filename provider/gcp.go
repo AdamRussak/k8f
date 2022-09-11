@@ -3,67 +3,74 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"k8f/core"
-	"log"
 
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/container/v1"
 	"google.golang.org/api/option"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // register GCP auth provider
 )
 
-func gcpAuth() {
+func gcpProjects() []subs {
 	// resource manager auth
+	var projStruct []subs
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx, option.WithScopes(cloudresourcemanager.CloudPlatformReadOnlyScope))
 	core.OnErrorFail(err, "Failed to create Auth client")
 	// get list of orginization Projects
 	projList := cloudresourcemanagerService.Projects.List()
 	resp, err := projList.Do()
 	core.OnErrorFail(err, "Failed to get projects list")
-	kJson, _ := json.Marshal(resp)
-	fmt.Println(string(kJson))
+	for _, a := range resp.Projects {
+		projStruct = append(projStruct, subs{Name: a.Name, Id: a.ProjectId})
+	}
+	return projStruct
 }
 
-// TODO: add process to check and list all Projects user can see
-func listProjects() {}
-
-// TODO: add process to check what projects you got and scan all of them
-// TODO: add process to list all GKE
-// TODO: add process to map Latest Version per channel
 // TODO: add process to Create GKE Config
-var fProjectId = "playground-s-11-8be6d443"
-
-func GcpMain() {
-	flag.Parse()
-	gcpAuth()
-	if fProjectId == "" {
-		log.Fatal("must specific -projectId")
+func (c CommandOptions) GcpMain() {
+	var clusters []Account
+	Projects := gcpProjects()
+	for _, p := range Projects {
+		var err error
+		projclusters, err := getK8sClusterConfigs(context.Background(), p.Id)
+		clusters = append(clusters, Account{Name: p.Id, Clusters: projclusters, TotalCount: len(projclusters)})
+		log.Error(err)
 	}
-
-	err := getK8sClusterConfigs(context.Background(), fProjectId)
-	if err != nil {
-		core.OnErrorFail(err, "error in GCP")
-	}
+	kJson, _ := json.Marshal(clusters)
+	log.Info(string(kJson))
 }
 
-func getK8sClusterConfigs(ctx context.Context, projectId string) error {
+func getK8sClusterConfigs(ctx context.Context, projectId string) ([]Cluster, error) {
+	var clustserss []Cluster
 	svc, err := container.NewService(ctx)
 	if err != nil {
-		return fmt.Errorf("container.NewService: %w", err)
+		return []Cluster{}, fmt.Errorf("container.NewService: %w", err)
 	}
 
 	// Ask Google for a list of all kube clusters in the given project.
+
 	resp, err := svc.Projects.Zones.Clusters.List(projectId, "-").Context(ctx).Do()
 	if err != nil {
-		return fmt.Errorf("clusters list project=%s: %w", projectId, err)
+		return []Cluster{}, fmt.Errorf("clusters list project=%s: %w", projectId, err)
 	}
-	fmt.Println("============================")
-	output := svc.Projects.Zones.GetServerconfig(resp.Clusters[0].Name, resp.Clusters[0].Zone)
-	fmt.Println("============================")
-	test, _ := output.Do()
-	kJson, _ := json.Marshal(test)
-	fmt.Println(string(kJson))
-	return nil
+
+	for _, a := range resp.Clusters {
+		log.Info("the Cluster name is: " + a.Name + " and its in zone " + a.Zone)
+		clustserss = append(clustserss, Cluster{Name: a.Name, Version: a.CurrentMasterVersion, CluserChannel: a.ReleaseChannel.Channel, Region: a.Zone, Latest: ""})
+	}
+	return clustserss, nil
+}
+
+// func to get latest version
+// TODO: add process to map Latest Version per channel
+func latestGCP() {
+	//versions
+	// fmt.Println("============================")
+	// output := svc.Projects.Zones.GetServerconfig(resp.Clusters[0].Name, resp.Clusters[0].Zone)
+	// fmt.Println("============================")
+	// test, _ := output.Do()
+	// kJson, _ := json.Marshal(test)
+	// fmt.Println(string(kJson))
 }

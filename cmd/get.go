@@ -19,9 +19,10 @@ var (
 		Short:  "Get a Specific K8S in Azure/AWS or Both",
 		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
+			options := provider.CommandOptions{}
 			log.Debug("Get start on Debug Mode")
 			log.Info("Get Command Starting")
-			provider.GcpMain()
+			options.GcpMain()
 			fmt.Println("get called")
 			m := map[string]string{"1": "a", "2": "b"}
 			fmt.Println(provider.RunResult(m, "yaml"))
