@@ -45,7 +45,7 @@ var listCmd = &cobra.Command{
 			p = options.FullAwsList()
 		} else if args[0] == "gcp" {
 			log.Debug("Starting GCP List")
-			p = options.FullAwsList()
+			p = options.GcpMain()
 		} else if args[0] == "all" {
 			log.Debug("Starting All List")
 
