@@ -19,7 +19,7 @@ var (
 		Use:   "connect",
 		Short: "Connect to all the clusters of a provider or all Supported Providers",
 		Example: `k8f connect aws -p ./testfiles/config --backup -v
-k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --isRole --role-name "test role" -v`,
+k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "test role" -v`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("requires cloud provider")
@@ -54,6 +54,7 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --isRole --ro
 	}
 )
 
+// FIXME: if 'role-name' is set, no need to configure 'isRole' (imply true)
 func init() {
 	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "Merged kubeconfig output type(json or yaml)")
 	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "Merged kubeconfig output path")
@@ -61,10 +62,8 @@ func init() {
 	connectCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "If true, only run a dry-run with cli output")
 	connectCmd.Flags().BoolVar(&o.Backup, "backup", false, "If true, backup config file to $HOME/.kube/config.bk")
 	connectCmd.Flags().BoolVar(&o.AwsAuth, "auth", false, "change from CLI Auth to AMI Auth, Default set to CLI")
-	connectCmd.Flags().BoolVar(&o.AwsAssumeRole, "isRole", false, "Add AWS Assume Role to EKS Config")
 	connectCmd.Flags().BoolVar(&o.AwsEnvProfile, "isEnv", false, "Add AWS Env Profile to the AWS Config")
 	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: '')")
-	connectCmd.MarkFlagsRequiredTogether("isRole", "role-name")
 	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "overwrite")
 	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "backup")
 	rootCmd.AddCommand(connectCmd)
