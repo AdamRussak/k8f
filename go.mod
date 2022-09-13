@@ -85,7 +85,7 @@ require (
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.5.0
-	google.golang.org/api v0.94.0
+	google.golang.org/api v0.95.0
 	gopkg.in/ini.v1 v1.66.6
 	k8s.io/client-go v0.25.0
 )

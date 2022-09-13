@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"k8f/core"
 	"strings"
@@ -70,7 +69,7 @@ func (c CommandOptions) getK8sClusterConfigs(ctx context.Context, projectId stri
 
 	for _, a := range resp.Clusters {
 		log.Info("the Cluster name is: " + a.Name + " and its in zone " + a.Zone)
-		clustserss = append(clustserss, Cluster{Name: a.Name, Version: a.CurrentMasterVersion, CluserChannel: a.ReleaseChannel.Channel, Region: a.Zone, Latest: c.latestGCP(a)})
+		clustserss = append(clustserss, Cluster{Name: a.Name, Version: a.CurrentMasterVersion, Region: a.Zone, Latest: c.latestGCP(a)})
 	}
 	return clustserss, nil
 }
@@ -115,11 +114,11 @@ func (c CommandOptions) GetK8sClusterConfigs() *api.Config {
 
 		for _, f := range resp.Clusters {
 			name := fmt.Sprintf("gke_%s_%s_%s", p.Id, f.Zone, f.Name)
-			cert, err := base64.StdEncoding.DecodeString(f.MasterAuth.ClusterCaCertificate)
-			core.OnErrorFail(err, "erro in certificate format")
+			// cert, err := base64.StdEncoding.DecodeString(f.MasterAuth.ClusterCaCertificate)
+			// core.OnErrorFail(err, "erro in certificate format")
 			// example: gke_my-project_us-central1-b_cluster-1 => https://XX.XX.XX.XX
 			ret.Clusters[name] = &api.Cluster{
-				CertificateAuthorityData: cert,
+				CertificateAuthorityData: []byte(f.MasterAuth.ClusterCaCertificate),
 				Server:                   "https://" + f.Endpoint,
 			}
 			// Just reuse the context name as an auth name.
