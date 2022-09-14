@@ -32,7 +32,7 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 		},
 		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
-			options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsAssumeRole: o.AwsAssumeRole, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
+			options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup {
 				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")

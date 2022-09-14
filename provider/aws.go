@@ -117,7 +117,7 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 		}
 		for i := 0; i < len(result.Clusters); i++ {
 			res := <-c3
-			loc = append(loc, Cluster{res[0], res[1], latest, reg, "",""})
+			loc = append(loc, Cluster{res[0], res[1], latest, reg, "", ""})
 		}
 	}
 	c <- loc
@@ -210,9 +210,9 @@ func (c CommandOptions) setCommand() string {
 }
 func (c CommandOptions) AwsArgs(region string, clusterName string) []string {
 	var args []string
-	if c.AwsAssumeRole && !c.AwsAuth {
+	if c.AwsRoleString != "" && !c.AwsAuth {
 		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "- --role-arn", c.AwsRoleString}
-	} else if c.AwsAssumeRole && c.AwsAuth {
+	} else if c.AwsRoleString != "" && c.AwsAuth {
 		args = []string{"token", "-i", clusterName, "- --role-arn", c.AwsRoleString}
 	} else {
 		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName}

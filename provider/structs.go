@@ -9,7 +9,6 @@ type CommandOptions struct {
 	Backup        bool
 	DryRun        bool
 	AwsAuth       bool
-	AwsAssumeRole bool
 	AwsRoleString string
 	AwsEnvProfile bool
 }

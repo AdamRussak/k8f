@@ -60,6 +60,9 @@ var listCmd = &cobra.Command{
 					} else if s == "aws" {
 						log.Trace(string("triggered " + s))
 						r = options.FullAwsList()
+					} else if s == "gcp" {
+						log.Trace(string("triggered " + s))
+						r = options.GcpMain()
 					}
 					c0 <- r
 				}(c0, s)
