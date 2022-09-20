@@ -15,11 +15,13 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
-      - name: Generate build files
-        uses: thatisuday/go-cross-build@v1
+      - name: Setup Go
+        uses: actions/setup-go@v2
         with:
-            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
-            package: 'k8s-version-checkup'
-            name: 'k8f'
-            compress: 'true'
-            dest: 'dist'
+          go-version: ‘1.18.5’
+      - name: Run build
+        run: go build .
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ${{ github.workspace }}/k8f
