@@ -22,10 +22,12 @@ jobs:
           go-version: '1.18'
           check-latest: true
       - name: version
-        run: echo "::set-output name=version::$(cat ./version)"
+        run: echo "::set-output name=version::$(git describe --tags --always --abbrev=0 --match='[0-9]*.[0-9]*.[0-9]*' 2> /dev/null)"
         id: version
-      - name: Run Build
-        run: go build . &&  env GOOS=windows GOARCH=amd64 go build . -o kfs.exe
+      - name: Run Linux Build
+        run: go build -ldflags="-X 'k8f/cmd.tversion=${{ steps.version.outputs.version }}'" .
+      - name: Run Windows Build
+        run: env GOOS=windows GOARCH=amd64 go build -ldflags="-X 'k8f/cmd.tversion=${{ steps.version.outputs.version }}'" . -o k8f.exe
       - name: release
         uses: actions/create-release@v1
         id: create_release
