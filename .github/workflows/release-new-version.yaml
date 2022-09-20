@@ -24,8 +24,8 @@ jobs:
       - name: version
         run: echo "::set-output name=version::$(cat ./version)"
         id: version
-      - name: Run build
-        run: go build .
+      - name: Run Build
+        run: go build . &&  env GOOS=windows GOARCH=amd64 go build . -o kfs.exe
       - name: release
         uses: actions/create-release@v1
         id: create_release
@@ -44,5 +44,14 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./k8f
+          asset_name: k8f_linux-amd64
+          asset_content_type: text/plain
+      - name: upload Windows artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./k8f.exe
           asset_name: k8f_linux-amd64
           asset_content_type: text/plain
