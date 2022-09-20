@@ -37,7 +37,5 @@ package cmd
 
 // func init() {
 // 	ddCmd.Flags().StringVar(&apikey, "apikey", "", "Set API Key for Datadog")
-// 	// ddCmd.Flags().StringVar(&appkey, "appkey", "", "Set App Key for Datadog")
-// 	// ddCmd.MarkFlagsRequiredTogether("appkey", "apikey")
 // 	rootCmd.AddCommand(ddCmd)
 // }

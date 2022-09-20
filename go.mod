@@ -18,6 +18,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.1.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.0.0 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v0.5.1 // indirect
+	github.com/DataDog/datadog-api-client-go v1.16.0 // indirect
 	github.com/DataDog/zstd v1.5.0 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
@@ -92,7 +93,7 @@ require (
 )
 
 require (
-	github.com/DataDog/datadog-api-client-go/v2 v2.0.0
+	github.com/DataDog/datadog-api-client-go/v2 v2.2.0
 	github.com/aws/aws-sdk-go-v2/config v1.15.14
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18
