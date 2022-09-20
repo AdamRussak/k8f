@@ -43,6 +43,7 @@ var listCmd = &cobra.Command{
 			p = options.FullAwsList()
 		} else if args[0] == "all" {
 			log.Debug("Starting All List")
+			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 
 			c0 := make(chan provider.Provider)
 			for _, s := range supportedProvider {

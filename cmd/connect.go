@@ -45,6 +45,7 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --isRole --ro
 			} else if args[0] == "aws" {
 				options.ConnectAllEks()
 			} else if args[0] == "all" {
+				log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 				options.FullCloudConfig()
 			} else {
 				core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")

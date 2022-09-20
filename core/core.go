@@ -25,7 +25,13 @@ func CheckEnvVarOrSitIt(varName string, varKey string) {
 		OnErrorFail(err, "Issue setting the 'AWS_REGION' Enviroment Variable")
 	}
 }
-
+func PrintOutStirng(arrayOfStrings []string) string {
+	var s string
+	for _, t := range arrayOfStrings {
+		s = s + " " + t
+	}
+	return s
+}
 func IfXinY(x string, y []string) bool {
 	for _, t := range y {
 		if x == t {
