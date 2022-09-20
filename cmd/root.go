@@ -10,6 +10,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+var tversion string
+
 // rootCmd represents the base command when called without any subcommands
 var (
 	o                 FlagsOptions
@@ -18,7 +20,7 @@ var (
 	AwsRegion         = "eu-west-1"
 	configYAML        = "yml"
 	listOutput        = "json"
-	version           = "0.1.0"
+	version           = tversion
 	confPath          = clientcmd.RecommendedHomeFile
 	rootCmd           = &cobra.Command{
 		Version: version,
