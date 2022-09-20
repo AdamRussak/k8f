@@ -27,7 +27,7 @@ jobs:
       - name: Run Linux Build
         run: go build -ldflags="-X 'k8f/cmd.tversion=${{ steps.version.outputs.version }}'" .
       - name: Run Windows Build
-        run: env GOOS=windows GOARCH=amd64 go build -ldflags="-X 'k8f/cmd.tversion=${{ steps.version.outputs.version }}'" . -o k8f.exe
+        run: env GOOS=windows GOARCH=amd64 go build -ldflags="-X 'k8f/cmd.tversion=${{ steps.version.outputs.version }}'" -o ./k8f.exe .
       - name: release
         uses: actions/create-release@v1
         id: create_release
