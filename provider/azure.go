@@ -101,7 +101,7 @@ func getAllAKS(subscription subs, c1 chan Account, id string) {
 		core.OnErrorFail(err, "failed to advance page")
 		for _, v := range nextResult.Value {
 			l := getAksConfig(SplitAzIDAndGiveItem(*v.ID, 4), *v.Name, subscription.Id, id)
-			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID})
+			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID, ""})
 		}
 	}
 	c1 <- Account{subscription.Name, r, len(r), id}

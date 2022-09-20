@@ -50,7 +50,7 @@ func (c CommandOptions) FullAwsList() Provider {
 	return Provider{"aws", f, countTotal(f)}
 }
 
-//get Addons Supported EKS versions
+// get Addons Supported EKS versions
 func getVersion() *eks.DescribeAddonVersionsOutput {
 	s, err := session.NewSession()
 	core.OnErrorFail(err, "Failed to get Version")
@@ -85,7 +85,7 @@ func getEksCurrentVersion(cluster string, s *session.Session, reg string, c3 cha
 	c3 <- []string{cluster, *result.Cluster.Version}
 }
 
-//get all Regions avilable
+// get all Regions avilable
 func listRegions(s *session.Session) []string {
 	var reg []string
 	svc := ec2.New(s)
@@ -117,7 +117,7 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 		}
 		for i := 0; i < len(result.Clusters); i++ {
 			res := <-c3
-			loc = append(loc, Cluster{res[0], res[1], latest, reg, ""})
+			loc = append(loc, Cluster{res[0], res[1], latest, reg, "", ""})
 		}
 	}
 	c <- loc
@@ -180,7 +180,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 
 }
 
-//Create AWS Config
+// Create AWS Config
 func GenerateKubeConfiguration(cluster *eks.Cluster, r string, a Account, c CommandOptions) LocalConfig {
 	clusters := CCluster{
 		Server:                   *cluster.Endpoint,
@@ -210,9 +210,9 @@ func (c CommandOptions) setCommand() string {
 }
 func (c CommandOptions) AwsArgs(region string, clusterName string) []string {
 	var args []string
-	if c.AwsAssumeRole && !c.AwsAuth {
+	if c.AwsRoleString != "" && !c.AwsAuth {
 		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "- --role-arn", c.AwsRoleString}
-	} else if c.AwsAssumeRole && c.AwsAuth {
+	} else if c.AwsRoleString != "" && c.AwsAuth {
 		args = []string{"token", "-i", clusterName, "- --role-arn", c.AwsRoleString}
 	} else {
 		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName}

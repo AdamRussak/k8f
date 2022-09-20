@@ -1,6 +1,5 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -13,13 +12,14 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var (
-	supportedProvider = []string{"azure", "aws"}
+	o                 FlagsOptions
+	supportedProvider = []string{"azure", "aws", "gcp"}
+	argouments        = []string{"all"}
 	AwsRegion         = "eu-west-1"
 	configYAML        = "yml"
 	listOutput        = "json"
 	version           = "0.1.0"
 	confPath          = clientcmd.RecommendedHomeFile
-	o                 FlagsOptions
 	rootCmd           = &cobra.Command{
 		Version: version,
 		Use:     "k8f",

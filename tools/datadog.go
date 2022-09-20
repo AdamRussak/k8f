@@ -2,12 +2,13 @@
 // https://docs.datadoghq.com/metrics/custom_metrics/
 // Submit metrics returns "Payload accepted" response
 
-package main
+package tools
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"k8f/core"
 	"os"
 	"time"
 
@@ -15,16 +16,30 @@ import (
 	datadog "github.com/DataDog/datadog-api-client-go/v2/api/v2/datadog"
 )
 
-func ddMain() {
+type Test struct {
+	Version string `json:"version,omitempty"`
+}
+
+// FIXME: i need to get access to DD to test this feature
+// DD_SITE="datadoghq.com" DD_API_KEY="<DD_API_KEY>"
+func DdMain(dd_api string) {
+	t := Test{Version: "1.2.0"}
+	jsonStr, _ := json.Marshal(t)
+	var mapData map[string]interface{}
+	if err := json.Unmarshal(jsonStr, &mapData); err != nil {
+		fmt.Println(err)
+	}
+	core.CheckEnvVarOrSitIt("DD_API_KEY", dd_api)
 	body := datadog.MetricPayload{
 		Series: []datadog.MetricSeries{
 			{
-				Metric: "system.load.1",
+				Metric: "adam.test.1",
 				Type:   datadog.METRICINTAKETYPE_UNSPECIFIED.Ptr(),
 				Points: []datadog.MetricPoint{
 					{
-						Timestamp: common.PtrInt64(time.Now().Unix()),
-						Value:     common.PtrFloat64(0.7),
+						Timestamp:      common.PtrInt64(time.Now().Unix()),
+						UnparsedObject: mapData,
+						Value:          common.PtrFloat64(1),
 					},
 				},
 				Resources: []datadog.MetricResource{
@@ -47,5 +62,5 @@ func ddMain() {
 	}
 
 	responseContent, _ := json.MarshalIndent(resp, "", "  ")
-	fmt.Fprintf(os.Stdout, "Response from `MetricsApi.SubmitMetrics`:\n%s\n", responseContent)
+	fmt.Fprintf(os.Stdout, "Response from `MetricsApi.SubmitMetrics`:\n%s\n", string(responseContent))
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"k8f/core"
 	"os"
 
@@ -52,7 +51,7 @@ func RunResult(p interface{}, output string) string {
 	return string(kJson)
 }
 
-//func to count ammount of Cluster in an account
+// func to count ammount of Cluster in an account
 func countTotal(f []Account) int {
 	var count int
 	for _, a := range f {
@@ -61,7 +60,7 @@ func countTotal(f []Account) int {
 	return count
 }
 
-//func to merge kubeconfig output to singe config file
+// func to merge kubeconfig output to singe config file
 func (c CommandOptions) Merge(configs AllConfig, arn string) {
 	clientConfig := Config{
 		Kind:           "Config",
@@ -80,7 +79,7 @@ func (c CommandOptions) Merge(configs AllConfig, arn string) {
 			c.Configcopy()
 		}
 		y, _ := yaml.Marshal(clientConfig)
-		err := ioutil.WriteFile(c.Path, y, 0666)
+		err := os.WriteFile(c.Path, y, 0666)
 		core.OnErrorFail(err, "failed to save config")
 
 	}
