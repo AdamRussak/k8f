@@ -6,6 +6,8 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 
 // TODO: add recomendation to upgrade / everyting is ok for each cluster
 // TODO: add output flag for: json,csv,toTerminal,pdf
+// PRIORITY: add FIND command to look for a specific Cluster accross Accounts (need to set cloud provder and cluster name)
+// PRIORITY: fix AWS Role output format (just role name is needed to build ARN)
 
 package main
 
