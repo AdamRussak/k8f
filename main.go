@@ -9,7 +9,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 // PRIORITY: add FIND command to look for a specific Cluster accross Accounts (need to set cloud provder and cluster name)
 // PRIORITY: fix AWS Role output format (just role name is needed to build ARN)
 // PRIORITY: update ReadMe and ChangeLOG.MD
-
+// testing GPG
 package main
 
 import (
