@@ -55,7 +55,6 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 	}
 )
 
-// FIXME: if 'role-name' is set, no need to configure 'isRole' (imply true)
 func init() {
 	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "Merged kubeconfig output type(json or yaml)")
 	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "Merged kubeconfig output path")

@@ -46,7 +46,7 @@ Usage:
 
 Examples:
 k8f connect aws -p ./testfiles/config --backup -v
-k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --isRole --role-name "test role" -v
+k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "test role" -v
 
 Flags:
       --auth               change from CLI Auth to AMI Auth, Default set to CLI
@@ -54,7 +54,6 @@ Flags:
       --dry-run            If true, only run a dry-run with cli output
   -h, --help               help for connect
       --isEnv              Add AWS Env Profile to the AWS Config
-      --isRole             Add AWS Assume Role to EKS Config
   -o, --output string      Merged kubeconfig output type(json or yaml) (default "yml")
       --overwrite          If true, force merge kubeconfig
   -p, --path string        Merged kubeconfig output path (default "/home/vscode/.kube/config")
