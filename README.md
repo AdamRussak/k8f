@@ -1,7 +1,4 @@
-# k8s-version-checkup
-
-test
-
+# k8f
 A CLI tool to find, list, connect, search and check version for K8S Clusters in all your resources at once,
 this tool supports **Azure AKS** and **AWS EKS**.  
 currently this tool supports the following commands:  
