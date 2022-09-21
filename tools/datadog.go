@@ -8,7 +8,6 @@ type Test struct {
 	Version string `json:"version,omitempty"`
 }
 
-// FIXME: i need to get access to DD to test this feature
 // DD_SITE="datadoghq.com" DD_API_KEY="<DD_API_KEY>"
 // func DdMain(dd_api string) {
 // 	core.CheckEnvVarOrSitIt("DD_API_KEY", dd_api)
