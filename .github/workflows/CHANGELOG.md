@@ -1,8 +1,7 @@
-# k8f version <>
+# k8f version 0.1.2
 ## Changes
+- [] moved CHANGELOG.md
+- [] working on stabalizing release process and first release packge
+
 ## Bugfix
 ## Braking changes
-
-
-  env GOOS=windows GOARCH=amd64 go build . -o k8f.exe
-  VERSION="$(git describe --tags --always --abbrev=0 --match='[0-9]*.[0-9]*.[0-9]*' 2> /dev/null | sed 's/^.//')"
