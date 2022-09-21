@@ -29,7 +29,7 @@ jobs:
       - name: Run Windows Build
         run: env GOOS=windows GOARCH=amd64 go build -ldflags="-X 'k8f/cmd.tversion=${{ steps.version.outputs.version }}'" -o ./k8f.exe .
       - name: Run Mac Build
-        run: env GOOS=drwin GOARCH=arm64 go build -ldflags="-X 'k8f/cmd.tversion=${{ steps.version.outputs.version }}'" -o ./k8f_darwin .
+        run: env GOOS=darwin GOARCH=arm64 go build -ldflags="-X 'k8f/cmd.tversion=${{ steps.version.outputs.version }}'" -o ./k8f_darwin .
       - name: release
         uses: actions/create-release@v1
         id: create_release
