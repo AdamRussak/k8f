@@ -33,7 +33,7 @@ Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
   -v, --verbose             verbose logging
 ```
-
+[![Sample of List command output](https://raw.githubusercontent.com/AdamRussak/k8f/master/examples/k8f-list.jpg "Sample of List command output")](https://raw.githubusercontent.com/t0mer/Botvid-19/master/Botvid-19.png "Sample of List command output")
 ###  connect
 ```sh
 Connect to all the clusters of a provider or all Supported Providers
