@@ -5,3 +5,4 @@ testconfig/
 .ssh/
 .vscode/
 k8f*
+!k8f-list.jpg
