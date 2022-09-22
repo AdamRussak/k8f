@@ -9,10 +9,12 @@ currently this tool supports the following commands:
 ## prerequisite:
 - for Azure: installed and logged in azure cli  
 - for AWS: install AWS cli and Profiles for each Account at `~/.aws/credentials`  
+- for GCP: Installed gcloud cli and loggedin
 
 ## Supported Platform:
 AWS  
 Azure<br>
+GCP *only list*<br> 
 
 ## Commands
 
@@ -24,7 +26,7 @@ Usage:
   k8f list [flags]
 
 Examples:
-k8f list {aws/azure/all}
+k8f list {aws/azure/gcp/all}
 
 Flags:
   -h, --help            help for list
