@@ -59,7 +59,7 @@ Flags:
   -o, --output string      Merged kubeconfig output type(json or yaml) (default "yml")
       --overwrite          If true, force merge kubeconfig
   -p, --path string        Merged kubeconfig output path (default "/home/vscode/.kube/config")
-      --role-name string   Set Role Name (Example: '')
+      --role-name string   Set Role Name (Example: 'myAssumeRoleName')
 
 Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
