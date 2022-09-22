@@ -37,7 +37,7 @@ Global Flags:
 
 List Command Sample Output:
 
-[![Sample of List command output](https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/k8f-list.jpg?token=GHSAT0AAAAAABTK2ARZAYYURNRYYSYB3BI2YZMWCGA "Sample of List command output")](https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/k8f-list.jpg?token=GHSAT0AAAAAABTK2ARZAYYURNRYYSYB3BI2YZMWCGA "Sample of List command output")
+[![Sample of List command output](https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/k8f-list.jpg "Sample of List command output")](https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/k8f-list.jpg "Sample of List command output")
 
 ###  connect
 ```sh
