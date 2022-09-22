@@ -194,7 +194,7 @@ func GenerateKubeConfiguration(cluster *eks.Cluster, r string, a Account, c Comm
 	authinfos := User{
 		Exec: Exec{
 			APIVersion: "client.authentication.k8s.io/v1beta1",
-			Args:       c.AwsArgs(r, *cluster.Name),
+			Args:       c.AwsArgs(r, *cluster.Name, *cluster.Arn),
 			Env:        c.AwsEnvs(a.Name),
 			Command:    c.setCommand(),
 		},
@@ -208,12 +208,12 @@ func (c CommandOptions) setCommand() string {
 	}
 	return "aws"
 }
-func (c CommandOptions) AwsArgs(region string, clusterName string) []string {
+func (c CommandOptions) AwsArgs(region string, clusterName string, arn string) []string {
 	var args []string
 	if c.AwsRoleString != "" && !c.AwsAuth {
-		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "- --role-arn", c.AwsRoleString}
+		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "- --role-arn", "arn:aws:iam::" + SplitAzIDAndGiveItem(arn, ":", 4) + ":role/" + c.AwsRoleString}
 	} else if c.AwsRoleString != "" && c.AwsAuth {
-		args = []string{"token", "-i", clusterName, "- --role-arn", c.AwsRoleString}
+		args = []string{"token", "-i", clusterName, "- --role-arn", "arn:aws:iam::" + SplitAzIDAndGiveItem(arn, ":", 4) + ":role/" + c.AwsRoleString}
 	} else {
 		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName}
 	}
@@ -226,6 +226,51 @@ func (c CommandOptions) AwsEnvs(profile string) interface{} {
 		return env
 	}
 	return nil
+}
+
+func (c CommandOptions) GetSingleCluster(clusterToFind string) Cluster {
+	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
+	//get Profiles//search this name in account
+	var f Cluster
+	profiles := GetLocalAwsProfiles()
+	c0 := make(chan Cluster)
+	// search each profile
+	for _, profile := range profiles {
+		go func(c0 chan Cluster, profile string, clusterToFind string) {
+			var re Cluster
+			log.Info(string("Using AWS profile: " + profile))
+			opt := session.Options{Profile: profile}
+			conf, err := session.NewSessionWithOptions(opt)
+			core.OnErrorFail(err, "Failed to create new session")
+			s := session.Must(conf, err)
+			regions := listRegions(s)
+			c2 := make(chan []Cluster)
+			for _, reg := range regions {
+				go printOutResult(reg, clusterToFind, profile, c2)
+			}
+			for i := 0; i < len(regions); i++ {
+				aRegion := <-c2
+				if len(aRegion) > 0 {
+					for _, cluster := range aRegion {
+						if cluster.Name == clusterToFind {
+							re = cluster
+						}
+					}
+				}
+			}
+			c0 <- re
+		}(c0, profile, clusterToFind)
+
+	}
+	for i := 0; i < len(profiles); i++ {
+		res := <-c0
+		if res.Name == clusterToFind {
+			f = res
+		}
+	}
+	return f
+	//search this name in region
+	//once it is found erturn info to the user
 }
 
 // The format for the config

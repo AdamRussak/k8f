@@ -4,31 +4,52 @@
 // */
 package cmd
 
-// import (
-// 	"fmt"
+import (
+	"errors"
+	"fmt"
+	"k8f/core"
+	"k8f/provider"
 
-// 	"github.com/spf13/cobra"
-// )
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+)
 
-// // findCmd represents the find command
-// var findCmd = &cobra.Command{
-// 	Use:   "find",
-// 	Short: "Find if a specific K8S exist in Azure or AWS",
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		fmt.Println("find called")
-// 	},
-// }
+// findCmd represents the find command
+var findCmd = &cobra.Command{
+	Use:     "find",
+	Short:   "Find if a specific K8S exist in Azure or AWS",
+	Example: `k8f {aws/azure/all} my-k8s-cluster`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 2 {
+			fmt.Println(len(args))
+			return errors.New("requires both cloud provider & cluster name")
+		}
+		argouments = append(argouments, supportedProvider...)
+		if core.IfXinY(args[0], argouments) {
+			return nil
+		}
+		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		var p provider.Cluster
+		options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
+		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
+		fmt.Println("find called")
+		if args[0] == "azure" {
+			// p = options.ConnectAllAks()
+		} else if args[0] == "aws" {
+			p = options.GetSingleCluster(args[1])
+		} else if args[0] == "all" {
+			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
+			// p = options.FullCloudConfig()
+		} else {
+			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
+		}
+		log.Debug(string("Outputing List as " + options.Output + " Format"))
+		fmt.Println(provider.RunResult(p, options.Output))
+	},
+}
 
-// func init() {
-// 	rootCmd.AddCommand(findCmd)
-
-// 	// Here you will define your flags and configuration settings.
-
-// 	// Cobra supports Persistent Flags which will work for this command
-// 	// and all subcommands, e.g.:
-// 	// findCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-// 	// Cobra supports local flags which will only run when this command
-// 	// is called directly, e.g.:
-// 	// findCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-// }
+func init() {
+	rootCmd.AddCommand(findCmd)
+}

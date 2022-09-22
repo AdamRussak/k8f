@@ -6,6 +6,7 @@ import (
 	"io"
 	"k8f/core"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/go-version"
 	log "github.com/sirupsen/logrus"
@@ -124,4 +125,11 @@ func (c CommandOptions) Configcopy() {
 	defer destination.Close()
 	_, err = io.Copy(destination, source)
 	core.OnErrorFail(err, "failed to Copy target file")
+}
+func SplitAzIDAndGiveItem(input string, seperator string, out int) string {
+	s := strings.Split(input, seperator)
+	log.Debug("Split output")
+	log.Debug(s)
+	log.Debug(s[out])
+	return s[out]
 }

@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"k8f/core"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice"
@@ -100,7 +99,7 @@ func getAllAKS(subscription subs, c1 chan Account, id string) {
 		nextResult, err := pager.NextPage(ctx)
 		core.OnErrorFail(err, "failed to advance page")
 		for _, v := range nextResult.Value {
-			l := getAksConfig(SplitAzIDAndGiveItem(*v.ID, 4), *v.Name, subscription.Id, id)
+			l := getAksConfig(SplitAzIDAndGiveItem(*v.ID, "/", 4), *v.Name, subscription.Id, id)
 			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID, ""})
 		}
 	}
@@ -145,9 +144,9 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 		for _, c := range a.Clusters {
 			go func(chanel chan AllConfig, c Cluster, a Account) {
 				log.WithField("Cluster Struct", log.Fields{"struct": core.DebugWithInfo(c), "tenentAuth": core.DebugWithInfo(a)}).Debug("Creating NewManagedClustersClient")
-				client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, 2), auth(a.Tenanat), nil)
+				client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, "/", 2), auth(a.Tenanat), nil)
 				core.OnErrorFail(err, "get user creds Failed")
-				chanel <- getAksProfile(client, SplitAzIDAndGiveItem(c.Id, 4), c.Name)
+				chanel <- getAksProfile(client, SplitAzIDAndGiveItem(c.Id, "/", 4), c.Name)
 			}(chanel, c, a)
 		}
 		for i := 0; i < len(a.Clusters); i++ {
@@ -167,9 +166,4 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 		return AllConfig{authe, context, clusters}
 	}
 
-}
-
-func SplitAzIDAndGiveItem(input string, out int) string {
-	s := strings.Split(input, "/")
-	return s[out]
 }
