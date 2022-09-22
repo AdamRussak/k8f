@@ -27,6 +27,7 @@ type Cluster struct {
 	Region        string `json:"region,omitempty"`
 	Id            string `json:"id,omitempty"`
 	CluserChannel string `json:"channel,omitempty"`
+	Status        string `json:"status,omitempty"`
 }
 
 type Account struct {

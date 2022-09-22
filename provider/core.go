@@ -35,6 +35,26 @@ func evaluateVersion(list []string) string {
 	return latest
 }
 
+// provide version compare
+func HowManyVersionsBack(versionsList []string, currentVersion string) string {
+	log.Debug("logs level are: ")
+	log.Debug(versionsList)
+	for i := range versionsList {
+		if versionsList[i] == currentVersion {
+			if i <= 1 {
+				return "OK"
+			} else if i <= 3 {
+				return "Warning"
+			} else {
+				return "Critical"
+			}
+
+		}
+	}
+	return "Critical"
+}
+
+//printout format selection
 func RunResult(p interface{}, output string) string {
 	var kJson []byte
 	log.Debug("start RunResult Func")

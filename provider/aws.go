@@ -15,7 +15,7 @@ import (
 func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
-	l := getLatestEKS(getVersion())
+	l := getLatestEKS(getEKSversionsList(getVersion()))
 	profiles := GetLocalAwsProfiles()
 	c0 := make(chan Account)
 	for _, profile := range profiles {
@@ -62,7 +62,12 @@ func getVersion() *eks.DescribeAddonVersionsOutput {
 }
 
 // gets the latest form suppported Addons
-func getLatestEKS(addons *eks.DescribeAddonVersionsOutput) string {
+func getLatestEKS(addons []string) string {
+	return evaluateVersion(addons)
+}
+
+// create Version list
+func getEKSversionsList(addons *eks.DescribeAddonVersionsOutput) []string {
 	var supportList []string
 	for _, a := range addons.Addons {
 		for _, c := range a.AddonVersions {
@@ -71,7 +76,7 @@ func getLatestEKS(addons *eks.DescribeAddonVersionsOutput) string {
 			}
 		}
 	}
-	return evaluateVersion(supportList)
+	return supportList
 }
 
 // get installed Version on existing Clusters
@@ -117,7 +122,7 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 		}
 		for i := 0; i < len(result.Clusters); i++ {
 			res := <-c3
-			loc = append(loc, Cluster{res[0], res[1], latest, reg, "", ""})
+			loc = append(loc, Cluster{res[0], res[1], latest, reg, "", "", HowManyVersionsBack(getEKSversionsList(getVersion()), res[1])})
 		}
 	}
 	c <- loc
@@ -272,18 +277,3 @@ func (c CommandOptions) GetSingleCluster(clusterToFind string) Cluster {
 	//search this name in region
 	//once it is found erturn info to the user
 }
-
-// The format for the config
-// https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html
-// args:
-// - --region
-// - $region_code
-// - eks
-// - get-token
-// - --cluster-name
-// - $cluster_name
-// # - "- --role-arn"
-// # - "arn:aws:iam::$account_id:role/my-role"
-// # env:
-// # - name: "AWS_PROFILE"
-// #   value: "aws-profile"
