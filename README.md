@@ -3,6 +3,7 @@ A CLI tool to find, list, connect, search and check version for K8S Clusters in 
 this tool supports **Azure AKS** and **AWS EKS**.  
 currently this tool supports the following commands:  
 **list** - to list all the Managed K8S in your accounts  
+**find** - to find a cluster in an unknown region/account.  
 **connect** - to generate Kubeconfig to all the managed K8S in your accounts.  
 
 ## prerequisite:
@@ -33,6 +34,8 @@ Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
   -v, --verbose             verbose logging
 ```
+
+List Command Sample Output:
 
 [![Sample of List command output](https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/k8f-list.jpg?token=GHSAT0AAAAAABTK2ARZAYYURNRYYSYB3BI2YZMWCGA "Sample of List command output")](https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/k8f-list.jpg?token=GHSAT0AAAAAABTK2ARZAYYURNRYYSYB3BI2YZMWCGA "Sample of List command output")
 

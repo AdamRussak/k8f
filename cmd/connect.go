@@ -63,7 +63,7 @@ func init() {
 	connectCmd.Flags().BoolVar(&o.Backup, "backup", false, "If true, backup config file to $HOME/.kube/config.bk")
 	connectCmd.Flags().BoolVar(&o.AwsAuth, "auth", false, "change from CLI Auth to AMI Auth, Default set to CLI")
 	connectCmd.Flags().BoolVar(&o.AwsEnvProfile, "isEnv", false, "Add AWS Env Profile to the AWS Config")
-	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: '')")
+	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: 'myRoleName')")
 	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "overwrite")
 	connectCmd.MarkFlagsMutuallyExclusive("dry-run", "backup")
 	rootCmd.AddCommand(connectCmd)

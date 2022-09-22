@@ -18,7 +18,7 @@ import (
 var findCmd = &cobra.Command{
 	Use:     "find",
 	Short:   "Find if a specific K8S exist in Azure or AWS",
-	Example: `k8f {aws/azure/all} my-k8s-cluster`,
+	Example: `k8f find {aws/azure/all} my-k8s-cluster`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
 			fmt.Println(len(args))
