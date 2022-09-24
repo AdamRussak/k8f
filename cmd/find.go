@@ -38,7 +38,7 @@ var findCmd = &cobra.Command{
 		if args[0] == "azure" {
 			// p = options.ConnectAllAks()
 		} else if args[0] == "aws" {
-			p = options.GetSingleCluster(args[1])
+			p = options.GetSingleAWSCluster(args[1])
 		} else if args[0] == "all" {
 			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 			// p = options.FullCloudConfig()

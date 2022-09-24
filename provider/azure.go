@@ -99,15 +99,20 @@ func getAllAKS(subscription subs, c1 chan Account, id string) {
 		nextResult, err := pager.NextPage(ctx)
 		core.OnErrorFail(err, "failed to advance page")
 		for _, v := range nextResult.Value {
-			l := getAksConfig(SplitAzIDAndGiveItem(*v.ID, "/", 4), *v.Name, subscription.Id, id)
-			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID, "", ""})
+			supportedAKS := findSupportedAksVersions(SplitAzIDAndGiveItem(*v.ID, "/", 4), *v.Name, subscription.Id, id)
+			l := getAksConfig(supportedAKS)
+			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID, "", microsoftSupportedVersion(l, *v.Properties.KubernetesVersion)})
 		}
 	}
 	c1 <- Account{subscription.Name, r, len(r), id}
 }
 
 // Getting a single
-func getAksConfig(resourceGroup string, resourceName string, subscription string, id string) string {
+func getAksConfig(supportedList []string) string {
+	return evaluateVersion(supportedList)
+}
+
+func findSupportedAksVersions(resourceGroup string, resourceName string, subscription string, id string) []string {
 	var supportList []string
 	log.WithField("CommandOptions", log.Fields{"subscription": subscription, "tenantID": id, "resourceName": resourceName}).Debug("getAksConfig Variables and Values: ")
 	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(id), nil)
@@ -117,9 +122,10 @@ func getAksConfig(resourceGroup string, resourceName string, subscription string
 	for _, a := range profile.Properties.ControlPlaneProfile.Upgrades {
 		supportList = append(supportList, *a.KubernetesVersion)
 	}
-	return evaluateVersion(supportList)
+	log.Debug("List of Supported Versions")
+	log.Debug(supportList)
+	return supportList
 }
-
 func getAksProfile(client *armcontainerservice.ManagedClustersClient, resourceGroupName string, resourceName string) AllConfig {
 	log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(client), "resourceGroupName": resourceGroupName, "resourceName": resourceName}).Debug("getAksProfile Variables and Values: ")
 	l, err := client.ListClusterUserCredentials(ctx, resourceGroupName, resourceName, nil)
@@ -167,3 +173,37 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 	}
 
 }
+
+// func (c CommandOptions) GetSingleAzureCluster(clusterToFind string) Cluster {
+// 	log.Info("Starting Azure find cluster named: " + clusterToFind)
+// 	var list Cluster
+// 	c0 := make(chan string)
+// 	tenant := GetTenentList()
+// 	for _, t := range tenant {
+// 		log.Info("Start Tenanat: " + *t.DisplayName)
+// 		go func(c0 chan string, t armsubscriptions.TenantIDDescription) {
+// 			subs := listSubscriptions(*t.TenantID)
+// 			c1 := make(chan Account)
+// 			for _, s := range subs {
+// 				log.Info("Start Subscription: " + s.Name)
+// 				go getAllAKS(s, c1, *t.TenantID)
+// 			}
+// 			for i := 0; i < len(subs); i++ {
+// 				res := <-c1
+// 				if condition {
+
+// 				}
+// 				list = append(list, res)
+// 				log.Debug("Finished Subscription: " + subs[i].Name)
+// 			}
+// 			c0 <- "Finished Tenanat:"
+// 		}(c0, t)
+
+// 	}
+// 	for i := 0; i < len(tenant); i++ {
+// 		res := <-c0
+// 		log.Debug(res + " " + *tenant[i].DisplayName)
+// 	}
+// 	return Provider{"azure", list, countTotal(list)}
+
+// }

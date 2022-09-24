@@ -233,7 +233,8 @@ func (c CommandOptions) AwsEnvs(profile string) interface{} {
 	return nil
 }
 
-func (c CommandOptions) GetSingleCluster(clusterToFind string) Cluster {
+func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
+	log.Info("Starting AWS find cluster named: " + clusterToFind)
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	//get Profiles//search this name in account
 	var f Cluster

@@ -6,6 +6,7 @@ import (
 	"io"
 	"k8f/core"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/go-version"
@@ -35,18 +36,48 @@ func evaluateVersion(list []string) string {
 	return latest
 }
 
+//Microsoft Comliance
+func microsoftSupportedVersion(latest string, current string) string {
+	//IMPORTANT: only supports same major at the moment!!!
+	// NEED: split version to get major and mainor only (1.2)
+	splitLatest := strings.Split(latest, ".")
+	splitcurernt := strings.Split(current, ".")
+	// make sure its the same major
+	if splitLatest[0] == splitcurernt[0] {
+		latestMinor, err := strconv.Atoi(splitLatest[1])
+		core.OnErrorFail(err, "faild to convert string to int")
+		currentMinor, err := strconv.Atoi(splitLatest[1])
+		core.OnErrorFail(err, "faild to convert string to int")
+		getStatus := latestMinor - currentMinor
+		//if its latest minor or -1, mark as ok
+		if getStatus <= 1 {
+			return "OK"
+			//if its minor -2 show warning
+		} else if getStatus > 1 && getStatus <= 2 {
+			return "Warining"
+			// if its minor > -2 show Critical
+		} else {
+			return "Critical"
+		}
+
+	}
+	return "Unknown"
+}
+
 // provide version compare
 func HowManyVersionsBack(versionsList []string, currentVersion string) string {
-	log.Debug("logs level are: ")
+	log.Debug("versions avilable are: ")
 	log.Debug(versionsList)
+	log.Debug("current version is: " + currentVersion)
+	//FIXME: add support for microsoft versioning: https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions?tabs=azure-cli
 	for i := range versionsList {
 		if versionsList[i] == currentVersion {
 			if i <= 1 {
-				return "OK"
+				return "Perfect"
 			} else if i <= 3 {
-				return "Warning"
+				return "OK"
 			} else {
-				return "Critical"
+				return "Warning"
 			}
 
 		}
