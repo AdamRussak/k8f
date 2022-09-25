@@ -39,7 +39,6 @@ func evaluateVersion(list []string) string {
 //Microsoft Comliance
 func microsoftSupportedVersion(latest string, current string) string {
 	//IMPORTANT: only supports same major at the moment!!!
-	// NEED: split version to get major and mainor only (1.2)
 	splitLatest := strings.Split(latest, ".")
 	splitcurernt := strings.Split(current, ".")
 	// make sure its the same major
@@ -69,7 +68,6 @@ func HowManyVersionsBack(versionsList []string, currentVersion string) string {
 	log.Debug("versions avilable are: ")
 	log.Debug(versionsList)
 	log.Debug("current version is: " + currentVersion)
-	//FIXME: add support for microsoft versioning: https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions?tabs=azure-cli
 	for i := range versionsList {
 		if versionsList[i] == currentVersion {
 			if i <= 1 {
