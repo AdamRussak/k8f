@@ -35,10 +35,13 @@ var findCmd = &cobra.Command{
 		options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		fmt.Println("find called")
+		// TODO: add find single cluster to azure
 		if args[0] == "azure" {
 			// p = options.ConnectAllAks()
 		} else if args[0] == "aws" {
 			p = options.GetSingleAWSCluster(args[1])
+			// TODO: add find single cluster to GCP
+			// TODO: add find single cluster to all (in case we know name but not platform)
 		} else if args[0] == "all" {
 			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 			// p = options.FullCloudConfig()

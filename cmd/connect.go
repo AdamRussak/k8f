@@ -25,10 +25,14 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 				return errors.New("requires cloud provider")
 			}
 			argouments = append(argouments, supportedProvider...)
-			if core.IfXinY(args[0], argouments) {
-				return nil
+			if len(args) > 0 && len(args) <= len(argouments) {
+				for a := range args {
+					if !core.IfXinY(args[a], argouments) {
+						return fmt.Errorf("invalid cloud provider specified: %s", args[a])
+					}
+				}
 			}
-			return fmt.Errorf("invalid cloud provider specified: %s", args[0])
+			return nil
 		},
 		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {

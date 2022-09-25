@@ -1,8 +1,9 @@
 # k8f 
 ## Changes
-- added **Find** command for AWS only
+- changed the repo to **PUBLIC**
+- added array args support for **List** (for example: `k8f list aws azure`)
 - added Status output in LIST command -- to show if admins should be consideriong an upgrade
-- improved ReadMe
 ## Bugfix
-- fixed ARN output for aws assume-role usage
-## Braking changes
+- fixed args vlidation for list and connect
+- fixed status for Azure AKS -- according to there supported AKS scheme
+<!-- ## Braking changes -->
