@@ -101,17 +101,19 @@ func getAllAKS(subscription subs, c1 chan Account, id string) {
 		for _, v := range nextResult.Value {
 			supportedAKS := findSupportedAksVersions(SplitAzIDAndGiveItem(*v.ID, "/", 4), *v.Name, subscription.Id, id)
 			l := getAksConfig(supportedAKS)
+			log.Debug("current Version is: " + *v.Properties.KubernetesVersion)
 			r = append(r, Cluster{*v.Name, *v.Properties.KubernetesVersion, l, *v.Location, *v.ID, "", microsoftSupportedVersion(l, *v.Properties.KubernetesVersion)})
 		}
 	}
 	c1 <- Account{subscription.Name, r, len(r), id}
 }
 
-// Getting a single
+// Getting AKS Config
 func getAksConfig(supportedList []string) string {
 	return evaluateVersion(supportedList)
 }
 
+// Getting AKS Supported K8S versions
 func findSupportedAksVersions(resourceGroup string, resourceName string, subscription string, id string) []string {
 	var supportList []string
 	log.WithField("CommandOptions", log.Fields{"subscription": subscription, "tenantID": id, "resourceName": resourceName}).Debug("getAksConfig Variables and Values: ")
@@ -126,6 +128,8 @@ func findSupportedAksVersions(resourceGroup string, resourceName string, subscri
 	log.Debug(supportList)
 	return supportList
 }
+
+// Getting AKS profile (contains most of the information needed for list and Connect commnands)
 func getAksProfile(client *armcontainerservice.ManagedClustersClient, resourceGroupName string, resourceName string) AllConfig {
 	log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(client), "resourceGroupName": resourceGroupName, "resourceName": resourceName}).Debug("getAksProfile Variables and Values: ")
 	l, err := client.ListClusterUserCredentials(ctx, resourceGroupName, resourceName, nil)
@@ -139,6 +143,7 @@ func getAksProfile(client *armcontainerservice.ManagedClustersClient, resourceGr
 	return AllConfig{auth: y.Users, context: y.Contexts, clusters: y.Clusters}
 }
 
+// create the KubeConfig info needed for AKS
 func (c CommandOptions) ConnectAllAks() AllConfig {
 	var authe []Users
 	var context []Contexts
@@ -174,36 +179,38 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 
 }
 
-// func (c CommandOptions) GetSingleAzureCluster(clusterToFind string) Cluster {
-// 	log.Info("Starting Azure find cluster named: " + clusterToFind)
-// 	var list Cluster
-// 	c0 := make(chan string)
-// 	tenant := GetTenentList()
-// 	for _, t := range tenant {
-// 		log.Info("Start Tenanat: " + *t.DisplayName)
-// 		go func(c0 chan string, t armsubscriptions.TenantIDDescription) {
-// 			subs := listSubscriptions(*t.TenantID)
-// 			c1 := make(chan Account)
-// 			for _, s := range subs {
-// 				log.Info("Start Subscription: " + s.Name)
-// 				go getAllAKS(s, c1, *t.TenantID)
-// 			}
-// 			for i := 0; i < len(subs); i++ {
-// 				res := <-c1
-// 				if condition {
-
-// 				}
-// 				list = append(list, res)
-// 				log.Debug("Finished Subscription: " + subs[i].Name)
-// 			}
-// 			c0 <- "Finished Tenanat:"
-// 		}(c0, t)
-
-// 	}
-// 	for i := 0; i < len(tenant); i++ {
-// 		res := <-c0
-// 		log.Debug(res + " " + *tenant[i].DisplayName)
-// 	}
-// 	return Provider{"azure", list, countTotal(list)}
-
-// }
+func (c CommandOptions) GetSingleAzureCluster(clusterToFind string) Cluster {
+	log.Info("Starting Azure find cluster named: " + clusterToFind)
+	var list Cluster
+	c0 := make(chan Cluster)
+	tenant := GetTenentList()
+	for _, t := range tenant {
+		log.Info("Start Tenanat: " + *t.DisplayName)
+		go func(c0 chan Cluster, t armsubscriptions.TenantIDDescription) {
+			subs := listSubscriptions(*t.TenantID)
+			c1 := make(chan Account)
+			for _, s := range subs {
+				log.Info("Start Subscription: " + s.Name)
+				go getAllAKS(s, c1, *t.TenantID)
+			}
+			for i := 0; i < len(subs); i++ {
+				res := <-c1
+				for a := range res.Clusters {
+					if res.Clusters[a].Name == clusterToFind {
+						list = res.Clusters[a]
+						break
+					}
+				}
+				log.Debug("Finished Subscription: " + subs[i].Name)
+			}
+			c0 <- list
+		}(c0, t)
+	}
+	for i := 0; i < len(tenant); i++ {
+		res := <-c0
+		if res.Name == clusterToFind {
+			return res
+		}
+	}
+	return list
+}

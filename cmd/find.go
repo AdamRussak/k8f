@@ -19,6 +19,7 @@ var findCmd = &cobra.Command{
 	Use:     "find",
 	Short:   "Find if a specific K8S exist in Azure or AWS",
 	Example: `k8f find {aws/azure/all} my-k8s-cluster`,
+	PreRun:  core.ToggleDebug,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
 			fmt.Println(len(args))
@@ -34,10 +35,9 @@ var findCmd = &cobra.Command{
 		var p provider.Cluster
 		options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
-		fmt.Println("find called")
-		// TODO: add find single cluster to azure
+		log.Info("find called")
 		if args[0] == "azure" {
-			// p = options.ConnectAllAks()
+			p = options.GetSingleAzureCluster(args[1])
 		} else if args[0] == "aws" {
 			p = options.GetSingleAWSCluster(args[1])
 			// TODO: add find single cluster to GCP

@@ -104,9 +104,9 @@ var listCmd = &cobra.Command{
 				list = append(list, res)
 			}
 			p = list
-			log.Debug(string("Outputing List as " + options.Output + " Format"))
-			fmt.Println(provider.RunResult(p, options.Output))
 		}
+		log.Debug(string("Outputing List as " + options.Output + " Format"))
+		fmt.Println(provider.RunResult(p, options.Output))
 	},
 }
 

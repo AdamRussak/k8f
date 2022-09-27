@@ -1,9 +1,8 @@
 # k8f 
 ## Changes
-- changed the repo to **PUBLIC**
-- added array args support for **List** (for example: `k8f list aws azure`)
-- added Status output in LIST command -- to show if admins should be consideriong an upgrade
+- added find cluster for Azure
 ## Bugfix
-- fixed args vlidation for list and connect
-- fixed status for Azure AKS -- according to there supported AKS scheme
-<!-- ## Braking changes -->
+- fixed list command output 
+- improved find speed for azure
+- fixed log output format for Find command
+<!-- ## Braking changes -->     
