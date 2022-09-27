@@ -1,24 +1,27 @@
 # k8f
-A CLI tool to find, list, connect, search and check version for K8S Clusters in all your resources at once,
-this tool supports **Azure AKS** and **AWS EKS**.  
-currently this tool supports the following commands:  
-**list** - to list all the Managed K8S in your accounts  
-**find** - to find a cluster in an unknown region/account.  
-**connect** - to generate Kubeconfig to all the managed K8S in your accounts.  
+A CLI tool to *find*, *list*, *connect* and check version for K8S Clusters in all your resources at once,
+in a single command
+this tool supports **Azure AKS**, **AWS EKS** and Partily supports **GCP GKE**  
+currently this tool supports the following commands:
+
+* **list** - to list all the Managed K8S in your accounts and info about there Version  
+* **find** - to find a cluster in an unknown region/account. 
+>currently only supports Azure and AWS
+* **connect** - to generate Kubeconfig to all the managed K8S in your accounts.  
+>currently only supports Azure and AWS
 
 ## prerequisite:
 - for Azure: installed and logged in azure cli  
 - for AWS: install AWS cli and Profiles for each Account at `~/.aws/credentials`  
-- for GCP: Installed gcloud cli and loggedin
+- for GCP: Installed gcloud cli and logged in
 
 ## Supported Platform:
-AWS  
-Azure<br>
-GCP *only list*<br> 
-
+- [ ] AWS  
+- [ ] Azure
+- [ ] GCP
+>GCP currently only supports List command
 ## Commands
-
-### list
+###  list
 ```sh
 List all K8S in Azure/AWS or Both
 
@@ -26,7 +29,7 @@ Usage:
   k8f list [flags]
 
 Examples:
-k8f list {aws/azure/gcp/all}
+k8f list {aws/azure/all}
 
 Flags:
   -h, --help            help for list
@@ -61,7 +64,25 @@ Flags:
   -o, --output string      Merged kubeconfig output type(json or yaml) (default "yml")
       --overwrite          If true, force merge kubeconfig
   -p, --path string        Merged kubeconfig output path (default "/home/vscode/.kube/config")
-      --role-name string   Set Role Name (Example: 'myAssumeRoleName')
+      --role-name string   Set Role Name (Example: 'myRoleName')
+
+Global Flags:
+      --aws-region string   Set Default AWS Region (default "eu-west-1")
+  -v, --verbose             verbose logging
+```
+
+###  find
+```sh
+Find if a specific K8S exist in Azure or AWS
+
+Usage:
+  k8f find [flags]
+
+Examples:
+k8f find {aws/azure/all} my-k8s-cluster
+
+Flags:
+  -h, --help   help for find
 
 Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
