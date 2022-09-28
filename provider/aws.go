@@ -12,6 +12,8 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+// URGENT: support ASSOME ROLE
+// FIXME: https://aws.amazon.com/blogs/developer/assume-aws-iam-roles-with-mfa-using-the-aws-sdk-for-go/
 func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
@@ -214,7 +216,6 @@ func (c CommandOptions) setCommand() string {
 	return "aws"
 }
 
-// URGENT: need to fix output
 func (c CommandOptions) AwsArgs(region string, clusterName string, arn string) []string {
 	var args []string
 	if c.AwsRoleString != "" && !c.AwsAuth {

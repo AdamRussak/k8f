@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+//FEATURE: add flag to support commands per account/profile
 // connectCmd represents the connect command
 var (
 	connectCmd = &cobra.Command{
