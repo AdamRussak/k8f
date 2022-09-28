@@ -213,10 +213,12 @@ func (c CommandOptions) setCommand() string {
 	}
 	return "aws"
 }
+
+// URGENT: need to fix output
 func (c CommandOptions) AwsArgs(region string, clusterName string, arn string) []string {
 	var args []string
 	if c.AwsRoleString != "" && !c.AwsAuth {
-		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "- --role-arn", "arn:aws:iam::" + SplitAzIDAndGiveItem(arn, ":", 4) + ":role/" + c.AwsRoleString}
+		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "--role-arn", "arn:aws:iam::" + SplitAzIDAndGiveItem(arn, ":", 4) + ":role/" + c.AwsRoleString}
 	} else if c.AwsRoleString != "" && c.AwsAuth {
 		args = []string{"token", "-i", clusterName, "- --role-arn", "arn:aws:iam::" + SplitAzIDAndGiveItem(arn, ":", 4) + ":role/" + c.AwsRoleString}
 	} else {
@@ -227,8 +229,9 @@ func (c CommandOptions) AwsArgs(region string, clusterName string, arn string) [
 
 func (c CommandOptions) AwsEnvs(profile string) interface{} {
 	if c.AwsEnvProfile {
-		env := Env{Name: "AWS_PROFILE", Value: profile}
-		return env
+		var envArray []Env
+		envArray = append(envArray, Env{Name: "AWS_PROFILE", Value: profile})
+		return envArray
 	}
 	return nil
 }
