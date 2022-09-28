@@ -220,7 +220,7 @@ func (c CommandOptions) AwsArgs(region string, clusterName string, arn string) [
 	if c.AwsRoleString != "" && !c.AwsAuth {
 		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "--role-arn", "arn:aws:iam::" + SplitAzIDAndGiveItem(arn, ":", 4) + ":role/" + c.AwsRoleString}
 	} else if c.AwsRoleString != "" && c.AwsAuth {
-		args = []string{"token", "-i", clusterName, "- --role-arn", "arn:aws:iam::" + SplitAzIDAndGiveItem(arn, ":", 4) + ":role/" + c.AwsRoleString}
+		args = []string{"token", "-i", clusterName, "--role-arn", "arn:aws:iam::" + SplitAzIDAndGiveItem(arn, ":", 4) + ":role/" + c.AwsRoleString}
 	} else {
 		args = []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName}
 	}

@@ -1,8 +1,6 @@
 # k8f 
 ## Changes
-- added find cluster for Azure
+- fixed profile and assume role
 ## Bugfix
-- fixed list command output 
-- improved find speed for azure
-- fixed log output format for Find command
+- fixed profile and assume role
 <!-- ## Braking changes -->     
