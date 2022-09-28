@@ -1,7 +1,8 @@
 <img src="https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/background.png" data-canonical-src="https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/background.png"  width="500" height="200" />
 
-> image created Using Dall-E
-
+> image created Using Dall-E<br>
+> 
+[![CodeQL](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml)  [![release-artifacts](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml) ![GitHub](https://img.shields.io/github/license/AdamRussak/k8f) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/AdamRussak/k8f) ![GitHub all releases](https://img.shields.io/github/downloads/AdamRussak/k8f/total)
 # k8f
 A CLI tool to *find*, *list*, *connect* and check version for K8S Clusters in all your resources at once,
 in a single command
