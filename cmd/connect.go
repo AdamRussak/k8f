@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//FEATURE: add flag to support commands per account/profile
+//FEATURE: add flag to support aws commands per account/profile (for example: ask per-account what to use)
 // connectCmd represents the connect command
 var (
 	connectCmd = &cobra.Command{
