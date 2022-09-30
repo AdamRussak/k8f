@@ -246,31 +246,7 @@ func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
 	c0 := make(chan Cluster)
 	// search each profile
 	for _, profile := range profiles {
-		go func(c0 chan Cluster, profile string, clusterToFind string) {
-			var re Cluster
-			log.Info(string("Using AWS profile: " + profile))
-			opt := session.Options{Profile: profile}
-			conf, err := session.NewSessionWithOptions(opt)
-			core.OnErrorFail(err, awsErrorMessage)
-			s := session.Must(conf, err)
-			regions := listRegions(s)
-			c2 := make(chan []Cluster)
-			for _, reg := range regions {
-				go printOutResult(reg, clusterToFind, profile, c2)
-			}
-			for i := 0; i < len(regions); i++ {
-				aRegion := <-c2
-				if len(aRegion) > 0 {
-					for _, cluster := range aRegion {
-						if cluster.Name == clusterToFind {
-							re = cluster
-						}
-					}
-				}
-			}
-			c0 <- re
-		}(c0, profile, clusterToFind)
-
+		go getAwsClusters(c0, profile, clusterToFind)
 	}
 	for i := 0; i < len(profiles); i++ {
 		res := <-c0
@@ -281,4 +257,29 @@ func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
 	return f
 	//search this name in region
 	//once it is found erturn info to the user
+}
+
+func getAwsClusters(c0 chan Cluster, profile string, clusterToFind string) {
+	var re Cluster
+	log.Info(string("Using AWS profile: " + profile))
+	opt := session.Options{Profile: profile}
+	conf, err := session.NewSessionWithOptions(opt)
+	core.OnErrorFail(err, awsErrorMessage)
+	s := session.Must(conf, err)
+	regions := listRegions(s)
+	c2 := make(chan []Cluster)
+	for _, reg := range regions {
+		go printOutResult(reg, clusterToFind, profile, c2)
+	}
+	for i := 0; i < len(regions); i++ {
+		aRegion := <-c2
+		if len(aRegion) > 0 {
+			for _, cluster := range aRegion {
+				if cluster.Name == clusterToFind {
+					re = cluster
+				}
+			}
+		}
+	}
+	c0 <- re
 }
