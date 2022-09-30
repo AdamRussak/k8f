@@ -62,7 +62,7 @@ func GetTenentList() []armsubscriptions.TenantIDDescription {
 	tenant := tenants.NewListPager(nil)
 	for tenant.More() {
 		nextResult, err := tenant.NextPage(ctx)
-		core.OnErrorFail(err, "failed to advance page")
+		core.OnErrorFail(err, azureErrorMessage)
 		for _, v := range nextResult.Value {
 			res = append(res, *v)
 		}
@@ -79,7 +79,7 @@ func listSubscriptions(id string) []subs {
 	r := client.NewListPager(nil)
 	for r.More() {
 		nextResult, err := r.NextPage(ctx)
-		core.OnErrorFail(err, "failed to advance page")
+		core.OnErrorFail(err, azureErrorMessage)
 		for _, v := range nextResult.Value {
 			res = append(res, subs{*v.DisplayName, *v.SubscriptionID})
 
@@ -97,7 +97,7 @@ func getAllAKS(subscription subs, c1 chan Account, id string) {
 	pager := client.NewListPager(nil)
 	for pager.More() {
 		nextResult, err := pager.NextPage(ctx)
-		core.OnErrorFail(err, "failed to advance page")
+		core.OnErrorFail(err, azureErrorMessage)
 		for _, v := range nextResult.Value {
 			supportedAKS := findSupportedAksVersions(SplitAzIDAndGiveItem(*v.ID, "/", 4), *v.Name, subscription.Id, id)
 			l := getAksConfig(supportedAKS)

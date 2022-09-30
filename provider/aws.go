@@ -26,7 +26,7 @@ func (c CommandOptions) FullAwsList() Provider {
 			log.Info(string("Using AWS profile: " + profile))
 			opt := session.Options{Profile: profile}
 			conf, err := session.NewSessionWithOptions(opt)
-			core.OnErrorFail(err, "Failed to create new session")
+			core.OnErrorFail(err, awsErrorMessage)
 			s := session.Must(conf, err)
 			regions := listRegions(s)
 			c2 := make(chan []Cluster)
@@ -110,7 +110,7 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 	var loc []Cluster
 	opt := session.Options{Profile: profile, Config: aws.Config{Region: aws.String(reg)}}
 	conf, err := session.NewSessionWithOptions(opt)
-	core.OnErrorFail(err, "Failed to create new session")
+	core.OnErrorFail(err, awsErrorMessage)
 	sess := session.Must(conf, err)
 	svc := eks.New(sess)
 	input := &eks.ListClustersInput{}
@@ -251,7 +251,7 @@ func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
 			log.Info(string("Using AWS profile: " + profile))
 			opt := session.Options{Profile: profile}
 			conf, err := session.NewSessionWithOptions(opt)
-			core.OnErrorFail(err, "Failed to create new session")
+			core.OnErrorFail(err, awsErrorMessage)
 			s := session.Must(conf, err)
 			regions := listRegions(s)
 			c2 := make(chan []Cluster)

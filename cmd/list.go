@@ -56,20 +56,7 @@ var listCmd = &cobra.Command{
 			c0 := make(chan provider.Provider)
 			for _, s := range supportedProvider {
 				log.Debug(string("Starting " + s + " Provider"))
-				go func(c0 chan provider.Provider, s string) {
-					var r provider.Provider
-					if s == "azure" {
-						log.Trace(string("triggered " + s))
-						r = options.FullAzureList()
-					} else if s == "aws" {
-						log.Trace(string("triggered " + s))
-						r = options.FullAwsList()
-					} else if s == "gcp" {
-						log.Trace(string("triggered " + s))
-						r = options.GcpMain()
-					}
-					c0 <- r
-				}(c0, s)
+				go runAll(c0, options, s)
 			}
 			for i := 0; i < len(supportedProvider); i++ {
 				res := <-c0
@@ -83,20 +70,7 @@ var listCmd = &cobra.Command{
 			c0 := make(chan provider.Provider)
 			for _, s := range args {
 				log.Debug(string("Starting " + s + " Provider"))
-				go func(c0 chan provider.Provider, s string) {
-					var r provider.Provider
-					if s == "azure" {
-						log.Trace(string("triggered " + s))
-						r = options.FullAzureList()
-					} else if s == "aws" {
-						log.Trace(string("triggered " + s))
-						r = options.FullAwsList()
-					} else if s == "gcp" {
-						log.Trace(string("triggered " + s))
-						r = options.GcpMain()
-					}
-					c0 <- r
-				}(c0, s)
+				go runAll(c0, options, s)
 			}
 			for i := 0; i < len(args); i++ {
 				res := <-c0
@@ -114,4 +88,19 @@ func init() {
 	listCmd.Flags().StringVarP(&o.Output, "output", "o", listOutput, "Set output type(json or yaml)")
 	rootCmd.AddCommand(listCmd)
 
+}
+
+func runAll(c0 chan provider.Provider, options provider.CommandOptions, s string) {
+	var r provider.Provider
+	if s == "azure" {
+		log.Trace(string(triggered + s))
+		r = options.FullAzureList()
+	} else if s == "aws" {
+		log.Trace(string(triggered + s))
+		r = options.FullAwsList()
+	} else if s == "gcp" {
+		log.Trace(string(triggered + s))
+		r = options.GcpMain()
+	}
+	c0 <- r
 }
