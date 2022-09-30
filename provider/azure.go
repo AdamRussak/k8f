@@ -181,30 +181,11 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 
 func (c CommandOptions) GetSingleAzureCluster(clusterToFind string) Cluster {
 	log.Info("Starting Azure find cluster named: " + clusterToFind)
-	var list Cluster
 	c0 := make(chan Cluster)
 	tenant := GetTenentList()
 	for _, t := range tenant {
 		log.Info("Start Tenanat: " + *t.DisplayName)
-		go func(c0 chan Cluster, t armsubscriptions.TenantIDDescription) {
-			subs := listSubscriptions(*t.TenantID)
-			c1 := make(chan Account)
-			for _, s := range subs {
-				log.Info("Start Subscription: " + s.Name)
-				go getAllAKS(s, c1, *t.TenantID)
-			}
-			for i := 0; i < len(subs); i++ {
-				res := <-c1
-				for a := range res.Clusters {
-					if res.Clusters[a].Name == clusterToFind {
-						list = res.Clusters[a]
-						break
-					}
-				}
-				log.Debug("Finished Subscription: " + subs[i].Name)
-			}
-			c0 <- list
-		}(c0, t)
+		go getAzureClusters(c0, t, clusterToFind)
 	}
 	for i := 0; i < len(tenant); i++ {
 		res := <-c0
@@ -212,5 +193,25 @@ func (c CommandOptions) GetSingleAzureCluster(clusterToFind string) Cluster {
 			return res
 		}
 	}
-	return list
+	return Cluster{}
+}
+func getAzureClusters(c0 chan Cluster, t armsubscriptions.TenantIDDescription, clusterToFind string) {
+	var list Cluster
+	subs := listSubscriptions(*t.TenantID)
+	c1 := make(chan Account)
+	for _, s := range subs {
+		log.Info("Start Subscription: " + s.Name)
+		go getAllAKS(s, c1, *t.TenantID)
+	}
+	for i := 0; i < len(subs); i++ {
+		res := <-c1
+		for a := range res.Clusters {
+			if res.Clusters[a].Name == clusterToFind {
+				list = res.Clusters[a]
+				break
+			}
+		}
+		log.Debug("Finished Subscription: " + subs[i].Name)
+	}
+	c0 <- list
 }
