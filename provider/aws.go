@@ -2,9 +2,12 @@ package provider
 
 import (
 	"k8f/core"
+	"regexp"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/eks"
@@ -13,21 +16,23 @@ import (
 )
 
 // URGENT: support ASSOME ROLE
-// FIXME: https://aws.amazon.com/blogs/developer/assume-aws-iam-roles-with-mfa-using-the-aws-sdk-for-go/
+// https://docs.aws.amazon.com/sdk-for-go/api/aws/credentials/stscreds/#:~:text=or%20service%20clients.-,Assume%20Role,-To%20assume%20an
 func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	l := getLatestEKS(getEKSversionsList(getVersion()))
 	profiles := GetLocalAwsProfiles()
+	log.Trace(profiles)
 	c0 := make(chan Account)
 	for _, profile := range profiles {
-		go func(c0 chan Account, profile string, l string) {
+		go func(c0 chan Account, profile AwsProfiles, l string) {
 			var re []Cluster
-			log.Info(string("Using AWS profile: " + profile))
-			opt := session.Options{Profile: profile}
+			log.Info(string("Using AWS profile: " + profile.Name))
+			opt := session.Options{Profile: profile.Name}
 			conf, err := session.NewSessionWithOptions(opt)
 			core.OnErrorFail(err, awsErrorMessage)
 			s := session.Must(conf, err)
+			stsAssumeRole(profile, s)
 			regions := listRegions(s)
 			c2 := make(chan []Cluster)
 			for _, reg := range regions {
@@ -39,7 +44,7 @@ func (c CommandOptions) FullAwsList() Provider {
 					re = append(re, aRegion...)
 				}
 			}
-			c0 <- Account{profile, re, len(re), ""}
+			c0 <- Account{profile.Name, re, len(re), ""}
 		}(c0, profile, l)
 
 	}
@@ -106,9 +111,9 @@ func listRegions(s *session.Session) []string {
 	return reg
 }
 
-func printOutResult(reg string, latest string, profile string, c chan []Cluster) {
+func printOutResult(reg string, latest string, profile AwsProfiles, c chan []Cluster) {
 	var loc []Cluster
-	opt := session.Options{Profile: profile, Config: aws.Config{Region: aws.String(reg)}}
+	opt := session.Options{Profile: profile.Name, Config: aws.Config{Region: aws.String(reg)}}
 	conf, err := session.NewSessionWithOptions(opt)
 	core.OnErrorFail(err, awsErrorMessage)
 	sess := session.Must(conf, err)
@@ -116,7 +121,7 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 	input := &eks.ListClustersInput{}
 	result, err := svc.ListClusters(input)
 	core.OnErrorFail(err, "Failed to list Clusters")
-	log.Debug(string("We are In Region: " + reg + " Profile " + profile))
+	log.Debug(string("We are In Region: " + reg + " Profile " + profile.Name))
 	if len(result.Clusters) > 0 {
 		c3 := make(chan []string)
 		for _, element := range result.Clusters {
@@ -130,17 +135,23 @@ func printOutResult(reg string, latest string, profile string, c chan []Cluster)
 	c <- loc
 }
 
-func GetLocalAwsProfiles() []string {
-	arr := []string{}
+func GetLocalAwsProfiles() []AwsProfiles {
+	var arr []AwsProfiles
 	fname := config.DefaultSharedCredentialsFilename() // Get aws.config default shared credentials file name
-	f, err := ini.Load(fname)                          // Load ini file
+	f, err := ini.Load(fname)
+
 	core.OnErrorFail(err, "Failed to load profile")
 	for _, v := range f.Sections() {
 		if len(v.Keys()) != 0 {
-			arr = append(arr, v.Name()) // Get only the sections having Keys. Not sure why this is returning DEFAULT here
+			kbool, karn := checkIfItsAssumeRole(v.Keys())
+			if kbool {
+				arr = append(arr, AwsProfiles{Name: v.Name(), IsROle: true, Arn: karn})
+			} else {
+				arr = append(arr, AwsProfiles{Name: v.Name(), IsROle: false})
+			}
+
 		}
 	}
-
 	return (arr) // Create JSON string response
 }
 
@@ -259,10 +270,10 @@ func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
 	//once it is found erturn info to the user
 }
 
-func getAwsClusters(c0 chan Cluster, profile string, clusterToFind string) {
+func getAwsClusters(c0 chan Cluster, profile AwsProfiles, clusterToFind string) {
 	var re Cluster
-	log.Info(string("Using AWS profile: " + profile))
-	opt := session.Options{Profile: profile}
+	log.Info(string("Using AWS profile: " + profile.Name))
+	opt := session.Options{Profile: profile.Name}
 	conf, err := session.NewSessionWithOptions(opt)
 	core.OnErrorFail(err, awsErrorMessage)
 	s := session.Must(conf, err)
@@ -282,4 +293,27 @@ func getAwsClusters(c0 chan Cluster, profile string, clusterToFind string) {
 		}
 	}
 	c0 <- re
+}
+
+func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
+	log.Debug(keys)
+	var ARNRegexp = regexp.MustCompile(`^arn:(\w|-)*:iam::\d+:role\/?(\w+|-|\/|\.)*$`)
+	for _, a := range keys {
+		if ARNRegexp.MatchString(a.String()) {
+			log.Debug("Is ARN: " + a.String())
+			return true, a.String()
+		}
+	}
+	return false, ""
+}
+
+func stsAssumeRole(awsProfile AwsProfiles, session *session.Session) *credentials.Credentials {
+	log.Debug("checking if this profile is a role")
+	if awsProfile.IsROle {
+		log.Debug("it is a role")
+		return stscreds.NewCredentials(session, awsProfile.Arn)
+	}
+	log.Debug("it is NOT a role")
+	return nil
+
 }

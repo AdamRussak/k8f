@@ -1,5 +1,11 @@
 package provider
 
+type AwsProfiles struct {
+	Name   string
+	IsROle bool
+	Arn    string `json:"arn,omitempty"`
+}
+
 type CommandOptions struct {
 	AwsRegion     string
 	Path          string
