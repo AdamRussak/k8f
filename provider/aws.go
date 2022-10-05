@@ -15,7 +15,6 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// URGENT: support ASSOME ROLE
 // https://docs.aws.amazon.com/sdk-for-go/api/aws/credentials/stscreds/#:~:text=or%20service%20clients.-,Assume%20Role,-To%20assume%20an
 func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
