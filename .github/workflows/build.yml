@@ -1,0 +1,27 @@
+name: Build
+on:
+  push:
+    branches:
+      - master # or the name of your main branch
+      - main # or the name of your main branch
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.19'
+          check-latest: true
+      - name: Run test coverage
+        run:  go test ./... -coverprofile=coverage.out
+      - name: Run test report
+        run:  go test ./... -json > report.json
+      - uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

@@ -30,9 +30,12 @@
 			"extensions": [
 				"golang.Go",
 				"rangav.vscode-thunder-client",
-				"Gruntfuggly.todo-tree"
-				
-
+				"ms-python.vscode-pylance",
+				"ms-python.python",
+				"Gruntfuggly.todo-tree",
+				"redhat.vscode-yaml",
+				"oderwat.indent-rainbow",
+				"golang.go"
 			]
 		}
 	},
