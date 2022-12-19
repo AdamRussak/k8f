@@ -2,7 +2,7 @@ package provider
 
 type AwsProfiles struct {
 	Name   string
-	IsROle bool
+	IsRole bool
 	Arn    string `json:"arn,omitempty"`
 }
 

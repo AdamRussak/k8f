@@ -122,6 +122,7 @@ func (c CommandOptions) Merge(configs AllConfig, arn string) {
 		Users:          configs.auth,
 	}
 	if c.DryRun {
+		log.Debugf("Dry-run will Output a %s Output", c.Output)
 		fmt.Println(RunResult(clientConfig, c.Output))
 	} else {
 		if c.Backup {
