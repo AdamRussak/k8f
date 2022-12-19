@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/eks/types"
@@ -29,11 +28,7 @@ func (c CommandOptions) FullAwsList() Provider {
 		go func(c0 chan Account, profile AwsProfiles, l string) {
 			var re []Cluster
 			log.Info(string("Using AWS profile: " + profile.Name))
-			// opt := session.Options{Profile: profile.Name}
-			conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
-			core.OnErrorFail(err, awsErrorMessage)
-			// s := session.Must(conf, err)
-			regions := profile.listRegions(conf)
+			regions := profile.listRegions(profile)
 			c2 := make(chan []Cluster)
 			for _, reg := range regions {
 				go printOutResult(reg, l, profile, addOnVersion, c2)
@@ -92,15 +87,19 @@ func getEKSversionsList(addons *eks.DescribeAddonVersionsOutput) []string {
 }
 
 // get installed Version on existing Clusters
-func (p AwsProfiles) getEksCurrentVersion(cluster string, s aws.Config, reg string, c3 chan []string) {
+func (p AwsProfiles) getEksCurrentVersion(cluster string, profile AwsProfiles, reg string, c3 chan []string) {
 	var svc *eks.Client
+	var conf aws.Config
+	var err error
+	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
+	core.OnErrorFail(err, awsErrorMessage)
 	if p.IsRole {
-		svc = eks.NewFromConfig(s, func(o *eks.Options) {
-			modifyOptions(p, s)
+		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
+			modifyOptions(p, conf)
 			o.Region = reg
 		})
 	} else {
-		svc = eks.NewFromConfig(s, func(o *eks.Options) {
+		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
 			o.Region = reg
 		})
 	}
@@ -113,14 +112,18 @@ func (p AwsProfiles) getEksCurrentVersion(cluster string, s aws.Config, reg stri
 }
 
 // get all Regions avilable
-func (p AwsProfiles) listRegions(s aws.Config) []string {
+func (p AwsProfiles) listRegions(s AwsProfiles) []string {
 	core.CheckEnvVarOrSitIt("AWS_REGION", Kregion)
 	var reg []string
 	var svc *ec2.Client
+	var conf aws.Config
+	var err error
+	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(s.Name))
+	core.OnErrorFail(err, awsErrorMessage)
 	if p.IsRole {
-		svc = ec2.NewFromConfig(aws.Config{}, func(o *ec2.Options) { modifyOptions(p, s) })
+		svc = ec2.NewFromConfig(conf, func(o *ec2.Options) { modifyOptions(p, conf) })
 	} else {
-		svc = ec2.NewFromConfig(s)
+		svc = ec2.NewFromConfig(conf)
 	}
 	input := &ec2.DescribeRegionsInput{}
 	result, err := svc.DescribeRegions(context.TODO(), input, func(o *ec2.Options) { o.Region = Kregion })
@@ -134,7 +137,9 @@ func (p AwsProfiles) listRegions(s aws.Config) []string {
 func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.DescribeAddonVersionsOutput, c chan []Cluster) {
 	var loc []Cluster
 	var svc *eks.Client
-	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
+	var conf aws.Config
+	var err error
+	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	if profile.IsRole {
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
@@ -154,7 +159,7 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	if len(result.Clusters) > 0 {
 		c3 := make(chan []string)
 		for _, element := range result.Clusters {
-			go profile.getEksCurrentVersion(element, conf, reg, c3)
+			go profile.getEksCurrentVersion(element, profile, reg, c3)
 		}
 		for i := 0; i < len(result.Clusters); i++ {
 			res := <-c3
@@ -191,22 +196,35 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 	var arnContext string
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	p := c.FullAwsList()
+	awsProfiles := GetLocalAwsProfiles()
 	for _, a := range p.Accounts {
 		r := make(chan LocalConfig)
 		for _, clus := range a.Clusters {
-			go func(r chan LocalConfig, clus Cluster, a Account, commandOptions CommandOptions) {
-				cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(a.Tenanat))
+			go func(r chan LocalConfig, clus Cluster, a Account, commandOptions CommandOptions, awsProfiles []AwsProfiles) {
+				var eksSvc *eks.Client
+				var conf aws.Config
+				var err error
+				inProfile, _ := XinAwsProfiles(a.Tenanat, awsProfiles)
+				log.Infof("Tenant profile is: %s and the Profile used is %s, and region is %s", a.Tenanat, awsProfiles[inProfile].Name, clus.Region)
+				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].Name))
 				core.OnErrorFail(err, awsErrorMessage)
-				eksSvc := eks.NewFromConfig(cfg, func(o *eks.Options) {
-					o.Region = clus.Region
-				})
+				if awsProfiles[inProfile].IsRole {
+					eksSvc = eks.NewFromConfig(conf, func(o *eks.Options) {
+						stsAssumeRole(awsProfiles[inProfile], conf)
+						o.Region = clus.Region
+					})
+				} else {
+					eksSvc = eks.NewFromConfig(conf, func(o *eks.Options) {
+						o.Region = clus.Region
+					})
+				}
 				input := &eks.DescribeClusterInput{
 					Name: aws.String(clus.Name),
 				}
 				result, err := eksSvc.DescribeCluster(context.TODO(), input)
 				core.OnErrorFail(err, "Error calling DescribeCluster")
 				r <- GenerateKubeConfiguration(result.Cluster, clus.Region, a, commandOptions)
-			}(r, clus, a, c)
+			}(r, clus, a, c, awsProfiles)
 		}
 		for i := 0; i < len(a.Clusters); i++ {
 			result := <-r
@@ -301,10 +319,7 @@ func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
 func getAwsClusters(c0 chan Cluster, profile AwsProfiles, clusterToFind string) {
 	var re Cluster
 	log.Info(string("Using AWS profile: " + profile.Name))
-	// opt := session.Options{Profile: profile.Name}
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
-	core.OnErrorFail(err, awsErrorMessage)
-	regions := profile.listRegions(cfg)
+	regions := profile.listRegions(profile)
 	profiles := GetLocalAwsProfiles()
 	addOnVersion := profiles[0].getVersion()
 	c2 := make(chan []Cluster)
@@ -336,23 +351,38 @@ func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
 	return false, ""
 }
 
-func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *stscreds.AssumeRoleProvider {
-	log.Debug("checking if this profile is a role")
-	if awsProfile.IsRole {
-		log.Debug("it is a role")
-		client := sts.NewFromConfig(session)
-		appCreds := stscreds.NewAssumeRoleProvider(client, awsProfile.Arn)
-		return appCreds
+func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *sts.AssumeRoleOutput {
+	log.Debug("it is a role")
+	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile("default"))
+	core.OnErrorFail(err, awsErrorMessage)
+	client := sts.NewFromConfig(conf)
+	roleSession := "default"
+	input := &sts.AssumeRoleInput{
+		RoleArn:         &awsProfile.Arn,
+		RoleSessionName: &roleSession,
 	}
-	log.Debug("it is NOT a role")
-	return nil
-
+	result, err := TakeRole(context.TODO(), client, input)
+	core.OnErrorFail(err, "Failed to retrive STS")
+	return result
 }
 
 func modifyOptions(p AwsProfiles, s aws.Config) *ec2.Options {
 	// Modify the options as needed.
 	options := ec2.Options{}
-	options.Credentials = stsAssumeRole(p, s)
+	stsAssumeRole(p, s)
 
 	return &options
+}
+
+func TakeRole(c context.Context, api STSAssumeRoleAPI, input *sts.AssumeRoleInput) (*sts.AssumeRoleOutput, error) {
+	return api.AssumeRole(c, input)
+}
+
+func XinAwsProfiles(x string, y []AwsProfiles) (int, bool) {
+	for t := range y {
+		if x == y[t].Name {
+			return t, true
+		}
+	}
+	return 0, false
 }
