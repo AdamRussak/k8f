@@ -21,7 +21,8 @@ func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	profiles := GetLocalAwsProfiles()
-	l := getLatestEKS(getEKSversionsList(profiles[0].getVersion()))
+	addOnVersion := profiles[0].getVersion()
+	l := getLatestEKS(getEKSversionsList(addOnVersion))
 	log.Trace(profiles)
 	c0 := make(chan Account)
 	for _, profile := range profiles {
@@ -36,7 +37,7 @@ func (c CommandOptions) FullAwsList() Provider {
 			regions := profile.listRegions(conf)
 			c2 := make(chan []Cluster)
 			for _, reg := range regions {
-				go printOutResult(reg, l, profile, c2)
+				go printOutResult(reg, l, profile, addOnVersion, c2)
 			}
 			for i := 0; i < len(regions); i++ {
 				aRegion := <-c2
@@ -127,7 +128,7 @@ func (p AwsProfiles) listRegions(s aws.Config) []string {
 	return reg
 }
 
-func printOutResult(reg string, latest string, profile AwsProfiles, c chan []Cluster) {
+func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.DescribeAddonVersionsOutput, c chan []Cluster) {
 	var loc []Cluster
 	var svc *eks.Client
 	conf, err := config.LoadDefaultConfig(context.TODO())
@@ -144,6 +145,7 @@ func printOutResult(reg string, latest string, profile AwsProfiles, c chan []Clu
 	result, err := svc.ListClusters(context.TODO(), input)
 	core.OnErrorFail(err, "Failed to list Clusters")
 	log.Debug(string("We are In Region: " + reg + " Profile " + profile.Name))
+	// URGENT: need to fix region settings in search
 	if len(result.Clusters) > 0 {
 		c3 := make(chan []string)
 		for _, element := range result.Clusters {
@@ -151,7 +153,7 @@ func printOutResult(reg string, latest string, profile AwsProfiles, c chan []Clu
 		}
 		for i := 0; i < len(result.Clusters); i++ {
 			res := <-c3
-			loc = append(loc, Cluster{res[0], res[1], latest, reg, "", "", HowManyVersionsBack(getEKSversionsList(profile.getVersion()), res[1])})
+			loc = append(loc, Cluster{res[0], res[1], latest, reg, "", "", HowManyVersionsBack(getEKSversionsList(addons), res[1])})
 		}
 	}
 	c <- loc
@@ -298,9 +300,11 @@ func getAwsClusters(c0 chan Cluster, profile AwsProfiles, clusterToFind string) 
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	core.OnErrorFail(err, awsErrorMessage)
 	regions := profile.listRegions(cfg)
+	profiles := GetLocalAwsProfiles()
+	addOnVersion := profiles[0].getVersion()
 	c2 := make(chan []Cluster)
 	for _, reg := range regions {
-		go printOutResult(reg, clusterToFind, profile, c2)
+		go printOutResult(reg, clusterToFind, profile, addOnVersion, c2)
 	}
 	for i := 0; i < len(regions); i++ {
 		aRegion := <-c2
