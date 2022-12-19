@@ -30,8 +30,7 @@ func (c CommandOptions) FullAwsList() Provider {
 			var re []Cluster
 			log.Info(string("Using AWS profile: " + profile.Name))
 			// opt := session.Options{Profile: profile.Name}
-			opt := config.WithSharedConfigProfile(profile.Name)
-			conf, err := config.LoadDefaultConfig(context.TODO(), opt)
+			conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
 			core.OnErrorFail(err, awsErrorMessage)
 			// s := session.Must(conf, err)
 			regions := profile.listRegions(conf)
@@ -61,8 +60,7 @@ func (c CommandOptions) FullAwsList() Provider {
 // get Addons Supported EKS versions
 func (p AwsProfiles) getVersion() *eks.DescribeAddonVersionsOutput {
 	var svc *eks.Client
-	opt := config.WithSharedConfigProfile(p.Name)
-	conf, err := config.LoadDefaultConfig(context.TODO(), opt)
+	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
 	core.OnErrorFail(err, "Failed to get Version")
 	if p.IsRole {
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) { modifyOptions(p, conf) })
@@ -97,9 +95,14 @@ func getEKSversionsList(addons *eks.DescribeAddonVersionsOutput) []string {
 func (p AwsProfiles) getEksCurrentVersion(cluster string, s aws.Config, reg string, c3 chan []string) {
 	var svc *eks.Client
 	if p.IsRole {
-		svc = eks.NewFromConfig(s, func(o *eks.Options) { modifyOptions(p, s) })
+		svc = eks.NewFromConfig(s, func(o *eks.Options) {
+			modifyOptions(p, s)
+			o.Region = reg
+		})
 	} else {
-		svc = eks.NewFromConfig(s)
+		svc = eks.NewFromConfig(s, func(o *eks.Options) {
+			o.Region = reg
+		})
 	}
 	input := &eks.DescribeClusterInput{
 		Name: aws.String(cluster),
@@ -131,7 +134,7 @@ func (p AwsProfiles) listRegions(s aws.Config) []string {
 func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.DescribeAddonVersionsOutput, c chan []Cluster) {
 	var loc []Cluster
 	var svc *eks.Client
-	conf, err := config.LoadDefaultConfig(context.TODO())
+	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	if profile.IsRole {
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
@@ -139,7 +142,9 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 			o.Region = reg
 		})
 	} else {
-		svc = eks.NewFromConfig(conf)
+		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
+			o.Region = reg
+		})
 	}
 	input := &eks.ListClustersInput{}
 	result, err := svc.ListClusters(context.TODO(), input)
@@ -190,7 +195,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 		r := make(chan LocalConfig)
 		for _, clus := range a.Clusters {
 			go func(r chan LocalConfig, clus Cluster, a Account, commandOptions CommandOptions) {
-				cfg, err := config.LoadDefaultConfig(context.TODO())
+				cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(a.Tenanat))
 				core.OnErrorFail(err, awsErrorMessage)
 				eksSvc := eks.NewFromConfig(cfg, func(o *eks.Options) {
 					o.Region = clus.Region
@@ -297,7 +302,7 @@ func getAwsClusters(c0 chan Cluster, profile AwsProfiles, clusterToFind string) 
 	var re Cluster
 	log.Info(string("Using AWS profile: " + profile.Name))
 	// opt := session.Options{Profile: profile.Name}
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	regions := profile.listRegions(cfg)
 	profiles := GetLocalAwsProfiles()
