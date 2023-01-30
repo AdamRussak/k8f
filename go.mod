@@ -69,7 +69,7 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/apimachinery v0.26.0 // indirect
+	k8s.io/apimachinery v0.26.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
@@ -85,5 +85,5 @@ require (
 	github.com/spf13/cobra v1.6.1
 	google.golang.org/api v0.105.0
 	gopkg.in/ini.v1 v1.67.0
-	k8s.io/client-go v0.26.0
+	k8s.io/client-go v0.26.1
 )
