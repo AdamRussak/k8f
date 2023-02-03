@@ -1,6 +1,6 @@
-<img src="https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/background.png" data-canonical-src="https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/background.png"  width="500" height="200" />
+<img src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png" data-canonical-src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png"  width="500" height="200" />
 
-> image created Using Dall-E<br>
+> image created Using MidJorny<br>
 > 
 [![CodeQL](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml)  [![release-artifacts](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml) ![GitHub](https://img.shields.io/github/license/AdamRussak/k8f) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/AdamRussak/k8f) ![GitHub all releases](https://img.shields.io/github/downloads/AdamRussak/k8f/total) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f)
 
@@ -59,7 +59,7 @@ Global Flags:
 
 List Command Sample Output:
 
-[![Sample of List command output](https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/k8f-list.jpg "Sample of List command output")](https://raw.githubusercontent.com/AdamRussak/k8f/main/examples/k8f-list.jpg "Sample of List command output")
+[![Sample of List command output](https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f-list.jpg "Sample of List command output")](https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f-list.jpg "Sample of List command output")
 
 ###  connect
 ```sh
