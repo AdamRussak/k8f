@@ -172,6 +172,13 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 func GetLocalAwsProfiles() []AwsProfiles {
 	var arr []AwsProfiles
 	fname := config.DefaultSharedCredentialsFilename() // Get aws.config default shared credentials file name
+	//TODO: add support to config file #1 (usecase: all creds are in config file)
+	//TODO: add support to config file #2 (usecase: default is in creds file and switch roles are in config)
+	//TODO: add support to config file #3 (usecase: a mix, and will need to check no duplication (profile name+creds+swtitch role name))
+	//TODO: process should be:
+	// 1. add flag to set config and secret location (defailt should stay like today)
+	// 2. load both files
+	// 3. compare resoults and vlidate a single profile per account exist
 	f, err := ini.Load(fname)
 	core.OnErrorFail(err, "Failed to load profile")
 	for _, v := range f.Sections() {
