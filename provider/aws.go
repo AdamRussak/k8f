@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/eks/types"
@@ -28,7 +29,7 @@ func (c CommandOptions) FullAwsList() Provider {
 		go func(c0 chan Account, profile AwsProfiles, l string) {
 			var re []Cluster
 			log.Info(string("Using AWS profile: " + profile.Name))
-			regions := profile.listRegions(profile)
+			regions := profile.listRegions()
 			c2 := make(chan []Cluster)
 			for _, reg := range regions {
 				go printOutResult(reg, l, profile, addOnVersion, c2)
@@ -58,7 +59,7 @@ func (p AwsProfiles) getVersion() *eks.DescribeAddonVersionsOutput {
 	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
 	core.OnErrorFail(err, "Failed to get Version")
 	if p.IsRole {
-		svc = eks.NewFromConfig(conf, func(o *eks.Options) { modifyOptions(p, conf) })
+		svc = eks.NewFromConfig(conf, func(o *eks.Options) { stsAssumeRole(p, conf) })
 	} else {
 		svc = eks.NewFromConfig(conf)
 	}
@@ -95,7 +96,7 @@ func (p AwsProfiles) getEksCurrentVersion(cluster string, profile AwsProfiles, r
 	core.OnErrorFail(err, awsErrorMessage)
 	if p.IsRole {
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
-			modifyOptions(p, conf)
+			stsAssumeRole(p, conf)
 			o.Region = reg
 		})
 	} else {
@@ -112,21 +113,22 @@ func (p AwsProfiles) getEksCurrentVersion(cluster string, profile AwsProfiles, r
 }
 
 // get all Regions avilable
-func (p AwsProfiles) listRegions(s AwsProfiles) []string {
+func (p AwsProfiles) listRegions() []string {
 	core.CheckEnvVarOrSitIt("AWS_REGION", Kregion)
 	var reg []string
 	var svc *ec2.Client
 	var conf aws.Config
 	var err error
-	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(s.Name))
+	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	if p.IsRole {
-		svc = ec2.NewFromConfig(conf, func(o *ec2.Options) { modifyOptions(p, conf) })
+		svc = ec2.NewFromConfig(conf, func(o *ec2.Options) { stsAssumeRole(p, conf) })
 	} else {
 		svc = ec2.NewFromConfig(conf)
 	}
 	input := &ec2.DescribeRegionsInput{}
-	result, err := svc.DescribeRegions(context.TODO(), input, func(o *ec2.Options) { o.Region = Kregion })
+	result, err := svc.DescribeRegions(context.TODO(), input)
+	log.Errorf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
 	core.OnErrorFail(err, "Failed Get Region info")
 	for _, r := range result.Regions {
 		reg = append(reg, *r.RegionName)
@@ -171,7 +173,8 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 
 func GetLocalAwsProfiles() []AwsProfiles {
 	var arr []AwsProfiles
-	fname := config.DefaultSharedCredentialsFilename() // Get aws.config default shared credentials file name
+	fname := config.DefaultSharedConfigFilename()
+	credFname := config.DefaultSharedCredentialsFilename()
 	//TODO: add support to config file #1 (usecase: all creds are in config file)
 	//TODO: add support to config file #2 (usecase: default is in creds file and switch roles are in config)
 	//TODO: add support to config file #3 (usecase: a mix, and will need to check no duplication (profile name+creds+swtitch role name))
@@ -180,17 +183,32 @@ func GetLocalAwsProfiles() []AwsProfiles {
 	// 2. load both files
 	// 3. compare resoults and vlidate a single profile per account exist
 	f, err := ini.Load(fname)
-	core.OnErrorFail(err, "Failed to load profile")
+	core.OnErrorFail(err, "Failed to load profile from config")
+	creds, err := ini.Load(credFname)
+	core.OnErrorFail(err, "Failed to load profile from creds")
 	for _, v := range f.Sections() {
 		if len(v.Keys()) != 0 {
 			kbool, karn := checkIfItsAssumeRole(v.Keys())
 			if kbool {
-				arr = append(arr, AwsProfiles{Name: v.Name(), IsRole: true, Arn: karn})
+				arr = append(arr, AwsProfiles{Name: v.Name(), IsRole: true, Arn: karn, Location: fname})
 			} else {
-				arr = append(arr, AwsProfiles{Name: v.Name(), IsRole: false})
+				arr = append(arr, AwsProfiles{Name: v.Name(), IsRole: false, Location: fname})
 			}
-
 		}
+	}
+	for _, p := range creds.Sections() {
+		if len(p.Keys()) != 0 {
+			_, isInArray := XinAwsProfiles(p.Name(), arr)
+			if !isInArray {
+				kbool, karn := checkIfItsAssumeRole(p.Keys())
+				if kbool {
+					arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: true, Arn: karn, Location: fname})
+				} else {
+					arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: false, Location: fname})
+				}
+			}
+		}
+
 	}
 	return (arr) // Create JSON string response
 }
@@ -326,7 +344,7 @@ func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
 func getAwsClusters(c0 chan Cluster, profile AwsProfiles, clusterToFind string) {
 	var re Cluster
 	log.Info(string("Using AWS profile: " + profile.Name))
-	regions := profile.listRegions(profile)
+	regions := profile.listRegions()
 	profiles := GetLocalAwsProfiles()
 	addOnVersion := profiles[0].getVersion()
 	c2 := make(chan []Cluster)
@@ -358,31 +376,17 @@ func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
 	return false, ""
 }
 
-func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *sts.AssumeRoleOutput {
+func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) aws.Credentials {
+	roleSession := "default"
 	log.Debug("it is a role")
-	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile("default"))
+	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(config.DefaultSharedCredentialsFilename()), config.WithSharedConfigProfile(roleSession))
 	core.OnErrorFail(err, awsErrorMessage)
 	client := sts.NewFromConfig(conf)
-	roleSession := "default"
-	input := &sts.AssumeRoleInput{
-		RoleArn:         &awsProfile.Arn,
-		RoleSessionName: &roleSession,
-	}
-	result, err := TakeRole(context.TODO(), client, input)
-	core.OnErrorFail(err, "Failed to retrive STS")
-	return result
-}
 
-func modifyOptions(p AwsProfiles, s aws.Config) *ec2.Options {
-	// Modify the options as needed.
-	options := ec2.Options{}
-	stsAssumeRole(p, s)
-
-	return &options
-}
-
-func TakeRole(c context.Context, api STSAssumeRoleAPI, input *sts.AssumeRoleInput) (*sts.AssumeRoleOutput, error) {
-	return api.AssumeRole(c, input)
+	appCreds := stscreds.NewAssumeRoleProvider(client, awsProfile.Arn)
+	app, err := appCreds.Retrieve(context.TODO())
+	core.OnErrorFail(err, "failed to get sts creds")
+	return app
 }
 
 func XinAwsProfiles(x string, y []AwsProfiles) (int, bool) {
