@@ -379,9 +379,9 @@ func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
 }
 
 func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) aws.Credentials {
-	// roleSession := "default"
+	roleSession := "default"
 	log.Debug("it is a role")
-	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(config.DefaultSharedCredentialsFilename()), config.WithSharedConfigProfile(awsProfile.Name))
+	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(config.DefaultSharedCredentialsFilename()), config.WithSharedConfigProfile(roleSession))
 	core.OnErrorFail(err, awsErrorMessage)
 	client := sts.NewFromConfig(conf)
 
