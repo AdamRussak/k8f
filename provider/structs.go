@@ -1,9 +1,11 @@
 package provider
 
 type AwsProfiles struct {
-	Name   string
-	IsRole bool
-	Arn    string `json:"arn,omitempty"`
+	Name        string
+	IsRole      bool
+	Arn         string `json:"arn,omitempty"`
+	Location    string
+	SessionName string
 }
 
 type CommandOptions struct {
