@@ -177,13 +177,6 @@ func GetLocalAwsProfiles() []AwsProfiles {
 	var arr []AwsProfiles
 	fname := config.DefaultSharedConfigFilename()
 	credFname := config.DefaultSharedCredentialsFilename()
-	//TODO: add support to config file #1 (usecase: all creds are in config file)
-	//TODO: add support to config file #2 (usecase: default is in creds file and switch roles are in config)
-	//TODO: add support to config file #3 (usecase: a mix, and will need to check no duplication (profile name+creds+swtitch role name))
-	//TODO: process should be:
-	// 1. add flag to set config and secret location (defailt should stay like today)
-	// 2. load both files
-	// 3. compare resoults and vlidate a single profile per account exist
 	f, err := ini.Load(fname)
 	core.OnErrorFail(err, "Failed to load profile from config")
 	creds, err := ini.Load(credFname)
@@ -236,8 +229,8 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].Name))
 				core.OnErrorFail(err, awsErrorMessage)
 				if awsProfiles[inProfile].IsRole {
+					conf.Credentials = stsAssumeRole(awsProfiles[inProfile], conf)
 					eksSvc = eks.NewFromConfig(conf, func(o *eks.Options) {
-						stsAssumeRole(awsProfiles[inProfile], conf)
 						o.Region = clus.Region
 					})
 				} else {

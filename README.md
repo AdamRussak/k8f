@@ -105,3 +105,54 @@ Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
   -v, --verbose             verbose logging
 ```
+## How to install
+### Windows
+Latest:
+```ps
+$downloads = "$env:USERPROFILE\Downloads"
+$source = "$downloads\k8f.exe"
+$destination = "C:\tool"
+Invoke-WebRequest -Uri "https://github.com/AdamRussak/k8f/releases/latest/download/k8f.exe" -OutFile $source
+New-Item -ItemType Directory -Path $destination
+Copy-Item -Path $source -Destination $destination
+[Environment]::SetEnvironmentVariable("Path", "$env:Path;$destination\k8f.exe", "Machine")
+```
+Version:
+```ps
+$downloads = "$env:USERPROFILE\Downloads"
+$source = "$downloads\k8f.exe"
+$destination = "C:\tool"
+$version = "0.3.1"
+Invoke-WebRequest -Uri "https://github.com/AdamRussak/k8f/releases/download/$version/k8f.exe" -OutFile "$downloads\k8f.exe"
+New-Item -ItemType Directory -Path $destination
+Copy-Item -Path $source -Destination $destination
+[Environment]::SetEnvironmentVariable("Path", "$env:Path;$destination\k8f.exe", "Machine")
+```
+### Linux
+Latest:
+```sh
+cd ~ && wget https://github.com/AdamRussak/k8f/releases/latest/download/k8f
+cp ~/k8f /usr/local/bin/k8f
+sudo chmod 777 /usr/local/bin/k8f
+```
+Version:
+```sh
+cd ~ && wget https://github.com/AdamRussak/k8f/releases/download/<version>/k8f
+cp ~/k8f /usr/local/bin/k8f
+sudo chmod 777 /usr/local/bin/k8f
+```
+### MacOS
+Latest:
+```sh
+cd ~ && wget https://github.com/AdamRussak/k8f/releases/latest/download/k8f_darwin-arm64
+mv k8f_darwin-arm64 ./k8f
+cp ~/k8f /usr/local/bin/k8f
+sudo chmod 777 /usr/local/bin/k8f
+```
+Version:
+```sh
+cd ~ && wget https://github.com/AdamRussak/k8f/releases/download/<version>/k8f_darwin-arm64
+mv k8f_darwin-arm64 ./k8f
+cp ~/k8f /usr/local/bin/k8f
+sudo chmod 777 /usr/local/bin/k8f
+```
