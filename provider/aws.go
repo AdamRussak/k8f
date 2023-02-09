@@ -59,7 +59,8 @@ func (p AwsProfiles) getVersion() *eks.DescribeAddonVersionsOutput {
 	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
 	core.OnErrorFail(err, "Failed to get Version")
 	if p.IsRole {
-		svc = eks.NewFromConfig(conf, func(o *eks.Options) { stsAssumeRole(p, conf) })
+		conf.Credentials = stsAssumeRole(p, conf)
+		svc = eks.NewFromConfig(conf)
 	} else {
 		svc = eks.NewFromConfig(conf)
 	}
@@ -95,8 +96,8 @@ func (p AwsProfiles) getEksCurrentVersion(cluster string, profile AwsProfiles, r
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	if p.IsRole {
+		conf.Credentials = stsAssumeRole(p, conf)
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
-			stsAssumeRole(p, conf)
 			o.Region = reg
 		})
 	} else {
@@ -122,9 +123,8 @@ func (p AwsProfiles) listRegions() []string {
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	if p.IsRole {
-		svc = ec2.NewFromConfig(conf, func(o *ec2.Options) {
-			stsAssumeRole(p, conf)
-		})
+		conf.Credentials = stsAssumeRole(p, conf)
+		svc = ec2.NewFromConfig(conf)
 	} else {
 		svc = ec2.NewFromConfig(conf)
 	}
@@ -146,8 +146,8 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	if profile.IsRole {
+		conf.Credentials = stsAssumeRole(profile, conf)
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
-			stsAssumeRole(profile, conf)
 			o.Region = reg
 		})
 	} else {
@@ -378,17 +378,16 @@ func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
 	return false, ""
 }
 
-func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) aws.Credentials {
+func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *aws.CredentialsCache {
 	roleSession := "default"
 	log.Debug("it is a role")
-	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(config.DefaultSharedCredentialsFilename()), config.WithSharedConfigProfile(roleSession))
+	conf, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion("us-east-1"),
+		config.WithSharedConfigProfile(roleSession))
 	core.OnErrorFail(err, awsErrorMessage)
-	client := sts.NewFromConfig(conf)
-
-	appCreds := stscreds.NewAssumeRoleProvider(client, awsProfile.Arn)
-	app, err := appCreds.Retrieve(context.TODO())
-	core.OnErrorFail(err, "failed to get sts creds")
-	return app
+	appCreds := stscreds.NewAssumeRoleProvider(sts.NewFromConfig(conf), awsProfile.Arn)
+	creds := aws.NewCredentialsCache(appCreds)
+	return creds
 }
 
 func XinAwsProfiles(x string, y []AwsProfiles) (int, bool) {
