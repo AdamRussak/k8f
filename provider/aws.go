@@ -122,7 +122,9 @@ func (p AwsProfiles) listRegions() []string {
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	if p.IsRole {
-		svc = ec2.NewFromConfig(conf, func(o *ec2.Options) { stsAssumeRole(p, conf) })
+		svc = ec2.NewFromConfig(conf, func(o *ec2.Options) {
+			stsAssumeRole(p, conf)
+		})
 	} else {
 		svc = ec2.NewFromConfig(conf)
 	}
@@ -377,9 +379,9 @@ func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
 }
 
 func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) aws.Credentials {
-	roleSession := "default"
+	// roleSession := "default"
 	log.Debug("it is a role")
-	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(config.DefaultSharedCredentialsFilename()), config.WithSharedConfigProfile(roleSession))
+	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(config.DefaultSharedCredentialsFilename()), config.WithSharedConfigProfile(awsProfile.Name))
 	core.OnErrorFail(err, awsErrorMessage)
 	client := sts.NewFromConfig(conf)
 
