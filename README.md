@@ -21,10 +21,10 @@ in a single command
 this tool supports **Azure AKS**, **AWS EKS** and Partily supports **GCP GKE**  
 currently this tool supports the following commands:
 
-* **list** - to list all the Managed K8S in your accounts and info about there Version  
-* **find** - to find a cluster in an unknown region/account. 
->currently only supports Azure and AWS
-* **connect** - to generate Kubeconfig to all the managed K8S in your accounts.  
+[List](#list) - to list all the Managed K8S in your accounts and info about there Version  
+[Find](#find) - to find a cluster in an unknown region/account. 
+>currently only supports Azure and AWS<br>
+[Connect](#connect) - to generate Kubeconfig to all the managed K8S in your accounts. <br>
 >currently only supports Azure and AWS
 
 ## Table of Contents
