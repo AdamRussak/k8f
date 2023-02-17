@@ -27,17 +27,34 @@ currently this tool supports the following commands:
 * **connect** - to generate Kubeconfig to all the managed K8S in your accounts.  
 >currently only supports Azure and AWS
 
-## prerequisite:
+## Table of Contents
+
+* [Prerequisite](#prerequisite)
+* [Supported Platform](#supported-platform)
+* [Commands](#commands)
+  * [List](#list)
+  * [Connect](#connect)
+  * [Find](#find)
+* [How to install](#how-to-install)
+  * [Windows](#windows)
+  * [Linux](#linux)
+  * [MacOS](#macos)
+
+
+
+## prerequisite
 - for Azure: installed and logged in azure cli  
 - for AWS: install AWS cli and Profiles for each Account at `~/.aws/credentials`  
 - for GCP: Installed gcloud cli and logged in
 
-## Supported Platform:
+Supported Platform
+-----------
 - [ ] AWS  
 - [ ] Azure
 - [ ] GCP
 >GCP currently only supports List command
-## Commands
+Commands
+------
 ###  list
 ```sh
 List all K8S in Azure/AWS or Both
@@ -105,7 +122,8 @@ Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
   -v, --verbose             verbose logging
 ```
-## How to install
+How to install
+-----------
 ### Windows
 Latest:
 ```ps
