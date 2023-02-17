@@ -4,7 +4,7 @@ type AwsProfiles struct {
 	Name        string
 	IsRole      bool
 	Arn         string `json:"arn,omitempty"`
-	Location    string
+	ConfProfile string
 	SessionName string
 }
 
