@@ -4,6 +4,7 @@ import (
 	"context"
 	"k8f/core"
 	"regexp"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -56,7 +57,7 @@ func (c CommandOptions) FullAwsList() Provider {
 // get Addons Supported EKS versions
 func (p AwsProfiles) getVersion() *eks.DescribeAddonVersionsOutput {
 	var svc *eks.Client
-	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
+	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.ConfProfile))
 	core.OnErrorFail(err, "Failed to get Version")
 	if p.IsRole {
 		conf.Credentials = stsAssumeRole(p, conf)
@@ -93,7 +94,7 @@ func (p AwsProfiles) getEksCurrentVersion(cluster string, profile AwsProfiles, r
 	var svc *eks.Client
 	var conf aws.Config
 	var err error
-	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
+	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.ConfProfile))
 	core.OnErrorFail(err, awsErrorMessage)
 	if p.IsRole {
 		conf.Credentials = stsAssumeRole(p, conf)
@@ -143,7 +144,7 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	var svc *eks.Client
 	var conf aws.Config
 	var err error
-	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
+	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.ConfProfile))
 	core.OnErrorFail(err, awsErrorMessage)
 	if profile.IsRole {
 		conf.Credentials = stsAssumeRole(profile, conf)
@@ -184,10 +185,11 @@ func GetLocalAwsProfiles() []AwsProfiles {
 	for _, v := range f.Sections() {
 		if len(v.Keys()) != 0 {
 			kbool, karn := checkIfItsAssumeRole(v.Keys())
+			profileName := removeString("profile", v.Name())
 			if kbool {
-				arr = append(arr, AwsProfiles{Name: v.Name(), IsRole: true, Arn: karn, Location: fname})
+				arr = append(arr, AwsProfiles{Name: profileName, IsRole: true, Arn: karn, ConfProfile: v.Name()})
 			} else {
-				arr = append(arr, AwsProfiles{Name: v.Name(), IsRole: false, Location: fname})
+				arr = append(arr, AwsProfiles{Name: profileName, IsRole: false, ConfProfile: v.Name()})
 			}
 		}
 	}
@@ -197,9 +199,9 @@ func GetLocalAwsProfiles() []AwsProfiles {
 			if !isInArray {
 				kbool, karn := checkIfItsAssumeRole(p.Keys())
 				if kbool {
-					arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: true, Arn: karn, Location: fname})
+					arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: true, Arn: karn, ConfProfile: p.Name()})
 				} else {
-					arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: false, Location: fname})
+					arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: false, ConfProfile: p.Name()})
 				}
 			}
 		}
@@ -226,7 +228,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 				var err error
 				inProfile, _ := XinAwsProfiles(a.Name, awsProfiles)
 				log.Infof("Tenant profile is: %s and the Profile used is %s, and region is %s", a.Tenanat, awsProfiles[inProfile].Name, clus.Region)
-				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].Name))
+				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].ConfProfile))
 				core.OnErrorFail(err, awsErrorMessage)
 				if awsProfiles[inProfile].IsRole {
 					conf.Credentials = stsAssumeRole(awsProfiles[inProfile], conf)
@@ -390,4 +392,14 @@ func XinAwsProfiles(x string, y []AwsProfiles) (int, bool) {
 		}
 	}
 	return 0, false
+}
+
+func removeString(word, arn string) string {
+	if !strings.Contains("default", arn) {
+		log.Debugf("Cutting %s from %s", word, arn)
+		split := strings.Split(arn, " ")
+		log.Debugf("length is %x and the profile name will be: %s", len(split), split[1])
+		return split[1]
+	}
+	return ""
 }

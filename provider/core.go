@@ -36,7 +36,7 @@ func evaluateVersion(list []string) string {
 	return latest
 }
 
-//Microsoft Comliance
+// Microsoft Compliance
 func microsoftSupportedVersion(latest string, current string) string {
 	//IMPORTANT: only supports same major at the moment!!!
 	splitLatest := strings.Split(latest, ".")
@@ -83,7 +83,7 @@ func HowManyVersionsBack(versionsList []string, currentVersion string) string {
 	return "Critical"
 }
 
-//printout format selection
+// printout format selection
 func RunResult(p interface{}, output string) string {
 	var kJson []byte
 	log.Debug("start RunResult Func")
@@ -179,7 +179,5 @@ func (c CommandOptions) Configcopy() {
 func SplitAzIDAndGiveItem(input string, seperator string, out int) string {
 	s := strings.Split(input, seperator)
 	log.Debug("Split output")
-	log.Debug(s)
-	log.Debug(s[out])
 	return s[out]
 }
