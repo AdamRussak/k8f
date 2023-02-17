@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"k8f/core"
 	"regexp"
 	"strings"
@@ -182,31 +183,30 @@ func GetLocalAwsProfiles() []AwsProfiles {
 	core.OnErrorFail(err, "Failed to load profile from config")
 	creds, err := ini.Load(credFname)
 	core.OnErrorFail(err, "Failed to load profile from creds")
-	for _, v := range f.Sections() {
-		if len(v.Keys()) != 0 {
-			kbool, karn := checkIfItsAssumeRole(v.Keys())
-			profileName := removeString("profile", v.Name())
+	for _, p := range creds.Sections() {
+		if len(p.Keys()) != 0 {
+			kbool, karn := checkIfItsAssumeRole(p.Keys())
 			if kbool {
-				arr = append(arr, AwsProfiles{Name: profileName, IsRole: true, Arn: karn, ConfProfile: v.Name()})
+				arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: true, Arn: karn, ConfProfile: p.Name()})
 			} else {
-				arr = append(arr, AwsProfiles{Name: profileName, IsRole: false, ConfProfile: v.Name()})
+				arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: false, ConfProfile: p.Name()})
 			}
 		}
 	}
-	for _, p := range creds.Sections() {
-		if len(p.Keys()) != 0 {
-			_, isInArray := XinAwsProfiles(p.Name(), arr)
+	for _, v := range f.Sections() {
+		if len(v.Keys()) != 0 {
+			profileName := removeString("profile", v.Name())
+			_, isInArray := XinAwsProfiles(profileName, arr)
 			if !isInArray {
-				kbool, karn := checkIfItsAssumeRole(p.Keys())
+				kbool, karn := checkIfItsAssumeRole(v.Keys())
 				if kbool {
-					arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: true, Arn: karn, ConfProfile: p.Name()})
-				} else {
-					arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: false, ConfProfile: p.Name()})
+					arr = append(arr, AwsProfiles{Name: profileName, IsRole: true, Arn: karn, ConfProfile: v.Name()})
 				}
 			}
 		}
-
 	}
+	kJson, _ := json.Marshal(arr)
+	log.Debugf("profile in use: %s", string(kJson))
 	return (arr) // Create JSON string response
 }
 
@@ -228,7 +228,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 				var err error
 				inProfile, _ := XinAwsProfiles(a.Name, awsProfiles)
 				log.Infof("Tenant profile is: %s and the Profile used is %s, and region is %s", a.Tenanat, awsProfiles[inProfile].Name, clus.Region)
-				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].ConfProfile))
+				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].Name))
 				core.OnErrorFail(err, awsErrorMessage)
 				if awsProfiles[inProfile].IsRole {
 					conf.Credentials = stsAssumeRole(awsProfiles[inProfile], conf)
@@ -244,6 +244,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 					Name: aws.String(clus.Name),
 				}
 				result, err := eksSvc.DescribeCluster(context.TODO(), input)
+				log.Debugf("the Profile that is used is: %s", awsProfiles[inProfile].Name)
 				core.OnErrorFail(err, "Error calling DescribeCluster")
 				r <- GenerateKubeConfiguration(result.Cluster, clus.Region, a, commandOptions)
 			}(r, clus, a, c, awsProfiles)
@@ -362,7 +363,6 @@ func getAwsClusters(c0 chan Cluster, profile AwsProfiles, clusterToFind string) 
 }
 
 func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
-	log.Debug(keys)
 	var ARNRegexp = regexp.MustCompile(`^arn:(\w|-)*:iam::\d+:role\/?(\w+|-|\/|\.)*$`)
 	for _, a := range keys {
 		if ARNRegexp.MatchString(a.String()) {
@@ -375,19 +375,20 @@ func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
 
 func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *aws.CredentialsCache {
 	roleSession := "default"
-	log.Debug("it is a role")
 	conf, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("us-east-1"),
 		config.WithSharedConfigProfile(roleSession))
 	core.OnErrorFail(err, awsErrorMessage)
 	appCreds := stscreds.NewAssumeRoleProvider(sts.NewFromConfig(conf), awsProfile.Arn)
 	creds := aws.NewCredentialsCache(appCreds)
+	log.Debugf("Succsefully triggered stsAssumeRole")
 	return creds
 }
 
 func XinAwsProfiles(x string, y []AwsProfiles) (int, bool) {
 	for t := range y {
-		if x == y[t].Name {
+		if strings.Contains(y[t].ConfProfile, x) {
+			log.Debugf("profile %s is the %x in list", x, t)
 			return t, true
 		}
 	}

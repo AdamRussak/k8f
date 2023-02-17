@@ -65,8 +65,6 @@ func microsoftSupportedVersion(latest string, current string) string {
 
 // provide version compare
 func HowManyVersionsBack(versionsList []string, currentVersion string) string {
-	log.Debug("versions avilable are: ")
-	log.Debug(versionsList)
 	log.Debug("current version is: " + currentVersion)
 	for i := range versionsList {
 		if versionsList[i] == currentVersion {
