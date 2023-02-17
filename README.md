@@ -24,6 +24,7 @@ currently this tool supports the following commands:
 [List](#list) - to list all the Managed K8S in your accounts and info about there Version  
 [Find](#find) - to find a cluster in an unknown region/account. 
 >currently only supports Azure and AWS<br>
+
 [Connect](#connect) - to generate Kubeconfig to all the managed K8S in your accounts. <br>
 >currently only supports Azure and AWS
 
