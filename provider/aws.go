@@ -227,7 +227,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 				var conf aws.Config
 				var err error
 				inProfile, _ := XinAwsProfiles(a.Name, awsProfiles)
-				log.Infof("Tenant profile is: %s and the Profile used is %s, and region is %s", a.Tenanat, awsProfiles[inProfile].Name, clus.Region)
+				log.Infof("The Profile used is %s, and region is %s", awsProfiles[inProfile].Name, clus.Region)
 				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].Name))
 				core.OnErrorFail(err, awsErrorMessage)
 				if awsProfiles[inProfile].IsRole {
