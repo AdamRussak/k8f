@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//FEATURE: add flag to support aws commands per account/profile (for example: ask per-account what to use)
+// FEATURE: add flag to support aws commands per account/profile (for example: ask per-account what to use)
 // connectCmd represents the connect command
 var (
 	connectCmd = &cobra.Command{
@@ -61,8 +61,8 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 )
 
 func init() {
-	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "Merged kubeconfig output type(json or yaml)")
-	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "Merged kubeconfig output path")
+	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "kubeconfig output type format(json or yaml)")
+	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "kubeconfig output path")
 	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force merge kubeconfig")
 	connectCmd.Flags().BoolVar(&o.DryRun, DryRun, false, "If true, only run a dry-run with cli output")
 	connectCmd.Flags().BoolVar(&o.Backup, "backup", false, "If true, backup config file to $HOME/.kube/config.bk")

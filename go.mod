@@ -79,6 +79,7 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.12
+	github.com/daviddengcn/go-colortext v1.0.0
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18
 	github.com/sirupsen/logrus v1.9.0
