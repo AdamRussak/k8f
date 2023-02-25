@@ -14,6 +14,7 @@ import (
 	"github.com/imdario/mergo"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -49,7 +50,10 @@ func (mc CommandOptions) runMerge(newConf Config) error {
 			return err
 		}
 	}
-	mc.WriteConfig(outConfigs)
+	var y []byte
+	y, _ = yaml.Marshal(outConfigs)
+	err = os.WriteFile(mc.Path, y, 0666)
+	core.OnErrorFail(err, "failed to save config")
 	return nil
 }
 
