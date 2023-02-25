@@ -1,23 +1,22 @@
 package provider
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"k8f/core"
 	"log"
 	"os"
 	"strings"
 
 	ct "github.com/daviddengcn/go-colortext"
+	"github.com/imdario/mergo"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
-
-// The Flow:
-// - get 2 paths (will need 1 path and 1 from memoroy (vriable))
 
 // MergeCommand merge cmd struct
 type MergeCommand struct {
@@ -30,25 +29,27 @@ type KubeConfigOption struct {
 	fileName string
 }
 
-func (mc CommandOptions) runMerge(newConf *clientcmdapi.Config) error {
+func (mc CommandOptions) runMerge(newConf Config) error {
+	var kconfigs []*clientcmdapi.Config
+	confToupdate, err := toClientConfig(&newConf)
+	kconfigs = append(kconfigs, confToupdate)
+	core.OnErrorFail(err, "failed to convert Config struct to clientcmdapi.Config")
 	outConfigs := clientcmdapi.NewConfig()
 	printString(os.Stdout, "Loading KubeConfig file: "+mc.Path+" \n")
 	loadConfig, err := loadKubeConfig(mc.Path)
-	if err != nil {
-		core.OnErrorFail(err, "File "+mc.Path+" is not kubeconfig\n")
+	core.OnErrorFail(err, "File "+mc.Path+" is not kubeconfig\n")
+	kconfigs = append(kconfigs, loadConfig)
+	for _, conf := range kconfigs {
+		kco := &KubeConfigOption{
+			config:   conf,
+			fileName: getFileName(mc.Path),
+		}
+		outConfigs, err = kco.handleContexts(outConfigs, mc)
+		if err != nil {
+			return err
+		}
 	}
-	kco := &KubeConfigOption{
-		config:   loadConfig,
-		fileName: getFileName(mc.Path),
-	}
-	kco = &KubeConfigOption{
-		config:   newConf,
-		fileName: "Var",
-	}
-	outConfigs, err = kco.handleContexts(outConfigs)
-	if err != nil {
-		return err
-	}
+	mc.WriteConfig(outConfigs)
 	return nil
 }
 
@@ -63,32 +64,6 @@ func loadKubeConfig(yaml string) (*clientcmdapi.Config, error) {
 	return loadConfig, err
 }
 
-func listFile(folder string) []string {
-	files, _ := ioutil.ReadDir(folder)
-	var fileList []string
-	for _, file := range files {
-		if file.Name() == ".DS_Store" {
-			continue
-		}
-		if file.IsDir() {
-			listFile(folder + "/" + file.Name())
-		} else {
-			fileList = append(fileList, fmt.Sprintf("%s/%s", folder, file.Name()))
-		}
-	}
-	return fileList
-}
-
-func mergeExample() string {
-	return `
-# Merge multiple kubeconfig
-kubecm merge 1st.yaml 2nd.yaml 3rd.yaml
-# Merge KubeConfig in the dir directory
-kubecm merge -f dir
-# Merge KubeConfig in the dir directory to the specified file.
-kubecm merge -f dir --config kubecm.config
-`
-}
 func CheckValidContext(clear bool, config *clientcmdapi.Config) *clientcmdapi.Config {
 	for key, obj := range config.Contexts {
 		if _, ok := config.AuthInfos[obj.AuthInfo]; !ok {
@@ -124,25 +99,10 @@ func printString(out io.Writer, name string) {
 }
 
 // the actule writing of the config to the OS
-func WriteConfig(cover bool, file string, outConfig *clientcmdapi.Config) error {
-	if cover {
-		err := clientcmd.WriteToFile(*outConfig, cfgFile)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("「%s」 write successful!\n", file)
-		err = PrintTable(outConfig)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := clientcmd.WriteToFile(*outConfig, "kubecm.config")
-		if err != nil {
-			return err
-		}
-		printString(os.Stdout, "generate ./kubecm.config\n")
-	}
-	return nil
+func (mc CommandOptions) WriteConfig(outConfig *clientcmdapi.Config) {
+	err := clientcmd.WriteToFile(*outConfig, mc.Path)
+	core.OnErrorFail(err, "failed to save new config")
+	fmt.Printf("「%s」 write successful!\n", mc.Path)
 }
 func getFileName(path string) string {
 	n := strings.Split(path, "/")
@@ -150,19 +110,19 @@ func getFileName(path string) string {
 	return result[0]
 }
 
-func (kc *KubeConfigOption) handleContexts(oldConfig *clientcmdapi.Config) (*clientcmdapi.Config, error) {
+func (kc *KubeConfigOption) handleContexts(oldConfig *clientcmdapi.Config, mc CommandOptions) (*clientcmdapi.Config, error) {
 	newConfig := clientcmdapi.NewConfig()
 	for name, ctx := range kc.config.Contexts {
 		var newName string
 		if len(kc.config.Contexts) > 1 {
-			newName = fmt.Sprintf("%s-%s", kc.fileName, HashSufString(name))
+			newName = name
 		} else {
 			newName = kc.fileName
 		}
 		if checkContextName(newName, oldConfig) {
-			nameConfirm := BoolUI(fmt.Sprintf("「%s」 Name already exists, do you want to rename it. (If you select `False`, this context will not be merged)", newName))
+			nameConfirm := BoolUI(fmt.Sprintf("「%s」 Name already exists, do you want to rename it. (If you select `False`, this context will not be merged)", newName), mc)
 			if nameConfirm == "True" {
-				newName = PromptUI("Rename", newName)
+				newName = core.PromptUI("Rename", newName)
 				if newName == kc.fileName {
 					return nil, errors.New("need to rename")
 				}
@@ -183,7 +143,7 @@ func checkContextName(name string, oldConfig *clientcmdapi.Config) bool {
 	}
 	return false
 }
-func BoolUI(label string) string {
+func BoolUI(label string, mc CommandOptions) string {
 	templates := &promptui.SelectTemplates{
 		Label:    "{{ . }}",
 		Active:   "\U0001F37A {{ . | red }}",
@@ -194,11 +154,152 @@ func BoolUI(label string) string {
 		Label:     label,
 		Items:     []string{"False", "True"},
 		Templates: templates,
-		Size:      uiSize,
+		Size:      mc.UiSize,
 	}
 	_, obj, err := prompt.Run()
 	if err != nil {
 		log.Fatalf("Prompt failed %v\n", err)
 	}
 	return obj
+}
+
+// HashSufString return the string of HashSuf.
+func HashSufString(data string) string {
+	sum, _ := hEncode(Hash(data))
+	return sum
+}
+func (kc *KubeConfigOption) handleContext(oldConfig *clientcmdapi.Config,
+	name string, ctx *clientcmdapi.Context) *clientcmdapi.Config {
+
+	var (
+		clusterNameSuffix string
+		userNameSuffix    string
+	)
+
+	isClusterNameExist, isUserNameExist := checkClusterAndUserName(oldConfig, ctx.Cluster, ctx.AuthInfo)
+	newConfig := clientcmdapi.NewConfig()
+	suffix := HashSufString(name)
+
+	if isClusterNameExist {
+		clusterNameSuffix = "-" + suffix
+	}
+	if isUserNameExist {
+		userNameSuffix = "-" + suffix
+	}
+
+	userName := fmt.Sprintf("%v%v", ctx.AuthInfo, userNameSuffix)
+	clusterName := fmt.Sprintf("%v%v", ctx.Cluster, clusterNameSuffix)
+	newCtx := ctx.DeepCopy()
+	newConfig.AuthInfos[userName] = kc.config.AuthInfos[newCtx.AuthInfo]
+	newConfig.Clusters[clusterName] = kc.config.Clusters[newCtx.Cluster]
+	newConfig.Contexts[name] = newCtx
+	newConfig.Contexts[name].AuthInfo = userName
+	newConfig.Contexts[name].Cluster = clusterName
+
+	return newConfig
+}
+func checkClusterAndUserName(oldConfig *clientcmdapi.Config, newClusterName, newUserName string) (bool, bool) {
+	var (
+		isClusterNameExist bool
+		isUserNameExist    bool
+	)
+
+	for _, ctx := range oldConfig.Contexts {
+		if ctx.Cluster == newClusterName {
+			isClusterNameExist = true
+		}
+		if ctx.AuthInfo == newUserName {
+			isUserNameExist = true
+		}
+	}
+
+	return isClusterNameExist, isUserNameExist
+}
+
+// Copied from https://github.com/kubernetes/kubernetes
+// /blob/master/pkg/kubectl/util/hash/hash.go
+func hEncode(hex string) (string, error) {
+	if len(hex) < 10 {
+		return "", fmt.Errorf(
+			"input length must be at least 10")
+	}
+	enc := []rune(hex[:10])
+	for i := range enc {
+		switch enc[i] {
+		case '0':
+			enc[i] = 'g'
+		case '1':
+			enc[i] = 'h'
+		case '3':
+			enc[i] = 'k'
+		case 'a':
+			enc[i] = 'm'
+		case 'e':
+			enc[i] = 't'
+		}
+	}
+	return string(enc), nil
+}
+
+func appendConfig(c1, c2 *clientcmdapi.Config) *clientcmdapi.Config {
+	config := clientcmdapi.NewConfig()
+	_ = mergo.Merge(config, c1)
+	_ = mergo.Merge(config, c2)
+	return config
+}
+
+// Hash returns the hex form of the sha256 of the argument.
+func Hash(data string) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(data)))
+}
+
+// Convert merged config to clientcmdapi.Config
+func toClientConfig(cfg *Config) (*clientcmdapi.Config, error) {
+	clientConfig := clientcmdapi.NewConfig()
+
+	// Set API version
+	clientConfig.APIVersion = cfg.APIVersion
+
+	// Set current context
+	clientConfig.CurrentContext = cfg.CurrentContext
+
+	// Set clusters
+	for _, c := range cfg.Clusters {
+		cluster := clientcmdapi.Cluster{
+			Server:                   c.Cluster.Server,
+			CertificateAuthorityData: []byte(c.Cluster.CertificateAuthorityData),
+		}
+		clientConfig.Clusters[c.Name] = &cluster
+	}
+
+	// Set users
+	for _, u := range cfg.Users {
+		user := clientcmdapi.AuthInfo{
+			ClientCertificateData: []byte(u.User.ClientCertificateData),
+			ClientKeyData:         []byte(u.User.ClientKeyData),
+			Token:                 u.User.Token,
+			Exec: &clientcmdapi.ExecConfig{
+				APIVersion: u.User.Exec.APIVersion,
+				Command:    u.User.Exec.Command,
+				Args:       u.User.Exec.Args,
+				Env:        []clientcmdapi.ExecEnvVar{},
+			},
+		}
+		envs, _ := u.User.Exec.Env.([]Env)
+		for _, env := range envs {
+			user.Exec.Env = append(user.Exec.Env, clientcmdapi.ExecEnvVar{Name: env.Name, Value: env.Value})
+		}
+		clientConfig.AuthInfos[u.Name] = &user
+	}
+
+	// Set contexts
+	for _, c := range cfg.Contexts {
+		context := clientcmdapi.Context{
+			Cluster:  c.Context.Cluster,
+			AuthInfo: c.Context.User,
+		}
+		clientConfig.Contexts[c.Name] = &context
+	}
+
+	return clientConfig, nil
 }

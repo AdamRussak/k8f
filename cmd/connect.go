@@ -37,9 +37,9 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 		},
 		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
-			options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
+			options := provider.CommandOptions{AwsRegion: AwsRegion, UiSize: o.UiSize, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Merge: o.Merge, Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
-			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup {
+			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup && !options.Merge {
 				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
 			}
 			if !core.Exists(options.Path) {
@@ -63,9 +63,10 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 func init() {
 	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "kubeconfig output type format(json or yaml)")
 	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "kubeconfig output path")
-	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force merge kubeconfig")
+	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force overwrite kubeconfig")
 	connectCmd.Flags().BoolVar(&o.DryRun, DryRun, false, "If true, only run a dry-run with cli output")
 	connectCmd.Flags().BoolVar(&o.Backup, "backup", false, "If true, backup config file to $HOME/.kube/config.bk")
+	connectCmd.Flags().BoolVar(&o.Merge, "merge", false, "If true, add new K8s to the existing kubeconfig")
 	connectCmd.Flags().BoolVar(&o.AwsAuth, "auth", false, "change from CLI Auth to AMI Auth, Default set to CLI")
 	connectCmd.Flags().BoolVar(&o.AwsEnvProfile, "isEnv", false, "Add AWS Env Profile to the AWS Config")
 	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: 'myRoleName')")

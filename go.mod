@@ -11,8 +11,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.84.1
 	github.com/aws/aws-sdk-go-v2/service/eks v1.27.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.3
+	github.com/bndr/gotabulate v1.1.2
+	github.com/daviddengcn/go-colortext v1.0.0
 	github.com/fatih/structs v1.1.0
 	github.com/hashicorp/go-version v1.6.0
+	github.com/manifoldco/promptui v0.9.0
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -31,6 +34,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.12.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.1 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dnaeon/go-vcr v1.2.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -79,7 +83,6 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.12
-	github.com/daviddengcn/go-colortext v1.0.0
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18
 	github.com/sirupsen/logrus v1.9.0

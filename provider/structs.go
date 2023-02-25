@@ -15,6 +15,8 @@ type CommandOptions struct {
 	Overwrite     bool
 	Combined      bool
 	Backup        bool
+	Merge         bool
+	UiSize        int
 	DryRun        bool
 	AwsAuth       bool
 	AwsRoleString string

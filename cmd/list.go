@@ -80,7 +80,7 @@ var listCmd = &cobra.Command{
 			p = list
 		}
 		log.Debug(string("Outputing List as " + options.Output + " Format"))
-		fmt.Println(provider.RunResult(p, options.Output))
+		fmt.Println(provider.PrintoutResults(p, options.Output))
 	},
 }
 
