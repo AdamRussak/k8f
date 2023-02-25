@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"io"
 	"k8f/core"
-	"log"
 	"os"
 	"strings"
 
 	ct "github.com/daviddengcn/go-colortext"
 	"github.com/imdario/mergo"
 	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -30,7 +29,7 @@ type KubeConfigOption struct {
 	fileName string
 }
 
-func (mc CommandOptions) runMerge(newConf Config) error {
+func (mc CommandOptions) runMerge(newConf Config) ([]byte, error) {
 	var kconfigs []*clientcmdapi.Config
 	confToupdate, err := toClientConfig(&newConf)
 	kconfigs = append(kconfigs, confToupdate)
@@ -47,14 +46,22 @@ func (mc CommandOptions) runMerge(newConf Config) error {
 		}
 		outConfigs, err = kco.handleContexts(outConfigs, mc)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	var y []byte
-	y, _ = yaml.Marshal(outConfigs)
-	err = os.WriteFile(mc.Path, y, 0666)
-	core.OnErrorFail(err, "failed to save config")
-	return nil
+	outConfigs.APIVersion = "v1"
+	outConfigs.Kind = "Config"
+	var contxetcItem *clientcmdapi.Context
+	for _, value := range outConfigs.Contexts {
+		contxetcItem = value
+		break
+	}
+	outConfigs.CurrentContext = contxetcItem.Cluster
+	confByte, err := clientcmd.Write(*outConfigs)
+	if err != nil {
+		return nil, err
+	}
+	return confByte, nil
 }
 
 func loadKubeConfig(yaml string) (*clientcmdapi.Config, error) {
@@ -68,34 +75,6 @@ func loadKubeConfig(yaml string) (*clientcmdapi.Config, error) {
 	return loadConfig, err
 }
 
-func CheckValidContext(clear bool, config *clientcmdapi.Config) *clientcmdapi.Config {
-	for key, obj := range config.Contexts {
-		if _, ok := config.AuthInfos[obj.AuthInfo]; !ok {
-			if clear {
-				printString(os.Stdout, fmt.Sprintf("clear lapsed AuthInfo [%s]\n", obj.AuthInfo))
-			} else {
-				printYellow(os.Stdout, fmt.Sprintf("WARNING: AuthInfo 「%s」 has no matching context 「%s」, please run `kubecm clear` to clean up this Context.\n", obj.AuthInfo, key))
-			}
-			delete(config.Contexts, key)
-			delete(config.Clusters, obj.Cluster)
-		}
-		if _, ok := config.Clusters[obj.Cluster]; !ok {
-			if clear {
-				printString(os.Stdout, fmt.Sprintf("clear lapsed Cluster [%s]\n", obj.Cluster))
-			} else {
-				printYellow(os.Stdout, fmt.Sprintf("WARNING: Cluster 「%s」 has no matching context 「%s」, please run `kubecm clear` to clean up this Context.\n", obj.Cluster, key))
-			}
-			delete(config.Contexts, key)
-			delete(config.AuthInfos, obj.AuthInfo)
-		}
-	}
-	return config
-}
-func printYellow(out io.Writer, content string) {
-	ct.ChangeColor(ct.Yellow, false, ct.None, false)
-	fmt.Fprint(out, content)
-	ct.ResetColor()
-}
 func printString(out io.Writer, name string) {
 	ct.ChangeColor(ct.Green, false, ct.None, false)
 	fmt.Fprint(out, name)
@@ -118,13 +97,14 @@ func (kc *KubeConfigOption) handleContexts(oldConfig *clientcmdapi.Config, mc Co
 	newConfig := clientcmdapi.NewConfig()
 	for name, ctx := range kc.config.Contexts {
 		var newName string
-		if len(kc.config.Contexts) > 1 {
+		if len(kc.config.Contexts) >= 1 {
 			newName = name
 		} else {
 			newName = kc.fileName
 		}
 		if checkContextName(newName, oldConfig) {
-			nameConfirm := BoolUI(fmt.Sprintf("「%s」 Name already exists, do you want to rename it. (If you select `False`, this context will not be merged)", newName), mc)
+			nameConfirm := "False"
+			// nameConfirm := BoolUI(fmt.Sprintf("「%s」 Name already exists, do you want to rename it. (If you select `False`, this context will not be merged)", newName), mc)
 			if nameConfirm == "True" {
 				newName = core.PromptUI("Rename", newName)
 				if newName == kc.fileName {

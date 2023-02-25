@@ -1,7 +1,7 @@
 # k8f 
 ## Changes
+- Improved commands descriptions
 ## Bugfix
-- fixed az cli run and connect AKS
 ## Known Issue
 - connect command with "dry-run" flag will default to Json insted of Yaml
 <!-- ## Bugfix -->

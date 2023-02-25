@@ -111,6 +111,7 @@ func countTotal(f []Account) int {
 // func to merge kubeconfig output to singe config file
 func (c CommandOptions) CombineConfigs(configs AllConfig, arn string) {
 	var y []byte
+	var err error
 	clientConfig := Config{
 		Kind:           "Config",
 		APIVersion:     "v1",
@@ -130,14 +131,15 @@ func (c CommandOptions) CombineConfigs(configs AllConfig, arn string) {
 			c.Configcopy()
 		}
 		if c.Merge {
-			err := c.runMerge(clientConfig)
+			y, err = c.runMerge(clientConfig)
 			core.OnErrorFail(err, "failed to merge configs")
+			c.cleanFile()
 		} else {
 			y, _ = yaml.Marshal(clientConfig)
 		}
 		err := os.WriteFile(c.Path, y, 0666)
 		core.OnErrorFail(err, "failed to save config")
-
+		log.Infof("「 %s 」 write successful!\n", c.Path)
 	}
 }
 
@@ -185,4 +187,27 @@ func SplitAzIDAndGiveItem(input string, seperator string, out int) string {
 	s := strings.Split(input, seperator)
 	log.Debug("Split output")
 	return s[out]
+}
+
+func (c CommandOptions) cleanFile() {
+	// Open the file with write only mode and set the file mode to 0644
+	file, err := os.OpenFile(c.Path, os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	// Truncate the file content to 0
+	if err := file.Truncate(0); err != nil {
+		panic(err)
+	}
+
+	// Get the file info to print the file size
+	fileStat, err := file.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	// Print the file size after cleaning the file
+	log.Debug("File size after cleaning:", fileStat.Size())
 }
