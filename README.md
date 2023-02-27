@@ -73,6 +73,7 @@ List Command Sample Output:
 ###  connect
 ```sh
 Connect to all the clusters of a provider or all Supported Providers
+
 Usage:
   k8f connect [flags]
 
@@ -81,13 +82,13 @@ k8f connect aws -p ./testfiles/config --backup -v
 k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "test role" -v
 
 Flags:
-      --auth               change from CLI Auth to AMI Auth, Default set to CLI
+      --auth               change from AWS CLI Auth to AWS IAM Authenticator, Default set to AWS CLI
       --backup             If true, backup config file to $HOME/.kube/config.bk
       --dry-run            If true, only run a dry-run with cli output
-      --force-merge        If set, all duplication will be merged without prompt
+      --force-merge        If set, all duplication will be merged without prompt, default is interactive
   -h, --help               help for connect
-      --isEnv              Add AWS Env Profile to the AWS Config
-      --merge              If true, add new K8s to the existing kubeconfig
+      --isEnv              Add AWS Profile as Env to the Kubeconfig
+      --merge              If true, add new K8s to the existing kubeconfig path
   -o, --output string      kubeconfig output type format(json or yaml) (default "yaml")
       --overwrite          If true, force overwrite kubeconfig
   -p, --path string        kubeconfig output path (default "/home/vscode/.kube/config")
