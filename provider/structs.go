@@ -16,6 +16,7 @@ type CommandOptions struct {
 	Combined      bool
 	Backup        bool
 	Merge         bool
+	ForceMerge    bool
 	UiSize        int
 	DryRun        bool
 	AwsAuth       bool

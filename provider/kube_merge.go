@@ -4,12 +4,9 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"io"
 	"k8f/core"
-	"os"
 	"strings"
 
-	ct "github.com/daviddengcn/go-colortext"
 	"github.com/imdario/mergo"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
@@ -35,7 +32,7 @@ func (mc CommandOptions) runMerge(newConf Config) ([]byte, error) {
 	kconfigs = append(kconfigs, confToupdate)
 	core.OnErrorFail(err, "failed to convert Config struct to clientcmdapi.Config")
 	outConfigs := clientcmdapi.NewConfig()
-	printString(os.Stdout, "Loading KubeConfig file: "+mc.Path+" \n")
+	log.Infof("Loading KubeConfig file: %s\n", mc.Path)
 	loadConfig, err := loadKubeConfig(mc.Path)
 	core.OnErrorFail(err, "File "+mc.Path+" is not kubeconfig\n")
 	kconfigs = append(kconfigs, loadConfig)
@@ -75,18 +72,6 @@ func loadKubeConfig(yaml string) (*clientcmdapi.Config, error) {
 	return loadConfig, err
 }
 
-func printString(out io.Writer, name string) {
-	ct.ChangeColor(ct.Green, false, ct.None, false)
-	fmt.Fprint(out, name)
-	ct.ResetColor()
-}
-
-// the actule writing of the config to the OS
-func (mc CommandOptions) WriteConfig(outConfig *clientcmdapi.Config) {
-	err := clientcmd.WriteToFile(*outConfig, mc.Path)
-	core.OnErrorFail(err, "failed to save new config")
-	fmt.Printf("「%s」 write successful!\n", mc.Path)
-}
 func getFileName(path string) string {
 	n := strings.Split(path, "/")
 	result := strings.Split(n[len(n)-1], ".")
@@ -102,9 +87,8 @@ func (kc *KubeConfigOption) handleContexts(oldConfig *clientcmdapi.Config, mc Co
 		} else {
 			newName = kc.fileName
 		}
-		if checkContextName(newName, oldConfig) {
-			nameConfirm := "False"
-			// nameConfirm := BoolUI(fmt.Sprintf("「%s」 Name already exists, do you want to rename it. (If you select `False`, this context will not be merged)", newName), mc)
+		if checkContextName(newName, oldConfig) && !mc.ForceMerge {
+			nameConfirm := BoolUI(fmt.Sprintf("「%s」 Name already exists, do you want to rename it. (If you select `False`, this context will not be merged)", newName), mc)
 			if nameConfirm == "True" {
 				newName = core.PromptUI("Rename", newName)
 				if newName == kc.fileName {
@@ -116,7 +100,7 @@ func (kc *KubeConfigOption) handleContexts(oldConfig *clientcmdapi.Config, mc Co
 		}
 		itemConfig := kc.handleContext(oldConfig, newName, ctx)
 		newConfig = appendConfig(newConfig, itemConfig)
-		fmt.Printf("Add Context: %s \n", newName)
+		log.Infof("Add Context: %s \n", newName)
 	}
 	outConfig := appendConfig(oldConfig, newConfig)
 	return outConfig, nil

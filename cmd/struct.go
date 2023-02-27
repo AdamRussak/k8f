@@ -6,6 +6,7 @@ type FlagsOptions struct {
 	Overwrite     bool   `json:"overwrite,omitempty"`
 	Backup        bool   `json:"backup,omitempty"`
 	Merge         bool   `json:"merge,omitempty"`
+	ForceMerge    bool   `json:"force_merge,omitempty"`
 	UiSize        int    `json:"uiSize,omitempty"`
 	DryRun        bool   `json:"dry-run,omitempty"`
 	AwsAuth       bool   `json:"aws_auth,omitempty"`

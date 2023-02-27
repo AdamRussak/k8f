@@ -132,7 +132,7 @@ func (p AwsProfiles) listRegions() []string {
 	}
 	input := &ec2.DescribeRegionsInput{}
 	result, err := svc.DescribeRegions(context.TODO(), input)
-	log.Errorf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
+	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
 	core.OnErrorFail(err, "Failed Get Region info")
 	for _, r := range result.Regions {
 		reg = append(reg, *r.RegionName)
@@ -380,7 +380,7 @@ func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *aws.CredentialsC
 	core.OnErrorFail(err, awsErrorMessage)
 	appCreds := stscreds.NewAssumeRoleProvider(sts.NewFromConfig(conf), awsProfile.Arn)
 	creds := aws.NewCredentialsCache(appCreds)
-	log.Debugf("Succsefully triggered stsAssumeRole")
+	log.Debugf("Succsefully triggered stsAssumeRole for %s", awsProfile.Name)
 	return creds
 }
 

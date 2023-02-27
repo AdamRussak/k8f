@@ -73,7 +73,6 @@ List Command Sample Output:
 ###  connect
 ```sh
 Connect to all the clusters of a provider or all Supported Providers
-
 Usage:
   k8f connect [flags]
 
@@ -85,11 +84,13 @@ Flags:
       --auth               change from CLI Auth to AMI Auth, Default set to CLI
       --backup             If true, backup config file to $HOME/.kube/config.bk
       --dry-run            If true, only run a dry-run with cli output
+      --force-merge        If set, all duplication will be merged without prompt
   -h, --help               help for connect
       --isEnv              Add AWS Env Profile to the AWS Config
-  -o, --output string      Merged kubeconfig output type(json or yaml) (default "yml")
-      --overwrite          If true, force merge kubeconfig
-  -p, --path string        Merged kubeconfig output path (default "/home/vscode/.kube/config")
+      --merge              If true, add new K8s to the existing kubeconfig
+  -o, --output string      kubeconfig output type format(json or yaml) (default "yaml")
+      --overwrite          If true, force overwrite kubeconfig
+  -p, --path string        kubeconfig output path (default "/home/vscode/.kube/config")
       --role-name string   Set Role Name (Example: 'myRoleName')
 
 Global Flags:
