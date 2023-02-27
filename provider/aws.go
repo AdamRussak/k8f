@@ -132,7 +132,7 @@ func (p AwsProfiles) listRegions() []string {
 	}
 	input := &ec2.DescribeRegionsInput{}
 	result, err := svc.DescribeRegions(context.TODO(), input)
-	log.Errorf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
+	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
 	core.OnErrorFail(err, "Failed Get Region info")
 	for _, r := range result.Regions {
 		reg = append(reg, *r.RegionName)
@@ -161,7 +161,6 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	result, err := svc.ListClusters(context.TODO(), input)
 	core.OnErrorFail(err, "Failed to list Clusters")
 	log.Debug(string("We are In Region: " + reg + " Profile " + profile.Name))
-	// URGENT: need to fix region settings in search
 	if len(result.Clusters) > 0 {
 		c3 := make(chan []string)
 		for _, element := range result.Clusters {
@@ -259,7 +258,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 	}
 	if !c.Combined {
 		log.Println("Started aws only config creation")
-		c.Merge(AllConfig{auth, contexts, clusters}, arnContext)
+		c.CombineConfigs(AllConfig{auth, contexts, clusters}, arnContext)
 		return AllConfig{}
 	}
 	log.Println("Started aws combined config creation")
@@ -381,7 +380,7 @@ func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *aws.CredentialsC
 	core.OnErrorFail(err, awsErrorMessage)
 	appCreds := stscreds.NewAssumeRoleProvider(sts.NewFromConfig(conf), awsProfile.Arn)
 	creds := aws.NewCredentialsCache(appCreds)
-	log.Debugf("Succsefully triggered stsAssumeRole")
+	log.Debugf("Succsefully triggered stsAssumeRole for %s", awsProfile.Name)
 	return creds
 }
 

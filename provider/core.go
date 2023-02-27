@@ -82,7 +82,7 @@ func HowManyVersionsBack(versionsList []string, currentVersion string) string {
 }
 
 // printout format selection
-func RunResult(p interface{}, output string) string {
+func PrintoutResults(p interface{}, output string) string {
 	var kJson []byte
 	log.Debug("start RunResult Func")
 	if output == "json" {
@@ -109,7 +109,9 @@ func countTotal(f []Account) int {
 }
 
 // func to merge kubeconfig output to singe config file
-func (c CommandOptions) Merge(configs AllConfig, arn string) {
+func (c CommandOptions) CombineConfigs(configs AllConfig, arn string) {
+	var y []byte
+	var err error
 	clientConfig := Config{
 		Kind:           "Config",
 		APIVersion:     "v1",
@@ -121,16 +123,23 @@ func (c CommandOptions) Merge(configs AllConfig, arn string) {
 	}
 	if c.DryRun {
 		log.Debugf("Dry-run will Output a %s Output", c.Output)
-		fmt.Println(RunResult(clientConfig, c.Output))
+		fmt.Println(PrintoutResults(clientConfig, c.Output))
 	} else {
 		if c.Backup {
+			y, _ = yaml.Marshal(clientConfig)
 			log.Debug("calling copy file to bak")
 			c.Configcopy()
 		}
-		y, _ := yaml.Marshal(clientConfig)
+		if c.Merge {
+			y, err = c.runMerge(clientConfig)
+			core.OnErrorFail(err, "failed to merge configs")
+			c.cleanFile()
+		} else {
+			y, _ = yaml.Marshal(clientConfig)
+		}
 		err := os.WriteFile(c.Path, y, 0666)
 		core.OnErrorFail(err, "failed to save config")
-
+		log.Infof("「 %s 」 write successful!\n", c.Path)
 	}
 }
 
@@ -156,7 +165,7 @@ func (c CommandOptions) FullCloudConfig() {
 		context = append(context, response.context...)
 		clusters = append(clusters, response.clusters...)
 	}
-	c.Merge(AllConfig{auth: auth, context: context, clusters: clusters}, context[0].Context.User)
+	c.CombineConfigs(AllConfig{auth: auth, context: context, clusters: clusters}, context[0].Context.User)
 }
 func (c CommandOptions) Configcopy() {
 	sourceFileStat, err := os.Stat(c.Path)
@@ -178,4 +187,27 @@ func SplitAzIDAndGiveItem(input string, seperator string, out int) string {
 	s := strings.Split(input, seperator)
 	log.Debug("Split output")
 	return s[out]
+}
+
+func (c CommandOptions) cleanFile() {
+	// Open the file with write only mode and set the file mode to 0644
+	file, err := os.OpenFile(c.Path, os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	// Truncate the file content to 0
+	if err := file.Truncate(0); err != nil {
+		panic(err)
+	}
+
+	// Get the file info to print the file size
+	fileStat, err := file.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	// Print the file size after cleaning the file
+	log.Debug("File size after cleaning:", fileStat.Size())
 }

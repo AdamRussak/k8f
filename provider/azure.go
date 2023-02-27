@@ -170,7 +170,7 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 	}
 	if !c.Combined {
 		log.Debug("Started azure only config creation")
-		c.Merge(AllConfig{authe, context, clusters}, arnContext)
+		c.CombineConfigs(AllConfig{authe, context, clusters}, arnContext)
 		return AllConfig{}
 	} else {
 		log.Debug("Started azure combined config creation")
