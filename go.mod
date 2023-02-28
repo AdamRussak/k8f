@@ -12,9 +12,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/eks v1.27.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.3
 	github.com/bndr/gotabulate v1.1.2
-	github.com/daviddengcn/go-colortext v1.0.0
 	github.com/fatih/structs v1.1.0
 	github.com/hashicorp/go-version v1.6.0
+	github.com/imdario/mergo v0.3.13
 	github.com/manifoldco/promptui v0.9.0
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	gopkg.in/yaml.v2 v2.4.0
@@ -46,7 +46,6 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
-	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kr/pretty v0.3.1 // indirect

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"k8f/core"
@@ -233,30 +234,18 @@ func toClientConfig(cfg *Config) (*clientcmdapi.Config, error) {
 
 	// Set clusters
 	for _, c := range cfg.Clusters {
+		decodedBytes, err := base64.StdEncoding.DecodeString(c.Cluster.CertificateAuthorityData)
+		core.OnErrorFail(err, "failed to decode base64")
 		cluster := clientcmdapi.Cluster{
 			Server:                   c.Cluster.Server,
-			CertificateAuthorityData: []byte(c.Cluster.CertificateAuthorityData),
+			CertificateAuthorityData: decodedBytes,
 		}
 		clientConfig.Clusters[c.Name] = &cluster
 	}
 
 	// Set users
 	for _, u := range cfg.Users {
-		user := clientcmdapi.AuthInfo{
-			ClientCertificateData: []byte(u.User.ClientCertificateData),
-			ClientKeyData:         []byte(u.User.ClientKeyData),
-			Token:                 u.User.Token,
-			Exec: &clientcmdapi.ExecConfig{
-				APIVersion: u.User.Exec.APIVersion,
-				Command:    u.User.Exec.Command,
-				Args:       u.User.Exec.Args,
-				Env:        []clientcmdapi.ExecEnvVar{},
-			},
-		}
-		envs, _ := u.User.Exec.Env.([]Env)
-		for _, env := range envs {
-			user.Exec.Env = append(user.Exec.Env, clientcmdapi.ExecEnvVar{Name: env.Name, Value: env.Value})
-		}
+		user := getUserForCluster(u)
 		clientConfig.AuthInfos[u.Name] = &user
 	}
 
@@ -270,4 +259,33 @@ func toClientConfig(cfg *Config) (*clientcmdapi.Config, error) {
 	}
 
 	return clientConfig, nil
+}
+
+func getUserForCluster(u Users) clientcmdapi.AuthInfo {
+	var user clientcmdapi.AuthInfo
+	if !checkIfStructInit(u.User, "Exec") {
+		clientCertificateDataBytes, err := base64.StdEncoding.DecodeString(u.User.ClientCertificateData)
+		core.OnErrorFail(err, "failed to decode base64")
+		ClientKeyDataBytes, err := base64.StdEncoding.DecodeString(u.User.ClientKeyData)
+		core.OnErrorFail(err, "failed to decode base64")
+		user = clientcmdapi.AuthInfo{
+			ClientCertificateData: []byte(clientCertificateDataBytes),
+			ClientKeyData:         []byte(ClientKeyDataBytes),
+			Token:                 u.User.Token,
+		}
+	} else {
+		user = clientcmdapi.AuthInfo{
+			Exec: &clientcmdapi.ExecConfig{
+				APIVersion: u.User.Exec.APIVersion,
+				Command:    u.User.Exec.Command,
+				Args:       u.User.Exec.Args,
+				Env:        []clientcmdapi.ExecEnvVar{},
+			},
+		}
+		envs, _ := u.User.Exec.Env.([]Env)
+		for _, env := range envs {
+			user.Exec.Env = append(user.Exec.Env, clientcmdapi.ExecEnvVar{Name: env.Name, Value: env.Value})
+		}
+	}
+	return user
 }

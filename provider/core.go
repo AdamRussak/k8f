@@ -6,6 +6,7 @@ import (
 	"io"
 	"k8f/core"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -210,4 +211,24 @@ func (c CommandOptions) cleanFile() {
 
 	// Print the file size after cleaning the file
 	log.Debug("File size after cleaning:", fileStat.Size())
+}
+
+func checkIfStructInit(u interface{}, key string) bool {
+	v := reflect.ValueOf(u)
+	t := v.Type()
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		tag := t.Field(i).Tag.Get("yaml")
+		if tag == key+",omitempty" {
+			// Exec field was omitted
+			log.Debugf("%s field was omitted.\n", key)
+			return false
+		} else {
+			// Exec field exists
+			log.Debugf("%s field exists with value %v.\n", key, field.Interface())
+			return true
+		}
+	}
+	return true
 }
