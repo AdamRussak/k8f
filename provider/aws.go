@@ -44,7 +44,6 @@ func (c CommandOptions) FullAwsList() Provider {
 			}
 			c0 <- Account{profile.Name, re, len(re), ""}
 		}(c0, profile, l)
-
 	}
 	for i := 0; i < len(profiles); i++ {
 		res := <-c0

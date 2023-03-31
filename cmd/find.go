@@ -16,9 +16,9 @@ import (
 
 // findCmd represents the find command
 var findCmd = &cobra.Command{
-	Use:     "find",
-	Short:   "Find if a specific K8S exist in Azure or AWS",
-	Example: `k8f find {aws/azure/all} my-k8s-cluster`,
+	Use:     findCMD,
+	Short:   findShort,
+	Example: findExample,
 	PreRun:  core.ToggleDebug,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
@@ -29,11 +29,11 @@ var findCmd = &cobra.Command{
 		if core.IfXinY(args[0], argouments) {
 			return nil
 		}
-		return fmt.Errorf("invalid cloud provider specified: %s", args[0])
+		return fmt.Errorf(providerListError, args[0])
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		var p provider.Cluster
-		options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
+		options := newCommandStruct(o, args)
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Info("find called")
 		if args[0] == "azure" {

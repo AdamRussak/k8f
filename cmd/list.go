@@ -16,28 +16,28 @@ import (
 // listCmd represents the list command
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all K8S in Azure/AWS or Both",
+	Use:   listCMD,
+	Short: listShort,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("requires cloud provider")
+			return errors.New(providerError)
 		}
 		argouments = append(argouments, supportedProvider...)
 		if len(args) > 0 && len(args) <= len(argouments) {
 			for a := range args {
 				if !core.IfXinY(args[a], argouments) {
-					return fmt.Errorf("invalid cloud provider specified: %s", args[a])
+					return fmt.Errorf(providerListError, args[a])
 				}
 			}
 		}
 		return nil
 	},
-	Example: `k8f list {aws/azure/all}`,
+	Example: listExample,
 	PreRun:  core.ToggleDebug,
 	Run: func(cmd *cobra.Command, args []string) {
 		var list []provider.Provider
 		var p interface{}
-		options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsRegion: AwsRegion}
+		options := newCommandStruct(o, args)
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Debug("CommandOptions Used")
 		if len(args) == 1 && args[0] == "azure" {

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"k8f/core"
-	"k8f/provider"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -17,19 +16,19 @@ import (
 // connectCmd represents the connect command
 var (
 	connectCmd = &cobra.Command{
-		Use:   "connect",
-		Short: "Connect to all the clusters of a provider or all Supported Providers",
-		Example: `k8f connect aws -p ./testfiles/config --backup -v
-k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "test role" -v`,
+		Use:     connectCMD,
+		Short:   connectShort,
+		Example: connectExample,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
-				return errors.New("requires cloud provider")
+				return errors.New(providerError)
 			}
+
 			argouments = append(argouments, supportedProvider...)
 			if len(args) > 0 && len(args) <= len(argouments) {
 				for a := range args {
 					if !core.IfXinY(args[a], argouments) {
-						return fmt.Errorf("invalid cloud provider specified: %s", args[a])
+						return fmt.Errorf(providerListError, args[a])
 					}
 				}
 			}
@@ -37,7 +36,7 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 		},
 		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
-			options := provider.CommandOptions{AwsRegion: AwsRegion, ForceMerge: o.ForceMerge, UiSize: o.UiSize, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Merge: o.Merge, Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
+			options := newCommandStruct(o, args)
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup && !options.Merge {
 				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
