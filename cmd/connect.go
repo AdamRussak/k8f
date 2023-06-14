@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"k8f/core"
 
 	log "github.com/sirupsen/logrus"
@@ -19,21 +18,6 @@ var (
 		Use:     connectCMD,
 		Short:   connectShort,
 		Example: connectExample,
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
-				return errors.New(providerError)
-			}
-
-			argouments = append(argouments, supportedProvider...)
-			if len(args) > 0 && len(args) <= len(argouments) {
-				for a := range args {
-					if !core.IfXinY(args[a], argouments) {
-						return fmt.Errorf(providerListError, args[a])
-					}
-				}
-			}
-			return nil
-		},
 		Run: func(cmd *cobra.Command, args []string) {
 			options := newCommandStruct(o, args)
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
