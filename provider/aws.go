@@ -58,7 +58,7 @@ func (c CommandOptions) FullAwsList() Provider {
 func (p AwsProfiles) getVersion() *eks.DescribeAddonVersionsOutput {
 	var svc *eks.Client
 	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.ConfProfile))
-	core.OnErrorFail(err, "Failed to get Version")
+	core.FailOnError(err, "Failed to get Version")
 	if p.IsRole {
 		conf.Credentials = stsAssumeRole(p, conf)
 		svc = eks.NewFromConfig(conf)
@@ -67,7 +67,7 @@ func (p AwsProfiles) getVersion() *eks.DescribeAddonVersionsOutput {
 	}
 	input2 := &eks.DescribeAddonVersionsInput{}
 	r, err := svc.DescribeAddonVersions(context.TODO(), input2)
-	core.OnErrorFail(err, "Failed to get Describe Version")
+	core.FailOnError(err, "Failed to get Describe Version")
 	return r
 }
 
@@ -95,7 +95,7 @@ func (p AwsProfiles) getEksCurrentVersion(cluster string, profile AwsProfiles, r
 	var conf aws.Config
 	var err error
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.ConfProfile))
-	core.OnErrorFail(err, awsErrorMessage)
+	core.FailOnError(err, awsErrorMessage)
 	if p.IsRole {
 		conf.Credentials = stsAssumeRole(p, conf)
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
@@ -110,7 +110,7 @@ func (p AwsProfiles) getEksCurrentVersion(cluster string, profile AwsProfiles, r
 		Name: aws.String(cluster),
 	}
 	result, err := svc.DescribeCluster(context.TODO(), input)
-	core.OnErrorFail(err, "Failed to Get Cluster Info")
+	core.FailOnError(err, "Failed to Get Cluster Info")
 	c3 <- []string{cluster, *result.Cluster.Version}
 }
 
@@ -122,7 +122,7 @@ func (p AwsProfiles) listRegions() []string {
 	var conf aws.Config
 	var err error
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
-	core.OnErrorFail(err, awsErrorMessage)
+	core.FailOnError(err, awsErrorMessage)
 	if p.IsRole {
 		conf.Credentials = stsAssumeRole(p, conf)
 		svc = ec2.NewFromConfig(conf)
@@ -132,7 +132,7 @@ func (p AwsProfiles) listRegions() []string {
 	input := &ec2.DescribeRegionsInput{}
 	result, err := svc.DescribeRegions(context.TODO(), input)
 	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
-	core.OnErrorFail(err, "Failed Get Region info")
+	core.FailOnError(err, "Failed Get Region info")
 	for _, r := range result.Regions {
 		reg = append(reg, *r.RegionName)
 	}
@@ -145,7 +145,7 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	var conf aws.Config
 	var err error
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.ConfProfile))
-	core.OnErrorFail(err, awsErrorMessage)
+	core.FailOnError(err, awsErrorMessage)
 	if profile.IsRole {
 		conf.Credentials = stsAssumeRole(profile, conf)
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
@@ -158,7 +158,7 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	}
 	input := &eks.ListClustersInput{}
 	result, err := svc.ListClusters(context.TODO(), input)
-	core.OnErrorFail(err, "Failed to list Clusters")
+	core.FailOnError(err, "Failed to list Clusters")
 	log.Debug(string("We are In Region: " + reg + " Profile " + profile.Name))
 	if len(result.Clusters) > 0 {
 		c3 := make(chan []string)
@@ -178,9 +178,9 @@ func GetLocalAwsProfiles() []AwsProfiles {
 	fname := config.DefaultSharedConfigFilename()
 	credFname := config.DefaultSharedCredentialsFilename()
 	f, err := ini.Load(fname)
-	core.OnErrorFail(err, "Failed to load profile from config")
+	core.FailOnError(err, "Failed to load profile from config")
 	creds, err := ini.Load(credFname)
-	core.OnErrorFail(err, "Failed to load profile from creds")
+	core.FailOnError(err, "Failed to load profile from creds")
 	for _, p := range creds.Sections() {
 		if len(p.Keys()) != 0 {
 			kbool, karn := checkIfItsAssumeRole(p.Keys())
@@ -227,7 +227,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 				inProfile, _ := XinAwsProfiles(a.Name, awsProfiles)
 				log.Infof("The Profile used is %s, and region is %s", awsProfiles[inProfile].Name, clus.Region)
 				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].Name))
-				core.OnErrorFail(err, awsErrorMessage)
+				core.FailOnError(err, awsErrorMessage)
 				if awsProfiles[inProfile].IsRole {
 					conf.Credentials = stsAssumeRole(awsProfiles[inProfile], conf)
 					eksSvc = eks.NewFromConfig(conf, func(o *eks.Options) {
@@ -243,7 +243,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 				}
 				result, err := eksSvc.DescribeCluster(context.TODO(), input)
 				log.Debugf("the Profile that is used is: %s", awsProfiles[inProfile].Name)
-				core.OnErrorFail(err, "Error calling DescribeCluster")
+				core.FailOnError(err, "Error calling DescribeCluster")
 				r <- GenerateKubeConfiguration(result.Cluster, clus.Region, a, commandOptions)
 			}(r, clus, a, c, awsProfiles)
 		}
@@ -376,7 +376,7 @@ func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *aws.CredentialsC
 	conf, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("us-east-1"),
 		config.WithSharedConfigProfile(roleSession))
-	core.OnErrorFail(err, awsErrorMessage)
+	core.FailOnError(err, awsErrorMessage)
 	appCreds := stscreds.NewAssumeRoleProvider(sts.NewFromConfig(conf), awsProfile.Arn)
 	creds := aws.NewCredentialsCache(appCreds)
 	log.Debugf("Succsefully triggered stsAssumeRole for %s", awsProfile.Name)

@@ -46,7 +46,7 @@ var findCmd = &cobra.Command{
 			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 			// p = options.FullCloudConfig()
 		} else {
-			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
+			core.FailOnError(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 		}
 		log.Debug(string("Outputing List as " + options.Output + " Format"))
 		fmt.Println(provider.PrintoutResults(p, options.Output))

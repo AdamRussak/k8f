@@ -39,11 +39,14 @@ var (
 			options := newCommandStruct(o, args)
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup && !options.Merge {
-				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
+				core.FailOnError(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
 			}
 			if !core.Exists(options.Path) {
 				core.CreatDIrectoryt(options.Path)
 				log.Warn("Path directorys were created")
+			}
+			if args[0] != "aws" || args[0] != "all" && options.ProfileName != "" {
+				core.FailOnError(errors.New("flags error"), "Profile flag is supported only with AWS Provider")
 			}
 			if args[0] == "azure" {
 				options.ConnectAllAks()
@@ -53,7 +56,7 @@ var (
 				log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 				options.FullCloudConfig()
 			} else {
-				core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
+				core.FailOnError(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 			}
 		},
 	}
@@ -70,6 +73,7 @@ func init() {
 	connectCmd.Flags().BoolVar(&o.AwsAuth, "auth", false, "change from AWS CLI Auth to AWS IAM Authenticator, Default set to AWS CLI")
 	connectCmd.Flags().BoolVar(&o.AwsEnvProfile, "isEnv", false, "Add AWS Profile as Env to the Kubeconfig")
 	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: 'myRoleName')")
+	connectCmd.Flags().StringVar(&o.ProfileName, "profile", "", "Set Profile to search a specific AWS account (Example: 'my-profile')")
 	connectCmd.MarkFlagsMutuallyExclusive(DryRun, "overwrite", "backup", "merge")
 	rootCmd.AddCommand(connectCmd)
 }

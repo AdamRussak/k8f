@@ -22,6 +22,7 @@ type CommandOptions struct {
 	AwsAuth       bool
 	AwsRoleString string
 	AwsEnvProfile bool
+	ProfileName   string
 }
 
 // Azure /GCP

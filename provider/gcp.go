@@ -40,11 +40,11 @@ func gcpProjects() []subs {
 	// resource manager auth
 	var projStruct []subs
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx, option.WithScopes(cloudresourcemanager.CloudPlatformReadOnlyScope))
-	core.OnErrorFail(err, "Failed to create Auth client")
+	core.FailOnError(err, "Failed to create Auth client")
 	// get list of orginization Projects
 	projList := cloudresourcemanagerService.Projects.List()
 	resp, err := projList.Do()
-	core.OnErrorFail(err, "Failed to get projects list")
+	core.FailOnError(err, "Failed to get projects list")
 	for _, a := range resp.Projects {
 		projStruct = append(projStruct, subs{Name: a.Name, Id: a.ProjectId})
 	}
@@ -75,10 +75,10 @@ func (c CommandOptions) getK8sClusterConfigs(ctx context.Context, projectId stri
 // func to get latest version
 func (c CommandOptions) latestGCP(k *container.Cluster) string {
 	svc, err := container.NewService(context.Background())
-	core.OnErrorFail(err, "failed to create container service")
+	core.FailOnError(err, "failed to create container service")
 	output := svc.Projects.Zones.GetServerconfig(k.Name, k.Zone)
 	ver, err := output.Do()
-	core.OnErrorFail(err, "failed to get versions")
+	core.FailOnError(err, "failed to get versions")
 	for _, v := range ver.Channels {
 		if strings.Contains(k.ReleaseChannel.Channel, v.Channel) {
 			return v.ValidVersions[0]

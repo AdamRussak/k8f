@@ -48,7 +48,7 @@ func (c CommandOptions) FullAzureList() Provider {
 func auth(tenantid string) *azidentity.AzureCLICredential {
 	log.Debug("Start Authentication for tenant ID: " + tenantid)
 	cred, err := azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{TenantID: tenantid})
-	core.OnErrorFail(err, "Authentication Failed")
+	core.FailOnError(err, "Authentication Failed")
 	log.Debug("Finished Authentication for tenant ID: " + tenantid)
 	return cred
 }
@@ -58,11 +58,11 @@ func GetTenentList() []armsubscriptions.TenantIDDescription {
 	log.Debug("Start getting tenant list")
 	var res []armsubscriptions.TenantIDDescription
 	tenants, err := armsubscriptions.NewTenantsClient(auth(""), nil)
-	core.OnErrorFail(err, "Failed to get Tenants")
+	core.FailOnError(err, "Failed to get Tenants")
 	tenant := tenants.NewListPager(nil)
 	for tenant.More() {
 		nextResult, err := tenant.NextPage(ctx)
-		core.OnErrorFail(err, azureErrorMessage)
+		core.FailOnError(err, azureErrorMessage)
 		for _, v := range nextResult.Value {
 			res = append(res, *v)
 		}
@@ -75,11 +75,11 @@ func listSubscriptions(id string) []subs {
 	log.Debug("Start getting Subscription list")
 	var res []subs
 	client, err := armsubscriptions.NewClient(auth(id), nil)
-	core.OnErrorFail(err, "Failed to Auth")
+	core.FailOnError(err, "Failed to Auth")
 	r := client.NewListPager(nil)
 	for r.More() {
 		nextResult, err := r.NextPage(ctx)
-		core.OnErrorFail(err, azureErrorMessage)
+		core.FailOnError(err, azureErrorMessage)
 		for _, v := range nextResult.Value {
 			res = append(res, subs{*v.DisplayName, *v.SubscriptionID})
 
@@ -93,11 +93,11 @@ func listSubscriptions(id string) []subs {
 func getAllAKS(subscription subs, c1 chan Account, id string) {
 	var r []Cluster
 	client, err := armcontainerservice.NewManagedClustersClient(subscription.Id, auth(id), nil)
-	core.OnErrorFail(err, "failed to create client")
+	core.FailOnError(err, "failed to create client")
 	pager := client.NewListPager(nil)
 	for pager.More() {
 		nextResult, err := pager.NextPage(ctx)
-		core.OnErrorFail(err, azureErrorMessage)
+		core.FailOnError(err, azureErrorMessage)
 		for _, v := range nextResult.Value {
 			supportedAKS := findSupportedAksVersions(SplitAzIDAndGiveItem(*v.ID, "/", 4), *v.Name, subscription.Id, id)
 			l := getAksConfig(supportedAKS)
@@ -118,9 +118,9 @@ func findSupportedAksVersions(resourceGroup string, resourceName string, subscri
 	var supportList []string
 	log.WithField("CommandOptions", log.Fields{"subscription": subscription, "tenantID": id, "resourceName": resourceName}).Debug("getAksConfig Variables and Values: ")
 	client, err := armcontainerservice.NewManagedClustersClient(subscription, auth(id), nil)
-	core.OnErrorFail(err, "Create Client Failed")
+	core.FailOnError(err, "Create Client Failed")
 	profile, err := client.GetUpgradeProfile(ctx, resourceGroup, resourceName, nil)
-	core.OnErrorFail(err, "Update Profile Failed")
+	core.FailOnError(err, "Update Profile Failed")
 	for _, a := range profile.Properties.ControlPlaneProfile.Upgrades {
 		supportList = append(supportList, *a.KubernetesVersion)
 	}
@@ -133,12 +133,12 @@ func findSupportedAksVersions(resourceGroup string, resourceName string, subscri
 func getAksProfile(client *armcontainerservice.ManagedClustersClient, resourceGroupName string, resourceName string) AllConfig {
 	log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(client), "resourceGroupName": resourceGroupName, "resourceName": resourceName}).Debug("getAksProfile Variables and Values: ")
 	l, err := client.ListClusterUserCredentials(ctx, resourceGroupName, resourceName, nil)
-	core.OnErrorFail(err, "get user creds Failed")
+	core.FailOnError(err, "get user creds Failed")
 	y := Config{}
 	for _, c := range l.Kubeconfigs {
 		b64 := c.Value
 		err := yaml.Unmarshal(b64, &y)
-		core.OnErrorFail(err, "Failed To Unmarshal Config")
+		core.FailOnError(err, "Failed To Unmarshal Config")
 	}
 	return AllConfig{auth: y.Users, context: y.Contexts, clusters: y.Clusters}
 }
@@ -156,7 +156,7 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 			go func(chanel chan AllConfig, c Cluster, a Account) {
 				log.WithField("Cluster Struct", log.Fields{"struct": core.DebugWithInfo(c), "tenentAuth": core.DebugWithInfo(a)}).Debug("Creating NewManagedClustersClient")
 				client, err := armcontainerservice.NewManagedClustersClient(SplitAzIDAndGiveItem(c.Id, "/", 2), auth(a.Tenanat), nil)
-				core.OnErrorFail(err, "get user creds Failed")
+				core.FailOnError(err, "get user creds Failed")
 				chanel <- getAksProfile(client, SplitAzIDAndGiveItem(c.Id, "/", 4), c.Name)
 			}(chanel, c, a)
 		}

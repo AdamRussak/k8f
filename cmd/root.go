@@ -39,7 +39,7 @@ this tool supports Azure AKS and AWS EKS. For example:
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
-	core.OnErrorFail(err, "error executing command")
+	core.FailOnError(err, "error executing command")
 }
 
 func init() {

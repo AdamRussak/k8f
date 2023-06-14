@@ -13,4 +13,5 @@ type FlagsOptions struct {
 	AwsAssumeRole bool   `json:"aws_assume_role,omitempty"`
 	AwsRoleString string `json:"aws_role_string,omitempty"`
 	AwsEnvProfile bool   `json:"aws_profile,omitempty"`
+	ProfileName   string `json:"profile_name,omitempty"`
 }
