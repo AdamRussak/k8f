@@ -1,10 +1,13 @@
 package core
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/ini.v1"
 )
 
 func FailOnError(err error, message string) {
@@ -79,4 +82,29 @@ func CreatDIrectoryt(path string) {
 		FailOnError(err, "Failed to Create Directory")
 	}
 
+}
+func MergeINIFiles(inputPaths []string) (*bytes.Reader, error) {
+	// Create a buffer to store the merged result
+	outputBuffer := bytes.Buffer{}
+
+	// Iterate over input INI files
+	for _, inputPath := range inputPaths {
+		// Open the input INI file
+		inputFile, err := ini.Load(inputPath)
+		OnErrorFail(err, "failed to load INI")
+
+		// Iterate over sections in the input file
+		for _, section := range inputFile.Sections() {
+			outputBuffer.WriteString(fmt.Sprintf("[%s]\n", section.Name()))
+
+			// Iterate over keys in the section
+			for _, key := range section.Keys() {
+				outputBuffer.WriteString(fmt.Sprintf("%s = %s\n", key.Name(), key.Value()))
+			}
+
+			outputBuffer.WriteString("\n")
+		}
+
+	}
+	return bytes.NewReader(outputBuffer.Bytes()), nil
 }

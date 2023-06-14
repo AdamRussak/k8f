@@ -7,7 +7,6 @@ import (
 	"github.com/fatih/structs"
 	"github.com/shiena/ansicolor"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )
 
@@ -17,7 +16,7 @@ func (f *PlainFormatter) Format(entry *log.Entry) ([]byte, error) {
 	return []byte(fmt.Sprintf("%s\n", entry.Message)), nil
 }
 
-func ToggleDebug(cmd *cobra.Command, args []string) {
+func ToggleDebug() {
 	formatter := new(prefixed.TextFormatter)
 	// Set specific colors for prefix and timestamp
 	formatter.SetColorScheme(&prefixed.ColorScheme{

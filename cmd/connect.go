@@ -34,7 +34,6 @@ var (
 			}
 			return nil
 		},
-		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
 			options := newCommandStruct(o, args)
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
@@ -65,6 +64,7 @@ var (
 func init() {
 	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "kubeconfig output type format(json or yaml)")
 	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "kubeconfig output path")
+	connectCmd.Flags().BoolVar(&o.ProfileSelector, "profile-select", false, "provides a UI to select a single profile to scan")
 	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force overwrite kubeconfig")
 	connectCmd.Flags().BoolVar(&o.DryRun, DryRun, false, "If true, only run a dry-run with cli output")
 	connectCmd.Flags().BoolVar(&o.Backup, "backup", false, "If true, backup config file to $HOME/.kube/config.bk")

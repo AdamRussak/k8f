@@ -11,7 +11,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.84.1
 	github.com/aws/aws-sdk-go-v2/service/eks v1.27.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.3
-	github.com/bndr/gotabulate v1.1.2
 	github.com/fatih/structs v1.1.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/imdario/mergo v0.3.13

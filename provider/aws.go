@@ -175,31 +175,19 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 
 func GetLocalAwsProfiles() []AwsProfiles {
 	var arr []AwsProfiles
-	fname := config.DefaultSharedConfigFilename()
-	credFname := config.DefaultSharedCredentialsFilename()
-	f, err := ini.Load(fname)
-	core.FailOnError(err, "Failed to load profile from config")
-	creds, err := ini.Load(credFname)
+	mergeconf, err := core.MergeINIFiles([]string{config.DefaultSharedConfigFilename(), config.DefaultSharedCredentialsFilename()})
+	core.FailOnError(err, "failed to merge INI")
+	creds, err := ini.Load(mergeconf)
 	core.FailOnError(err, "Failed to load profile from creds")
 	for _, p := range creds.Sections() {
 		if len(p.Keys()) != 0 {
+			profileName := removeString("profile", p.Name())
+			_, isInArray := XinAwsProfiles(profileName, arr)
 			kbool, karn := checkIfItsAssumeRole(p.Keys())
-			if kbool {
+			if kbool && !isInArray {
 				arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: true, Arn: karn, ConfProfile: p.Name()})
 			} else {
 				arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: false, ConfProfile: p.Name()})
-			}
-		}
-	}
-	for _, v := range f.Sections() {
-		if len(v.Keys()) != 0 {
-			profileName := removeString("profile", v.Name())
-			_, isInArray := XinAwsProfiles(profileName, arr)
-			if !isInArray {
-				kbool, karn := checkIfItsAssumeRole(v.Keys())
-				if kbool {
-					arr = append(arr, AwsProfiles{Name: profileName, IsRole: true, Arn: karn, ConfProfile: v.Name()})
-				}
 			}
 		}
 	}
@@ -394,11 +382,14 @@ func XinAwsProfiles(x string, y []AwsProfiles) (int, bool) {
 }
 
 func removeString(word, arn string) string {
-	if !strings.Contains("default", arn) {
+	if !strings.Contains("default", arn) && strings.Contains(word, arn) {
 		log.Debugf("Cutting %s from %s", word, arn)
 		split := strings.Split(arn, " ")
 		log.Debugf("length is %x and the profile name will be: %s", len(split), split[1])
 		return split[1]
+	} else if strings.Contains(word, arn) {
+		return ""
+	} else {
+		return arn
 	}
-	return ""
 }

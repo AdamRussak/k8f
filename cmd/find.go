@@ -19,18 +19,6 @@ var findCmd = &cobra.Command{
 	Use:     findCMD,
 	Short:   findShort,
 	Example: findExample,
-	PreRun:  core.ToggleDebug,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			fmt.Println(len(args))
-			return errors.New("requires both cloud provider & cluster name")
-		}
-		argouments = append(argouments, supportedProvider...)
-		if core.IfXinY(args[0], argouments) {
-			return nil
-		}
-		return fmt.Errorf(providerListError, args[0])
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		var p provider.Cluster
 		options := newCommandStruct(o, args)
