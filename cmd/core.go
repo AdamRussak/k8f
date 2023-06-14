@@ -12,11 +12,11 @@ func argValidator(cmd *cobra.Command, args []string) error {
 	var err error
 
 	err = checkArgsCount(args)
-	core.OnErrorFail(err, "validation failed")
+	core.OnErrorFail(err, validationError)
 	err = providerValidator(args)
-	core.OnErrorFail(err, "validation failed")
+	core.OnErrorFail(err, validationError)
 	err = uiSelectValidator(args)
-	core.OnErrorFail(err, "validation failed")
+	core.OnErrorFail(err, validationError)
 	return err
 }
 
