@@ -36,7 +36,7 @@ in a single command
 
 ## prerequisite
 - for Azure: installed and logged in azure cli  
-- for AWS: install AWS cli and Profiles for each Account at `~/.aws/credentials`  
+- for AWS: install AWS cli and Profiles for each Account at `~/.aws/credentials`  and `~/.aws/config`
 - for GCP: Installed gcloud cli and logged in
 
 Supported Platform
