@@ -6,7 +6,6 @@ package cmd
 import (
 	"errors"
 	"k8f/core"
-	"k8f/provider"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -16,15 +15,14 @@ import (
 // connectCmd represents the connect command
 var (
 	connectCmd = &cobra.Command{
-		Use:   "connect",
-		Short: "Connect to all the clusters of a provider or all Supported Providers",
-		Example: `k8f connect aws -p ./testfiles/config --backup -v
-k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "test role" -v`,
+		Use:     connectCMD,
+		Short:   connectShort,
+		Example: connectExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			options := provider.CommandOptions{AwsRegion: AwsRegion, ForceMerge: o.ForceMerge, UiSize: o.UiSize, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Merge: o.Merge, Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
+			options := newCommandStruct(o, args)
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup && !options.Merge {
-				core.OnErrorFail(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
+				core.FailOnError(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
 			}
 			if !core.Exists(options.Path) {
 				core.CreatDIrectoryt(options.Path)
@@ -38,7 +36,7 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 				log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 				options.FullCloudConfig()
 			} else {
-				core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
+				core.FailOnError(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 			}
 		},
 	}

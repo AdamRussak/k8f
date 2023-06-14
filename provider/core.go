@@ -22,13 +22,13 @@ func evaluateVersion(list []string) string {
 		var lt *version.Version
 		var err error
 		v1, err := version.NewVersion(v)
-		core.OnErrorFail(err, "Error Evaluating Version")
+		core.FailOnError(err, "Error Evaluating Version")
 		if latest == "" {
 			lt, err = version.NewVersion("0.0")
 		} else {
 			lt, err = version.NewVersion(latest)
 		}
-		core.OnErrorFail(err, "Error Evaluating Version")
+		core.FailOnError(err, "Error Evaluating Version")
 		// Options availabe
 		if v1.GreaterThan(lt) {
 			latest = v
@@ -45,9 +45,9 @@ func microsoftSupportedVersion(latest string, current string) string {
 	// make sure its the same major
 	if splitLatest[0] == splitcurernt[0] {
 		latestMinor, err := strconv.Atoi(splitLatest[1])
-		core.OnErrorFail(err, "faild to convert string to int")
+		core.FailOnError(err, "faild to convert string to int")
 		currentMinor, err := strconv.Atoi(splitLatest[1])
-		core.OnErrorFail(err, "faild to convert string to int")
+		core.FailOnError(err, "faild to convert string to int")
 		getStatus := latestMinor - currentMinor
 		//if its latest minor or -1, mark as ok
 		if getStatus <= 1 {
@@ -133,13 +133,13 @@ func (c CommandOptions) CombineConfigs(configs AllConfig, arn string) {
 		}
 		if c.Merge {
 			y, err = c.runMerge(clientConfig)
-			core.OnErrorFail(err, "failed to merge configs")
+			core.FailOnError(err, "failed to merge configs")
 			c.cleanFile()
 		} else {
 			y, _ = yaml.Marshal(clientConfig)
 		}
 		err := os.WriteFile(c.Path, y, 0666)
-		core.OnErrorFail(err, "failed to save config")
+		core.FailOnError(err, "failed to save config")
 		log.Infof("「 %s 」 write successful!\n", c.Path)
 	}
 }
@@ -170,19 +170,19 @@ func (c CommandOptions) FullCloudConfig() {
 }
 func (c CommandOptions) Configcopy() {
 	sourceFileStat, err := os.Stat(c.Path)
-	core.OnErrorFail(err, "Issue Findign the Files in the path: "+c.Path)
+	core.FailOnError(err, "Issue Findign the Files in the path: "+c.Path)
 	if !sourceFileStat.Mode().IsRegular() {
-		core.OnErrorFail(err, c.Path+" is not a regular file")
+		core.FailOnError(err, c.Path+" is not a regular file")
 	}
 	source, err := os.Open(c.Path)
-	core.OnErrorFail(err, "failed to Open target file")
+	core.FailOnError(err, "failed to Open target file")
 	defer source.Close()
 
 	destination, err := os.Create(c.Path + ".bak")
-	core.OnErrorFail(err, "failed to Copy target file")
+	core.FailOnError(err, "failed to Copy target file")
 	defer destination.Close()
 	_, err = io.Copy(destination, source)
-	core.OnErrorFail(err, "failed to Copy target file")
+	core.FailOnError(err, "failed to Copy target file")
 }
 func SplitAzIDAndGiveItem(input string, seperator string, out int) string {
 	s := strings.Split(input, seperator)

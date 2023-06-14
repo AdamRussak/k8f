@@ -10,9 +10,10 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func OnErrorFail(err error, message string) {
+func FailOnError(err error, message string) {
 	if err != nil {
-		log.Fatalf("%s: %s\n", message, err)
+		log.Errorf("%s: %s\n", message, err)
+		os.Exit(1)
 	}
 }
 
@@ -25,7 +26,7 @@ func CheckEnvVarOrSitIt(varName string, varKey string) {
 		err := os.Setenv(varName, varKey)
 		val = os.Getenv(varName)
 		log.Debug("Variable " + varName + " is Set with Value: " + val)
-		OnErrorFail(err, "Issue setting the 'AWS_REGION' Enviroment Variable")
+		FailOnError(err, "Issue setting the 'AWS_REGION' Enviroment Variable")
 	}
 }
 
@@ -78,7 +79,7 @@ func CreatDIrectoryt(path string) {
 			create = dir
 		}
 		err := os.MkdirAll(create, 0777)
-		OnErrorFail(err, "Failed to Create Directory")
+		FailOnError(err, "Failed to Create Directory")
 	}
 
 }
@@ -90,7 +91,7 @@ func MergeINIFiles(inputPaths []string) (*bytes.Reader, error) {
 	for _, inputPath := range inputPaths {
 		// Open the input INI file
 		inputFile, err := ini.Load(inputPath)
-		OnErrorFail(err, "failed to load INI")
+		FailOnError(err, "failed to load INI")
 
 		// Iterate over sections in the input file
 		for _, section := range inputFile.Sections() {

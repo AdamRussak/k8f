@@ -28,7 +28,7 @@ var (
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			core.ToggleDebug()
 			err := argValidator(cmd, args)
-			core.OnErrorFail(err, "Validation failed2")
+			core.FailOnError(err, "Validation failed2")
 			return err
 		},
 		Short: "A CLI tool to List, Connect, Search and check version for K8S Clusters in all your resources at once",
@@ -45,7 +45,7 @@ this tool supports Azure AKS and AWS EKS. For example:
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
-	core.OnErrorFail(err, "error executing command")
+	core.FailOnError(err, "error executing command")
 }
 
 func init() {

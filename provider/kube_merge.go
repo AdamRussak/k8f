@@ -31,11 +31,11 @@ func (mc CommandOptions) runMerge(newConf Config) ([]byte, error) {
 	var kconfigs []*clientcmdapi.Config
 	confToupdate, err := toClientConfig(&newConf)
 	kconfigs = append(kconfigs, confToupdate)
-	core.OnErrorFail(err, "failed to convert Config struct to clientcmdapi.Config")
+	core.FailOnError(err, "failed to convert Config struct to clientcmdapi.Config")
 	outConfigs := clientcmdapi.NewConfig()
 	log.Infof("Loading KubeConfig file: %s\n", mc.Path)
 	loadConfig, err := loadKubeConfig(mc.Path)
-	core.OnErrorFail(err, "File "+mc.Path+" is not kubeconfig\n")
+	core.FailOnError(err, "File "+mc.Path+" is not kubeconfig\n")
 	kconfigs = append(kconfigs, loadConfig)
 	for _, conf := range kconfigs {
 		kco := &KubeConfigOption{
@@ -235,7 +235,7 @@ func toClientConfig(cfg *Config) (*clientcmdapi.Config, error) {
 	// Set clusters
 	for _, c := range cfg.Clusters {
 		decodedBytes, err := base64.StdEncoding.DecodeString(c.Cluster.CertificateAuthorityData)
-		core.OnErrorFail(err, decodeError)
+		core.FailOnError(err, decodeError)
 		cluster := clientcmdapi.Cluster{
 			Server:                   c.Cluster.Server,
 			CertificateAuthorityData: decodedBytes,
@@ -265,9 +265,9 @@ func getUserForCluster(u Users) clientcmdapi.AuthInfo {
 	var user clientcmdapi.AuthInfo
 	if !checkIfStructInit(u.User, "Exec") {
 		clientCertificateDataBytes, err := base64.StdEncoding.DecodeString(u.User.ClientCertificateData)
-		core.OnErrorFail(err, decodeError)
+		core.FailOnError(err, decodeError)
 		ClientKeyDataBytes, err := base64.StdEncoding.DecodeString(u.User.ClientKeyData)
-		core.OnErrorFail(err, decodeError)
+		core.FailOnError(err, decodeError)
 		user = clientcmdapi.AuthInfo{
 			ClientCertificateData: []byte(clientCertificateDataBytes),
 			ClientKeyData:         []byte(ClientKeyDataBytes),

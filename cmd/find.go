@@ -16,12 +16,12 @@ import (
 
 // findCmd represents the find command
 var findCmd = &cobra.Command{
-	Use:     "find",
-	Short:   "Find if a specific K8S exist in Azure or AWS",
-	Example: `k8f find {aws/azure/all} my-k8s-cluster`,
+	Use:     findCMD,
+	Short:   findShort,
+	Example: findExample,
 	Run: func(cmd *cobra.Command, args []string) {
 		var p provider.Cluster
-		options := provider.CommandOptions{AwsRegion: AwsRegion, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
+		options := newCommandStruct(o, args)
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Info("find called")
 		if args[0] == "azure" {
@@ -34,7 +34,7 @@ var findCmd = &cobra.Command{
 			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 			// p = options.FullCloudConfig()
 		} else {
-			core.OnErrorFail(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
+			core.FailOnError(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 		}
 		log.Debug(string("Outputing List as " + options.Output + " Format"))
 		fmt.Println(provider.PrintoutResults(p, options.Output))

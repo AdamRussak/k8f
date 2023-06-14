@@ -15,13 +15,13 @@ import (
 // listCmd represents the list command
 
 var listCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List all K8S in Azure/AWS or Both",
-	Example: `k8f list {aws/azure/all}`,
+	Use:     listCMD,
+	Short:   listShort,
+	Example: listExample,
 	Run: func(cmd *cobra.Command, args []string) {
 		var list []provider.Provider
 		var p interface{}
-		options := provider.CommandOptions{Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Backup: o.Backup, DryRun: o.DryRun, AwsRegion: AwsRegion}
+		options := newCommandStruct(o, args)
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Debug("CommandOptions Used")
 		if len(args) == 1 && args[0] == "azure" {
@@ -69,6 +69,7 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
+	listCmd.Flags().BoolVar(&o.ProfileSelector, "profile-select", false, "Get UI to select single profile to connect")
 	listCmd.Flags().StringVarP(&o.Output, "output", "o", listOutput, "Set output type(json or yaml)")
 	rootCmd.AddCommand(listCmd)
 

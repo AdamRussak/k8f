@@ -9,19 +9,21 @@ type AwsProfiles struct {
 }
 
 type CommandOptions struct {
-	AwsRegion     string
-	Path          string
-	Output        string
-	Overwrite     bool
-	Combined      bool
-	Backup        bool
-	Merge         bool
-	ForceMerge    bool
-	UiSize        int
-	DryRun        bool
-	AwsAuth       bool
-	AwsRoleString string
-	AwsEnvProfile bool
+	AwsRegion       string
+	Path            string
+	Output          string
+	Overwrite       bool
+	Combined        bool
+	Backup          bool
+	Merge           bool
+	ForceMerge      bool
+	UiSize          int
+	DryRun          bool
+	AwsAuth         bool
+	AwsRoleString   string
+	AwsEnvProfile   bool
+	ProfileName     string
+	ProfileSelector bool
 }
 
 // Azure /GCP

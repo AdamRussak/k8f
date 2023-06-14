@@ -1,6 +1,9 @@
 # k8f 
 ## Changes
-- Added Merge Flag to combine new K8S and already existed K8S in kubeconfig file - inspired by the [kubecm](https://github.com/sunny0826/kubecm) by @sunny0826
+- improved internal profile logic
+- improve logging and exit codes
+- improved structs handaling
+- fix markdown syntax errors
 ## Bugfix
 - fixed merge issues (base64 usage and Azure/Aws config format)
 ## Known Issue
