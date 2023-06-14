@@ -69,6 +69,7 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
+	listCmd.Flags().BoolVar(&o.ProfileSelector, "profile-select", false, "Get UI to select single profile to connect")
 	listCmd.Flags().StringVarP(&o.Output, "output", "o", listOutput, "Set output type(json or yaml)")
 	rootCmd.AddCommand(listCmd)
 

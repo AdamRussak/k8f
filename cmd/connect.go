@@ -73,7 +73,6 @@ func init() {
 	connectCmd.Flags().BoolVar(&o.AwsAuth, "auth", false, "change from AWS CLI Auth to AWS IAM Authenticator, Default set to AWS CLI")
 	connectCmd.Flags().BoolVar(&o.AwsEnvProfile, "isEnv", false, "Add AWS Profile as Env to the Kubeconfig")
 	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: 'myRoleName')")
-	connectCmd.Flags().StringVar(&o.ProfileName, "profile", "", "Set Profile to search a specific AWS account (Example: 'my-profile')")
 	connectCmd.MarkFlagsMutuallyExclusive(DryRun, "overwrite", "backup", "merge")
 	rootCmd.AddCommand(connectCmd)
 }

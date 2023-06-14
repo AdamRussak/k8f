@@ -91,7 +91,7 @@ func MergeINIFiles(inputPaths []string) (*bytes.Reader, error) {
 	for _, inputPath := range inputPaths {
 		// Open the input INI file
 		inputFile, err := ini.Load(inputPath)
-		OnErrorFail(err, "failed to load INI")
+		FailOnError(err, "failed to load INI")
 
 		// Iterate over sections in the input file
 		for _, section := range inputFile.Sections() {

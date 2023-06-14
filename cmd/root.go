@@ -28,7 +28,7 @@ var (
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			core.ToggleDebug()
 			err := argValidator(cmd, args)
-			core.OnErrorFail(err, "Validation failed2")
+			core.FailOnError(err, "Validation failed2")
 			return err
 		},
 		Short: "A CLI tool to List, Connect, Search and check version for K8S Clusters in all your resources at once",
