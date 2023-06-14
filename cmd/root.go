@@ -25,7 +25,13 @@ var (
 	rootCmd           = &cobra.Command{
 		Version: version,
 		Use:     "k8f",
-		Short:   "A CLI tool to List, Connect, Search and check version for K8S Clusters in all your resources at once",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			core.ToggleDebug()
+			err := argValidator(cmd, args)
+			core.OnErrorFail(err, "Validation failed2")
+			return err
+		},
+		Short: "A CLI tool to List, Connect, Search and check version for K8S Clusters in all your resources at once",
 		Long: `A CLI tool to find, list, connect, search and check version for K8S Clusters in all your resources at once,
 this tool supports Azure AKS and AWS EKS. For example:
 	to get List of all EKS:

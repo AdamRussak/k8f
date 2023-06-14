@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"k8f/core"
 	"k8f/provider"
 
@@ -21,21 +20,6 @@ var (
 		Short: "Connect to all the clusters of a provider or all Supported Providers",
 		Example: `k8f connect aws -p ./testfiles/config --backup -v
 k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "test role" -v`,
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
-				return errors.New("requires cloud provider")
-			}
-			argouments = append(argouments, supportedProvider...)
-			if len(args) > 0 && len(args) <= len(argouments) {
-				for a := range args {
-					if !core.IfXinY(args[a], argouments) {
-						return fmt.Errorf("invalid cloud provider specified: %s", args[a])
-					}
-				}
-			}
-			return nil
-		},
-		PreRun: core.ToggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
 			options := provider.CommandOptions{AwsRegion: AwsRegion, ForceMerge: o.ForceMerge, UiSize: o.UiSize, Path: o.Path, Output: o.Output, Overwrite: o.Overwrite, Combined: core.BoolCombine(args[0], supportedProvider), Merge: o.Merge, Backup: o.Backup, DryRun: o.DryRun, AwsAuth: o.AwsAuth, AwsRoleString: o.AwsRoleString, AwsEnvProfile: o.AwsEnvProfile}
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
@@ -63,6 +47,7 @@ k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "
 func init() {
 	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "kubeconfig output type format(json or yaml)")
 	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "kubeconfig output path")
+	connectCmd.Flags().BoolVar(&o.ProfileSelector, "profile-select", false, "provides a UI to select a single profile to scan")
 	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force overwrite kubeconfig")
 	connectCmd.Flags().BoolVar(&o.DryRun, DryRun, false, "If true, only run a dry-run with cli output")
 	connectCmd.Flags().BoolVar(&o.Backup, "backup", false, "If true, backup config file to $HOME/.kube/config.bk")

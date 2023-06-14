@@ -4,7 +4,6 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"k8f/core"
 	"k8f/provider"
@@ -16,24 +15,9 @@ import (
 // listCmd represents the list command
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all K8S in Azure/AWS or Both",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("requires cloud provider")
-		}
-		argouments = append(argouments, supportedProvider...)
-		if len(args) > 0 && len(args) <= len(argouments) {
-			for a := range args {
-				if !core.IfXinY(args[a], argouments) {
-					return fmt.Errorf("invalid cloud provider specified: %s", args[a])
-				}
-			}
-		}
-		return nil
-	},
+	Use:     "list",
+	Short:   "List all K8S in Azure/AWS or Both",
 	Example: `k8f list {aws/azure/all}`,
-	PreRun:  core.ToggleDebug,
 	Run: func(cmd *cobra.Command, args []string) {
 		var list []provider.Provider
 		var p interface{}
