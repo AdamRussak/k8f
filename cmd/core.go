@@ -45,7 +45,7 @@ func argValidator(cmd *cobra.Command, args []string) error {
 // check amounts of args in the command
 func checkArgsCount(args []string) error {
 	if len(args) < 1 {
-		return errors.New("requires cloud provider")
+		return errors.New(providerError)
 	}
 	return nil
 }

@@ -28,9 +28,6 @@ var (
 				core.CreatDIrectoryt(options.Path)
 				log.Warn("Path directorys were created")
 			}
-			if args[0] != "aws" || args[0] != "all" && options.ProfileName != "" {
-				core.FailOnError(errors.New("flags error"), "Profile flag is supported only with AWS Provider")
-			}
 			if args[0] == "azure" {
 				options.ConnectAllAks()
 			} else if args[0] == "aws" {

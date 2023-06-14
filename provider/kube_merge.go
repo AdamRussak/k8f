@@ -235,7 +235,7 @@ func toClientConfig(cfg *Config) (*clientcmdapi.Config, error) {
 	// Set clusters
 	for _, c := range cfg.Clusters {
 		decodedBytes, err := base64.StdEncoding.DecodeString(c.Cluster.CertificateAuthorityData)
-		core.FailOnError(err, "failed to decode base64")
+		core.FailOnError(err, decodeError)
 		cluster := clientcmdapi.Cluster{
 			Server:                   c.Cluster.Server,
 			CertificateAuthorityData: decodedBytes,
@@ -265,9 +265,9 @@ func getUserForCluster(u Users) clientcmdapi.AuthInfo {
 	var user clientcmdapi.AuthInfo
 	if !checkIfStructInit(u.User, "Exec") {
 		clientCertificateDataBytes, err := base64.StdEncoding.DecodeString(u.User.ClientCertificateData)
-		core.FailOnError(err, "failed to decode base64")
+		core.FailOnError(err, decodeError)
 		ClientKeyDataBytes, err := base64.StdEncoding.DecodeString(u.User.ClientKeyData)
-		core.FailOnError(err, "failed to decode base64")
+		core.FailOnError(err, decodeError)
 		user = clientcmdapi.AuthInfo{
 			ClientCertificateData: []byte(clientCertificateDataBytes),
 			ClientKeyData:         []byte(ClientKeyDataBytes),
