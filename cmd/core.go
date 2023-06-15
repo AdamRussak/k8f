@@ -17,7 +17,7 @@ func newCommandStruct(o FlagsOptions, args []string) provider.CommandOptions {
 		Path:            o.Path,
 		Output:          o.Output,
 		Overwrite:       o.Overwrite,
-		Combined:        core.BoolCombine(args[0], supportedProvider),
+		Combined:        core.IfXinY(args[0], supportedProvider),
 		Merge:           o.Merge,
 		Backup:          o.Backup,
 		DryRun:          o.DryRun,

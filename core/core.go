@@ -47,10 +47,6 @@ func IfXinY(x string, y []string) bool {
 	return false
 }
 
-func BoolCombine(arg string, supportedProvider []string) bool {
-	return !IfXinY(arg, supportedProvider)
-}
-
 func Exists(path string) bool {
 	log.Trace("Start Checking if Path Exist")
 	_, err := os.Stat(path)

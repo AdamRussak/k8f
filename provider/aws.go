@@ -243,7 +243,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 			clusters = append(clusters, Clusters{Name: arnContext, Cluster: result.Cluster})
 		}
 	}
-	if !c.Combined {
+	if c.Combined {
 		log.Println("Started aws only config creation")
 		c.CombineConfigs(AllConfig{auth, contexts, clusters}, arnContext)
 		return AllConfig{}

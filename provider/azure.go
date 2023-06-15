@@ -168,7 +168,7 @@ func (c CommandOptions) ConnectAllAks() AllConfig {
 			clusters = append(clusters, response.clusters...)
 		}
 	}
-	if !c.Combined {
+	if c.Combined {
 		log.Debug("Started azure only config creation")
 		c.CombineConfigs(AllConfig{authe, context, clusters}, arnContext)
 		return AllConfig{}
