@@ -46,7 +46,7 @@ func microsoftSupportedVersion(latest string, current string) string {
 	if splitLatest[0] == splitcurernt[0] {
 		latestMinor, err := strconv.Atoi(splitLatest[1])
 		core.FailOnError(err, "faild to convert string to int")
-		currentMinor, err := strconv.Atoi(splitLatest[1])
+		currentMinor, err := strconv.Atoi(splitcurernt[1])
 		core.FailOnError(err, "faild to convert string to int")
 		getStatus := latestMinor - currentMinor
 		//if its latest minor or -1, mark as ok
@@ -54,7 +54,7 @@ func microsoftSupportedVersion(latest string, current string) string {
 			return "OK"
 			//if its minor -2 show warning
 		} else if getStatus > 1 && getStatus <= 2 {
-			return "Warining"
+			return "Warning"
 			// if its minor > -2 show Critical
 		} else {
 			return "Critical"
@@ -168,6 +168,7 @@ func (c CommandOptions) FullCloudConfig() {
 	}
 	c.CombineConfigs(AllConfig{auth: auth, context: context, clusters: clusters}, context[0].Context.User)
 }
+
 func (c CommandOptions) Configcopy() {
 	sourceFileStat, err := os.Stat(c.Path)
 	core.FailOnError(err, "Issue Findign the Files in the path: "+c.Path)
@@ -184,6 +185,7 @@ func (c CommandOptions) Configcopy() {
 	_, err = io.Copy(destination, source)
 	core.FailOnError(err, "failed to Copy target file")
 }
+
 func SplitAzIDAndGiveItem(input string, seperator string, out int) string {
 	s := strings.Split(input, seperator)
 	log.Debug("Split output")
