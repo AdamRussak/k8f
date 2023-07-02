@@ -60,7 +60,8 @@ func Exists(path string) bool {
 	}
 	return false
 }
-func CreatDIrectoryt(path string) {
+
+func CreateDirectory(path string) {
 	// parts := strings.Split(path, string(os.PathSeparator))
 	dir := filepath.Dir(path)
 	var create string
@@ -77,8 +78,8 @@ func CreatDIrectoryt(path string) {
 		err := os.MkdirAll(create, 0777)
 		FailOnError(err, "Failed to Create Directory")
 	}
-
 }
+
 func MergeINIFiles(inputPaths []string) (*bytes.Reader, error) {
 	// Create a buffer to store the merged result
 	outputBuffer := bytes.Buffer{}

@@ -25,7 +25,7 @@ var (
 				core.FailOnError(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
 			}
 			if !core.Exists(options.Path) {
-				core.CreatDIrectoryt(options.Path)
+				core.CreateDirectory(options.Path)
 				log.Warn("Path directorys were created")
 			}
 			if args[0] == "azure" {
