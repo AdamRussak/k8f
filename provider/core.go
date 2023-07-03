@@ -223,14 +223,13 @@ func checkIfStructInit(u interface{}, key string) bool {
 		field := v.Field(i)
 		tag := t.Field(i).Tag.Get("yaml")
 		if tag == key+",omitempty" {
-			// Exec field was omitted
-			log.Debugf("%s field was omitted.\n", key)
-			return false
-		} else {
-			// Exec field exists
-			log.Debugf("%s field exists with value %v.\n", key, field.Interface())
+			// Check if the field is set to its zero value
+			if reflect.DeepEqual(field.Interface(), reflect.Zero(field.Type()).Interface()) {
+				continue
+			}
+			// If any field has a non-zero value, return true
 			return true
 		}
 	}
-	return true
+	return false
 }

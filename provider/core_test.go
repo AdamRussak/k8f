@@ -2,6 +2,8 @@ package provider
 
 import (
 	"encoding/json"
+	"io"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -176,4 +178,112 @@ func TestCountTotal(t *testing.T) {
 		assert.Equal(t, expected, result, "Unexpected total count for empty accounts")
 	})
 	// Add more test cases for other scenarios
+}
+
+func TestCheckIfStructInit(t *testing.T) {
+	t.Run("FieldExists", func(t *testing.T) {
+		// Test case: Field exists in the struct
+		user := User{
+			Exec:                  Exec{APIVersion: "1", Args: []string{"1", "2"}, Command: "noting", Env: "dev", ProvideClusterInfo: true},
+			ClientCertificateData: "certData",
+			ClientKeyData:         "clientKeyData",
+			Token:                 "veryComplicatedToken",
+		}
+
+		result := checkIfStructInit(user, "exec")
+		expected := true
+		assert.Equal(t, expected, result, "Unexpected result for field existence")
+	})
+
+	t.Run("FieldOmitted", func(t *testing.T) {
+		// Test case: Field is omitted in the struct
+		user := User{}
+
+		result := checkIfStructInit(user, "exec")
+		expected := false
+		assert.Equal(t, expected, result, "Unexpected result for field omission")
+	})
+	// Add more test cases for other scenarios
+}
+
+func TestCleanFile(t *testing.T) {
+	// Create a temporary file for testing
+	tmpfile, err := os.CreateTemp("", "testfile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpfile.Name())
+	// Write some content to the file
+	content := []byte("Test content")
+	_, err = tmpfile.Write(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Close the file before cleaning it
+	tmpfile.Close()
+
+	// Create a CommandOptions instance with the temporary file path
+	c := CommandOptions{Path: tmpfile.Name()}
+
+	// Call the cleanFile method
+	c.cleanFile()
+	// Open the file again to check if it's empty
+	file, err := os.Open(tmpfile.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+	// Read the file content
+	_, err = io.ReadAll(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Check if the file is empty
+	fileStat, err := file.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Verify that the file size is 0 after cleaning
+	if fileStat.Size() != 0 {
+		t.Errorf("Expected file size after cleaning: 0, got: %d", fileStat.Size())
+	}
+}
+
+func TestConfigCopy(t *testing.T) {
+	t.Run("RegularFile", func(t *testing.T) {
+		// Create a temporary file for testing
+		tmpfile, err := os.CreateTemp("", "testfile")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.RemoveAll(tmpfile.Name())
+
+		// Create a CommandOptions instance with the temporary file path
+		c := CommandOptions{Path: tmpfile.Name()}
+
+		// Call the Configcopy method
+		c.Configcopy()
+
+		// Check if the backup file exists
+		_, err = os.Stat(tmpfile.Name() + ".bak")
+		if err != nil {
+			t.Errorf("Expected backup file to exist, got error: %v", err)
+		}
+		os.RemoveAll(tmpfile.Name() + ".bak")
+	})
+}
+
+func TestSplitAzIDAndGiveItem(t *testing.T) {
+	t.Run("ValidInput", func(t *testing.T) {
+		input := "item1-item2-item3"
+		separator := "-"
+		index := 1
+		expected := "item2"
+
+		result := SplitAzIDAndGiveItem(input, separator, index)
+
+		if result != expected {
+			t.Errorf("Expected result: %s, got: %s", expected, result)
+		}
+	})
 }
