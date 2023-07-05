@@ -32,10 +32,9 @@ func newCommandStruct(o FlagsOptions, args []string) provider.CommandOptions {
 
 func argValidator(cmd *cobra.Command, args []string) error {
 	var err error
-
 	err = checkArgsCount(args)
 	core.FailOnError(err, validationError)
-	err = providerValidator(args)
+	err = providerValidator(args, cmd)
 	core.FailOnError(err, validationError)
 	err = uiSelectValidator(args)
 	core.FailOnError(err, validationError)
@@ -51,12 +50,19 @@ func checkArgsCount(args []string) error {
 }
 
 // check the args for supported Provider
-func providerValidator(args []string) error {
+func providerValidator(args []string, cmd *cobra.Command) error {
 	argouments = append(argouments, supportedProvider...)
-	if len(args) > 0 && len(args) <= len(argouments) {
-		for a := range args {
-			if !core.IfXinY(args[a], argouments) {
-				return fmt.Errorf("invalid cloud provider specified - %s", args[a])
+	switch cmd.Use {
+	case "find":
+		if !core.IfXinY(args[0], argouments) {
+			return fmt.Errorf(providerListError, args[0])
+		}
+	default:
+		if len(args) > 0 && len(args) <= len(argouments) {
+			for a := range args {
+				if !core.IfXinY(args[a], argouments) {
+					return fmt.Errorf(providerListError, args[a])
+				}
 			}
 		}
 	}
