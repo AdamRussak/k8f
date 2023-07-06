@@ -1,15 +1,16 @@
 <div align="center">
 
-# :cloud: k8f :cloud:
+# :sun_behind_large_cloud: k8f :sun_behind_large_cloud:
 
 </div>
 
-k8f is a command-line tool designed to simplify and streamline Kubernetes cluster operations.<br>
+**k8f** is a command-line tool designed to simplify and streamline Kubernetes cluster operations.<br>
 It provides a collection of useful commands and features that assist in managing and interacting with Kubernetes clusters efficiently.<br>
-The tool was desinged to scan all your all you're Cloud Accounts for Kubernetes with a single command.
-*What for??*
-you can Add or Update EKS/AKS to you're kubeconfig file.
-you can get you're EKS/AKS output with: k8s name, account, region, version and upgrade status.
+The tool was desinged to scan all your all you're Cloud Accounts for Kubernetes with a single command.<br>
+
+**What can it do??**<br>
+you can **Add** or **Update** EKS/AKS to you're kubeconfig file.<br>
+you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, **version** and **upgrade status**.
 
 ## Table of Contents
 
