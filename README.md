@@ -149,7 +149,7 @@ Copy-Item -Path $source -Destination $destination
 Latest:
 ```sh
 cd ~ && wget https://github.com/AdamRussak/k8f/releases/latest/download/k8f
-cp ~/k8f /usr/local/bin/k8f
+sudo cp ~/k8f /usr/local/bin/k8f
 sudo chmod 755 /usr/local/bin/k8f
 ```
 Version:
