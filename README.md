@@ -6,7 +6,7 @@
 
 **k8f** is a command-line tool designed to simplify and streamline Kubernetes cluster operations.<br>
 It provides a collection of useful commands and features that assist in managing and interacting with Kubernetes clusters efficiently.<br>
-The tool was desinged to scan all your all you're Cloud Accounts for Kubernetes with a single command.<br>
+The tool was desinged to scan all you're Cloud Accounts for Kubernetes with a single command.<br>
 
 **What can it do??**<br>
 you can **Add** or **Update** EKS/AKS to you're kubeconfig file.<br>
