@@ -1,28 +1,16 @@
-<img src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png" data-canonical-src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png"  width="500" height="200" />
+<div align="center">
 
-> image created Using MidJorny<br>
-> 
-[![CodeQL](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml)  [![release-artifacts](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml) ![GitHub](https://img.shields.io/github/license/AdamRussak/k8f) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/AdamRussak/k8f) ![GitHub all releases](https://img.shields.io/github/downloads/AdamRussak/k8f/total) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f)
+# :sun_behind_large_cloud: k8f :sun_behind_large_cloud:
 
+</div>
 
-[![Star History Chart](https://api.star-history.com/svg?repos=adamrussak/k8f&type=Date)](https://star-history.com/#adamrussak/k8f&Date)
+**k8f** is a command-line tool designed to simplify and streamline Kubernetes cluster operations.<br>
+It provides a collection of useful commands and features that assist in managing and interacting with Kubernetes clusters efficiently.<br>
+The tool was desinged to scan all you're Azure and/or AWS Accounts for Kubernetes with a single command.<br>
 
-
-
-[badge-info]: https://raw.githubusercontent.com/AdamRussak/public-images/main/badges/info.svg 'Info'
-
-> ![badge-info][badge-info]<br>
-> Tested with:<br>
-> AWS CLI: 2.9.17 <br>
-> AZ CLI: 2.44.1 <br>
-> Kubectl: v1.26.1 <br>
-
-<br>
-
-# k8f
-
-A CLI tool to *find*, *list*, *connect* and check version for K8S Clusters in all your resources at once,
-in a single command
+**What can it do??**<br>
+you can **Add** or **Update** EKS/AKS to you're kubeconfig file.<br>
+you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, **version** and **upgrade status**.
 
 ## Table of Contents
 
@@ -38,6 +26,22 @@ in a single command
   * [MacOS](#macos)
 
 
+<img src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png" data-canonical-src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png"  width="500" height="200" />
+
+> image created Using MidJorny<br>
+> 
+[![CodeQL](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml)  [![release-artifacts](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml) ![GitHub](https://img.shields.io/github/license/AdamRussak/k8f) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/AdamRussak/k8f) ![GitHub all releases](https://img.shields.io/github/downloads/AdamRussak/k8f/total) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f)
+
+
+[![Star History Chart](https://api.star-history.com/svg?repos=adamrussak/k8f&type=Date)](https://star-history.com/#adamrussak/k8f&Date)
+
+[badge-info]: https://raw.githubusercontent.com/AdamRussak/public-images/main/badges/info.svg 'Info'
+
+> ![badge-info][badge-info]<br>
+> Tested with:<br>
+> AWS CLI: 2.9.17 <br>
+> AZ CLI: 2.44.1 <br>
+> Kubectl: v1.26.1 <br>
 
 ## prerequisite
 - for Azure: installed and logged in azure cli  

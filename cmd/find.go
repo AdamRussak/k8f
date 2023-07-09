@@ -28,7 +28,6 @@ var findCmd = &cobra.Command{
 			p = options.GetSingleAzureCluster(args[1])
 		} else if args[0] == "aws" {
 			p = options.GetSingleAWSCluster(args[1])
-			// TODO: add find single cluster to GCP
 			// TODO: add find single cluster to all (in case we know name but not platform)
 		} else if args[0] == "all" {
 			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))

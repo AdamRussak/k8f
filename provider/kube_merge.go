@@ -263,7 +263,7 @@ func toClientConfig(cfg *Config) (*clientcmdapi.Config, error) {
 
 func getUserForCluster(u Users) clientcmdapi.AuthInfo {
 	var user clientcmdapi.AuthInfo
-	if !checkIfStructInit(u.User, "Exec") {
+	if !checkIfStructInit(u.User, "exec") {
 		clientCertificateDataBytes, err := base64.StdEncoding.DecodeString(u.User.ClientCertificateData)
 		core.FailOnError(err, decodeError)
 		ClientKeyDataBytes, err := base64.StdEncoding.DecodeString(u.User.ClientKeyData)

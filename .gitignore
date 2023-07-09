@@ -4,5 +4,6 @@ testfiles/
 testconfig/
 .ssh/
 .vscode/
+.mirrord/
 k8f*
 !k8f-list.jpg
