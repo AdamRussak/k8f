@@ -38,88 +38,87 @@ func TestEvaluateVersion(t *testing.T) {
 }
 
 func TestMicrosoftSupportedVersion(t *testing.T) {
-	t.Run("SameMajorVersion", func(t *testing.T) {
-		// Test case: Same major version
-		latest := "10.0.0"
-		current := "10.0.0"
-		result := microsoftSupportedVersion(latest, current)
-		expected := "OK"
-		assert.Equal(t, expected, result, "Unexpected result for same major version")
-	})
+	firstLatest := "10.0.0"
+	testCases := []struct {
+		name     string
+		latest   string
+		current  string
+		expected string
+	}{
+		{
+			name:     "SameMajorVersion",
+			latest:   firstLatest,
+			current:  firstLatest,
+			expected: "OK",
+		},
+		{
+			name:     "MinorVersionDifference",
+			latest:   firstLatest,
+			current:  "10.1.0",
+			expected: "OK",
+		},
+		{
+			name:     "MinorVersionWarning",
+			latest:   "10.10.0",
+			current:  "10.8.0",
+			expected: "Warning",
+		},
+		{
+			name:     "MinorVersionCritical",
+			latest:   "10.6.0",
+			current:  firstLatest,
+			expected: "Critical",
+		},
+		{
+			name:     "DifferentMajorVersion",
+			latest:   "11.0.0",
+			current:  "10.1.0",
+			expected: "Unknown",
+		},
+		// Add more test cases for other scenarios
+	}
 
-	t.Run("MinorVersionDifference", func(t *testing.T) {
-		// Test case: Minor version difference within range
-		latest := "10.0.0"
-		current := "10.1.0"
-		result := microsoftSupportedVersion(latest, current)
-		expected := "OK"
-		assert.Equal(t, expected, result, "Unexpected result for minor version difference within range")
-	})
-
-	t.Run("MinorVersionWarning", func(t *testing.T) {
-		// Test case: Minor version difference exceeding range, but within warning range
-		latest := "10.10.0"
-		current := "10.8.0"
-		result := microsoftSupportedVersion(latest, current)
-		expected := "Warning"
-		assert.Equal(t, expected, result, "Unexpected result for minor version warning")
-	})
-
-	t.Run("MinorVersionCritical", func(t *testing.T) {
-		// Test case: Minor version difference exceeding range, critical status
-		latest := "10.6.0"
-		current := "10.0.0"
-		result := microsoftSupportedVersion(latest, current)
-		expected := "Critical"
-		assert.Equal(t, expected, result, "Unexpected result for minor version critical")
-	})
-
-	t.Run("DifferentMajorVersion", func(t *testing.T) {
-		// Test case: Different major versions
-		latest := "11.0.0"
-		current := "10.1.0"
-		result := microsoftSupportedVersion(latest, current)
-		expected := "Unknown"
-		assert.Equal(t, expected, result, "Unexpected result for different major versions")
-	})
-	// Add more test cases for other scenarios
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := microsoftSupportedVersion(tc.latest, tc.current)
+			assert.Equal(t, tc.expected, result, "Unexpected result for "+tc.name)
+		})
+	}
 }
 
 func TestHowManyVersionsBack(t *testing.T) {
 	versionsList := []string{"v1.0", "v1.1", "v1.2", "v1.3", "v1.4", "v1.5"}
+	testCases := []struct {
+		name           string
+		currentVersion string
+		expected       string
+	}{
+		{
+			name:           "PerfectMatch",
+			currentVersion: "v1.0",
+			expected:       "Perfect",
+		}, {
+			name:           "OKMatch",
+			currentVersion: "v1.3",
+			expected:       "OK",
+		}, {
+			name:           "WarningMatch",
+			currentVersion: "v1.5",
+			expected:       "Warning",
+		}, {
+			name:           "CriticalMatch",
+			currentVersion: "v0.5",
+			expected:       "Critical",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test case: Perfect match, current version is the latest
+			result := HowManyVersionsBack(versionsList, tc.currentVersion)
+			assert.Equal(t, tc.expected, result, "Unexpected result for "+tc.name)
 
-	t.Run("PerfectMatch", func(t *testing.T) {
-		// Test case: Perfect match, current version is the latest
-		currentVersion := "v1.0"
-		result := HowManyVersionsBack(versionsList, currentVersion)
-		expected := "Perfect"
-		assert.Equal(t, expected, result, "Unexpected result for perfect match")
-	})
-
-	t.Run("OKMatch", func(t *testing.T) {
-		// Test case: OK match, current version is within 3 versions from the latest
-		currentVersion := "v1.3"
-		result := HowManyVersionsBack(versionsList, currentVersion)
-		expected := "OK"
-		assert.Equal(t, expected, result, "Unexpected result for OK match")
-	})
-
-	t.Run("WarningMatch", func(t *testing.T) {
-		// Test case: Warning match, current version is more than 3 versions back
-		currentVersion := "v1.5"
-		result := HowManyVersionsBack(versionsList, currentVersion)
-		expected := "Warning"
-		assert.Equal(t, expected, result, "Unexpected result for warning match")
-	})
-
-	t.Run("CriticalMatch", func(t *testing.T) {
-		// Test case: Critical match, current version is not found in the list
-		currentVersion := "v0.5"
-		result := HowManyVersionsBack(versionsList, currentVersion)
-		expected := "Critical"
-		assert.Equal(t, expected, result, "Unexpected result for critical match")
-	})
-	// Add more test cases for other scenarios
+		})
+	}
 }
 
 func TestPrintoutResults(t *testing.T) {
