@@ -5,6 +5,7 @@
 - fixed dupplication in Unitests
 - fixed assume role Assertion in the code
 - added Unitest to new functions
+- updated ReadMe file
 ### Known Issues
 - version output for AWS needs improvment and can show wierd and unconsistent output
 ## Contributors
