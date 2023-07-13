@@ -185,9 +185,9 @@ func GetLocalAwsProfiles() []AwsProfiles {
 			_, isInArray := XinAwsProfiles(profileName, arr)
 			kbool, karn := checkIfItsAssumeRole(p.Keys())
 			if kbool && !isInArray {
-				arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: true, Arn: karn, ConfProfile: p.Name()})
+				arr = append(arr, AwsProfiles{Name: profileName, IsRole: true, Arn: karn, ConfProfile: p.Name()})
 			} else {
-				arr = append(arr, AwsProfiles{Name: p.Name(), IsRole: false, ConfProfile: p.Name()})
+				arr = append(arr, AwsProfiles{Name: profileName, IsRole: false, ConfProfile: p.Name()})
 			}
 		}
 	}
@@ -255,13 +255,14 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 
 // Create AWS Config
 func GenerateKubeConfiguration(cluster *types.Cluster, r string, a Account, c CommandOptions) LocalConfig {
+	clusterName := c.SetClusterName(cluster.Arn)
 	clusters := CCluster{
 		Server:                   *cluster.Endpoint,
 		CertificateAuthorityData: *cluster.CertificateAuthority.Data,
 	}
 	contexts := Context{
-		Cluster: *cluster.Arn,
-		User:    *cluster.Arn,
+		Cluster: clusterName,
+		User:    clusterName,
 	}
 
 	authinfos := User{
@@ -273,6 +274,22 @@ func GenerateKubeConfiguration(cluster *types.Cluster, r string, a Account, c Co
 		},
 	}
 	return LocalConfig{authinfos, contexts, clusters}
+}
+
+func (c CommandOptions) SetClusterName(arn *string) string {
+	split := strings.Split(*arn, ":")
+	clusterName := strings.TrimPrefix(split[5], "cluster/")
+	const breaker = ":"
+	switch c.AwsClusterName {
+	case false:
+		outputName := split[4] + breaker + split[3] + breaker + clusterName
+		return outputName
+	case true:
+		outputName := split[3] + breaker + clusterName
+		return outputName
+	default:
+		return *arn
+	}
 }
 
 func (c CommandOptions) setCommand() string {
@@ -382,7 +399,7 @@ func XinAwsProfiles(x string, y []AwsProfiles) (int, bool) {
 }
 
 func removeString(word, arn string) string {
-	if !strings.Contains("default", arn) && strings.Contains(word, arn) {
+	if !strings.Contains("default", arn) && strings.Contains(arn, word) {
 		log.Debugf("Cutting %s from %s", word, arn)
 		split := strings.Split(arn, " ")
 		log.Debugf("length is %x and the profile name will be: %s", len(split), split[1])

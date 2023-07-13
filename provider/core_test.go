@@ -38,7 +38,7 @@ func TestEvaluateVersion(t *testing.T) {
 }
 
 func TestMicrosoftSupportedVersion(t *testing.T) {
-	firstLatest := "10.0.0"
+	setCurrent := "10.0.0"
 	testCases := []struct {
 		name     string
 		latest   string
@@ -47,14 +47,14 @@ func TestMicrosoftSupportedVersion(t *testing.T) {
 	}{
 		{
 			name:     "SameMajorVersion",
-			latest:   firstLatest,
-			current:  firstLatest,
+			latest:   setCurrent,
+			current:  setCurrent,
 			expected: "OK",
 		},
 		{
 			name:     "MinorVersionDifference",
-			latest:   firstLatest,
-			current:  "10.1.0",
+			latest:   "10.1.0",
+			current:  setCurrent,
 			expected: "OK",
 		},
 		{
@@ -66,7 +66,7 @@ func TestMicrosoftSupportedVersion(t *testing.T) {
 		{
 			name:     "MinorVersionCritical",
 			latest:   "10.6.0",
-			current:  firstLatest,
+			current:  setCurrent,
 			expected: "Critical",
 		},
 		{

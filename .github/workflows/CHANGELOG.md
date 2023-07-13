@@ -1,15 +1,12 @@
 # k8f 
 ## Release Notes
 ### Changes
-- fixed validation error in Find command that fails to search single Cluster
-- added unitest to core.core && provider.core
-- improved Readme file & installation commands #10
-- improved Github Action flows.
-- updated some vars to more readable names
-- fixed typos
+- added output name for EKS (short name and longer name) - issue #11
+- fixed dupplication in Unitests
+- fixed assume role Assertion in the code
+- added Unitest to new functions
 ### Known Issues
-
+- version output for AWS needs improvment and can show wierd and unconsistent output
 ## Contributors
-@henrik-koren
 <!-- ## Bugfix -->
 <!-- ## Braking changes -->     
