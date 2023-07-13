@@ -53,6 +53,7 @@ func init() {
 	connectCmd.Flags().BoolVar(&o.ForceMerge, "force-merge", false, "If set, all duplication will be merged without prompt, default is interactive")
 	connectCmd.Flags().BoolVar(&o.AwsAuth, "auth", false, "change from AWS CLI Auth to AWS IAM Authenticator, Default set to AWS CLI")
 	connectCmd.Flags().BoolVar(&o.AwsEnvProfile, "isEnv", false, "Add AWS Profile as Env to the Kubeconfig")
+	connectCmd.Flags().BoolVarP(&o.AwsClusterName, "short-name", "s", false, "shorten EKS name from <account>:<region>:<cluster> to <region>:<cluster>")
 	connectCmd.Flags().StringVar(&o.AwsRoleString, "role-name", "", "Set Role Name (Example: 'myRoleName')")
 	connectCmd.MarkFlagsMutuallyExclusive(DryRun, "overwrite", "backup", "merge")
 	rootCmd.AddCommand(connectCmd)

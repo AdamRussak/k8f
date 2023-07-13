@@ -6,6 +6,7 @@ on:
       - main # or the name of your main branch
       - feature/*
       - fix/*
+      - issue/*
 jobs:
   build:
     name: Build

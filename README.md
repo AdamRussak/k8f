@@ -88,7 +88,7 @@ Usage:
 
 Examples:
 k8f connect aws -p ./testfiles/config --backup -v
-k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "test role" -v
+        k8f connect aws --isEnv -p ./testfiles/config --overwrite --backup --role-name "test role" -v
 
 Flags:
       --auth               change from AWS CLI Auth to AWS IAM Authenticator, Default set to AWS CLI
@@ -100,8 +100,10 @@ Flags:
       --merge              If true, add new K8s to the existing kubeconfig path
   -o, --output string      kubeconfig output type format(json or yaml) (default "yaml")
       --overwrite          If true, force overwrite kubeconfig
-  -p, --path string        kubeconfig output path (default "/home/vscode/.kube/config")
+  -p, --path string        kubeconfig output path (default "/home/adam/.kube/config")
+      --profile-select     provides a UI to select a single profile to scan
       --role-name string   Set Role Name (Example: 'myRoleName')
+  -s, --short-name         shorten EKS name from <account>:<region>:<cluster> to <region>:<cluster>
 
 Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")

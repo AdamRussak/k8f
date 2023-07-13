@@ -24,6 +24,7 @@ func newCommandStruct(o FlagsOptions, args []string) provider.CommandOptions {
 		AwsAuth:         o.AwsAuth,
 		AwsRoleString:   o.AwsRoleString,
 		AwsEnvProfile:   o.AwsEnvProfile,
+		AwsClusterName:  o.AwsClusterName,
 		ProfileSelector: o.ProfileSelector,
 	}
 
