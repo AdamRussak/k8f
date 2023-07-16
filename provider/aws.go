@@ -82,7 +82,9 @@ func getEKSversionsList(addons *eks.DescribeAddonVersionsOutput) []string {
 	for _, a := range addons.Addons {
 		for _, c := range a.AddonVersions {
 			for _, v := range c.Compatibilities {
-				supportList = append(supportList, *v.ClusterVersion)
+				if !core.IfXinY(*v.ClusterVersion, supportList) {
+					supportList = append(supportList, *v.ClusterVersion)
+				}
 			}
 		}
 	}

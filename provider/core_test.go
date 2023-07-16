@@ -10,6 +10,44 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+func TestReturnMinorDiff(t *testing.T) {
+	testCases := []struct {
+		name           string
+		currentVersion []string
+		latestVersion  []string
+		expected       int
+	}{
+		{
+			name:           "PerfectMatch",
+			currentVersion: []string{"1", "27"},
+			latestVersion:  []string{"1", "27"},
+			expected:       0,
+		}, {
+			name:           "PerfectMatch-1",
+			currentVersion: []string{"1", "26"},
+			latestVersion:  []string{"1", "27"},
+			expected:       1,
+		}, {
+			name:           "WarningMatch",
+			currentVersion: []string{"1", "22"},
+			latestVersion:  []string{"1", "27"},
+			expected:       5,
+		}, {
+			name:           "CriticalMatch",
+			currentVersion: []string{"1", "0"},
+			latestVersion:  []string{"1", "27"},
+			expected:       27,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test case: Perfect match, current version is the latest
+			result := returnMinorDiff(tc.currentVersion, tc.latestVersion)
+			assert.Equal(t, tc.expected, result, "Unexpected result for "+tc.name)
+
+		})
+	}
+}
 func TestEvaluateVersion(t *testing.T) {
 	t.Run("EmptyList", func(t *testing.T) {
 		// Test case: Empty list
@@ -87,7 +125,7 @@ func TestMicrosoftSupportedVersion(t *testing.T) {
 }
 
 func TestHowManyVersionsBack(t *testing.T) {
-	versionsList := []string{"v1.0", "v1.1", "v1.2", "v1.3", "v1.4", "v1.5"}
+	versionsList := []string{"1.24", "1.23", "1.22", "1.21", "1.20", "1.27", "1.26", "1.25"}
 	testCases := []struct {
 		name           string
 		currentVersion string
@@ -95,19 +133,19 @@ func TestHowManyVersionsBack(t *testing.T) {
 	}{
 		{
 			name:           "PerfectMatch",
-			currentVersion: "v1.0",
+			currentVersion: "1.27",
 			expected:       "Perfect",
 		}, {
-			name:           "OKMatch",
-			currentVersion: "v1.3",
-			expected:       "OK",
+			name:           "PerfectMatch-1",
+			currentVersion: "1.26",
+			expected:       "Perfect",
 		}, {
 			name:           "WarningMatch",
-			currentVersion: "v1.5",
+			currentVersion: "1.22",
 			expected:       "Warning",
 		}, {
 			name:           "CriticalMatch",
-			currentVersion: "v0.5",
+			currentVersion: "0.5",
 			expected:       "Critical",
 		},
 	}

@@ -15,6 +15,15 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+func returnMinorDiff(splitcurernt, splitLatest []string) int {
+	latestMinor, err := strconv.Atoi(splitLatest[1])
+	core.FailOnError(err, "faild to convert string to int")
+	currentMinor, err := strconv.Atoi(splitcurernt[1])
+	core.FailOnError(err, "faild to convert string to int")
+	getStatus := latestMinor - currentMinor
+	return getStatus
+}
+
 // evaluate latest version from addon version list
 func evaluateVersion(list []string) string {
 	var latest string
@@ -44,11 +53,7 @@ func microsoftSupportedVersion(latest string, current string) string {
 	splitcurernt := strings.Split(current, ".")
 	// make sure its the same major
 	if splitLatest[0] == splitcurernt[0] {
-		latestMinor, err := strconv.Atoi(splitLatest[1])
-		core.FailOnError(err, "faild to convert string to int")
-		currentMinor, err := strconv.Atoi(splitcurernt[1])
-		core.FailOnError(err, "faild to convert string to int")
-		getStatus := latestMinor - currentMinor
+		getStatus := returnMinorDiff(splitcurernt, splitLatest)
 		//if its latest minor or -1, mark as ok
 		if getStatus <= 1 {
 			return "OK"
@@ -67,16 +72,18 @@ func microsoftSupportedVersion(latest string, current string) string {
 // provide version compare
 func HowManyVersionsBack(versionsList []string, currentVersion string) string {
 	log.Debug("current version is: " + currentVersion)
-	for i := range versionsList {
-		if versionsList[i] == currentVersion {
-			if i <= 1 {
-				return "Perfect"
-			} else if i <= 3 {
-				return "OK"
-			} else {
-				return "Warning"
-			}
-
+	latest := evaluateVersion(versionsList)
+	splitcurernt := strings.Split(currentVersion, ".")
+	splitLatest := strings.Split(latest, ".")
+	//check if same major
+	if splitLatest[0] == splitcurernt[0] {
+		getStatus := returnMinorDiff(splitcurernt, splitLatest)
+		if getStatus <= 1 {
+			return "Perfect"
+		} else if getStatus <= 3 {
+			return "OK"
+		} else {
+			return "Warning"
 		}
 	}
 	return "Critical"
