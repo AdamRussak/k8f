@@ -1,8 +1,7 @@
 # k8f 
 ## Release Notes
 ### Changes
-- fixed known issue for EKS version comparison - #15
-- more improvments of Unitests
+- improved backup file logic to not delete existing backups- every version gets running number
 
 ### Known Issues
 ## Contributors

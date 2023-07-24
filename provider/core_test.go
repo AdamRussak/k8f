@@ -2,10 +2,13 @@ package provider
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"k8f/core"
 	"os"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
@@ -323,4 +326,36 @@ func TestSplitAzIDAndGiveItem(t *testing.T) {
 			t.Errorf("Expected result: %s, got: %s", expected, result)
 		}
 	})
+}
+
+func TestGetBackupFileVersion(t *testing.T) {
+	testCases := []struct {
+		name     string
+		current  int
+		expected int
+	}{
+		{name: "NoBackups",
+			current:  0,
+			expected: 0},
+		{name: "OneBackups",
+			current:  1,
+			expected: 1},
+		{name: "FiveBackups",
+			current:  4,
+			expected: 5},
+	}
+	for _, tc := range testCases {
+		directory := t.TempDir()
+		for i := 0; i < tc.current; i++ {
+			_, err := os.Create(directory + backupExtnesion + "." + fmt.Sprint(i))
+			log.Debug(directory + backupExtnesion + "." + fmt.Sprint(i))
+			core.FailOnError(err, "failed to Copy target file")
+		}
+		t.Run(tc.name, func(t *testing.T) {
+			c := CommandOptions{Path: directory}
+			// Test case: Perfect match, current version is the latest
+			result := c.GetBackupFileVersion()
+			assert.Equal(t, tc.expected, result, "Unexpected result for "+tc.name)
+		})
+	}
 }

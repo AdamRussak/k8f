@@ -67,7 +67,7 @@ func (p AwsProfiles) getVersion() *eks.DescribeAddonVersionsOutput {
 	}
 	input2 := &eks.DescribeAddonVersionsInput{}
 	r, err := svc.DescribeAddonVersions(context.TODO(), input2)
-	core.FailOnError(err, "Failed to get Describe Version")
+	core.FailOnError(err, "Failed to get Describe Version with profile: "+p.ConfProfile)
 	return r
 }
 
@@ -252,7 +252,6 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 	}
 	log.Println("Started aws combined config creation")
 	return AllConfig{auth, contexts, clusters}
-
 }
 
 // Create AWS Config

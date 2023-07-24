@@ -6,6 +6,7 @@ import (
 	"io"
 	"k8f/core"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -185,14 +186,35 @@ func (c CommandOptions) Configcopy() {
 	source, err := os.Open(c.Path)
 	core.FailOnError(err, "failed to Open target file")
 	defer source.Close()
+	var destination *os.File
+	backupVersion := c.GetBackupFileVersion()
+	if backupVersion >= 1 {
+		destination, err = os.Create(c.Path + backupExtnesion + "." + fmt.Sprint(backupVersion))
+		log.Debug(c.Path + backupExtnesion + "." + fmt.Sprint(backupVersion))
+		core.FailOnError(err, "failed to Copy target file")
+	} else {
+		destination, err = os.Create(c.Path + backupExtnesion)
+		core.FailOnError(err, "failed to Copy target file")
+	}
 
-	destination, err := os.Create(c.Path + ".bak")
-	core.FailOnError(err, "failed to Copy target file")
 	defer destination.Close()
 	_, err = io.Copy(destination, source)
 	core.FailOnError(err, "failed to Copy target file")
 }
 
+func (c CommandOptions) GetBackupFileVersion() int {
+	dir := filepath.Dir(c.Path)
+	dirFiles, err := os.ReadDir(dir)
+	core.FailOnError(err, "failed to list all files in directory")
+	var countBackups []string
+	for _, file := range dirFiles {
+		if strings.Contains(file.Name(), backupExtnesion) {
+			countBackups = append(countBackups, file.Name())
+			log.Debug(file.Name(), " ", file.IsDir())
+		}
+	}
+	return len(countBackups)
+}
 func SplitAzIDAndGiveItem(input string, seperator string, out int) string {
 	s := strings.Split(input, seperator)
 	log.Debug("Split output")
