@@ -7,7 +7,8 @@ COPY ./core /tmp/build/core
 COPY ./provider /tmp/build/provider
 COPY ./provider /tmp/build/provider
 COPY *.go /tmp/build/
-COPY go* /tmp/build/
+COPY go.mod /tmp/build/
+COPY go.sum /tmp/build/
 WORKDIR /tmp/build
 RUN ls -alh .
 RUN apk update \
