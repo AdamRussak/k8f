@@ -191,15 +191,15 @@ func (c CommandOptions) Configcopy() {
 	if backupVersion >= 1 {
 		destination, err = os.Create(c.Path + backupExtnesion + "." + fmt.Sprint(backupVersion))
 		log.Debug(c.Path + backupExtnesion + "." + fmt.Sprint(backupVersion))
-		core.FailOnError(err, "failed to Copy target file")
+		core.FailOnError(err, filedtoCopyToTarget)
 	} else {
 		destination, err = os.Create(c.Path + backupExtnesion)
-		core.FailOnError(err, "failed to Copy target file")
+		core.FailOnError(err, filedtoCopyToTarget)
 	}
 
 	defer destination.Close()
 	_, err = io.Copy(destination, source)
-	core.FailOnError(err, "failed to Copy target file")
+	core.FailOnError(err, filedtoCopyToTarget)
 }
 
 func (c CommandOptions) GetBackupFileVersion() int {
