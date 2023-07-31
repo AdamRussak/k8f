@@ -349,7 +349,7 @@ func TestGetBackupFileVersion(t *testing.T) {
 		for i := 0; i < tc.current; i++ {
 			_, err := os.Create(directory + backupExtnesion + "." + fmt.Sprint(i))
 			log.Debug(directory + backupExtnesion + "." + fmt.Sprint(i))
-			core.FailOnError(err, "failed to Copy target file")
+			core.FailOnError(err, filedtoCopyToTarget)
 		}
 		t.Run(tc.name, func(t *testing.T) {
 			c := CommandOptions{Path: directory}

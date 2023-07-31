@@ -1,0 +1,9 @@
+[default]
+region = eu-west-1	
+[profile account1]
+role_arn = arn:aws:iam::123456789012:role/my-role
+source_profile = default
+[profile account2]
+role_arn = arn:aws:iam::125456389012:role/my-role
+source_profile = default
+

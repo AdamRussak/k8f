@@ -1,0 +1,6 @@
+test/
+.github/
+.devcontainer/
+.gitignore
+CODE_OF_CONDUCT.md
+sonar-project.properties
