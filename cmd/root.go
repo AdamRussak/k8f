@@ -52,7 +52,6 @@ func init() {
 	rootCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "Run the task as Dry-run, no action is done")
 	rootCmd.PersistentFlags().BoolVarP(&core.Verbosity, "verbose", "v", false, "verbose logging")
 	rootCmd.PersistentFlags().StringVar(&AwsRegion, "aws-region", AwsRegion, "Set Default AWS Region")
-	rootCmd.PersistentFlags().BoolVar(&o.AwsIsConfigFirst, "aws-conf-first", false, "Set the cli to take config before cerdentals (default is creds first)")
 	rootCmd.Flags().IntVar(&o.UiSize, "ui-size", 4, "number of list items to show in menu at once")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

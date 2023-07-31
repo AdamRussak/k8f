@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"k8f/core"
@@ -178,15 +177,8 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 
 func (c CommandOptions) GetLocalAwsProfiles() []AwsProfiles {
 	var arr []AwsProfiles
-	var mergeconf *bytes.Reader
-	var err error
-	if c.AwsIsConfigFirst {
-		mergeconf, err = core.MergeINIFiles([]string{config.DefaultSharedConfigFilename(), config.DefaultSharedCredentialsFilename()})
-		core.FailOnError(err, "failed to merge INI")
-	} else {
-		mergeconf, err = core.MergeINIFiles([]string{config.DefaultSharedCredentialsFilename(), config.DefaultSharedConfigFilename()})
-		core.FailOnError(err, "failed to merge INI")
-	}
+	mergeconf, err := core.MergeINIFiles([]string{config.DefaultSharedConfigFilename(), config.DefaultSharedCredentialsFilename()})
+	core.FailOnError(err, "failed to merge INI")
 	creds, err := ini.Load(mergeconf)
 	core.FailOnError(err, "Failed to load profile from creds")
 	for _, p := range creds.Sections() {
