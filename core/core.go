@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/ini.v1"
@@ -83,25 +84,39 @@ func CreateDirectory(path string) {
 func MergeINIFiles(inputPaths []string) (*bytes.Reader, error) {
 	// Create a buffer to store the merged result
 	outputBuffer := bytes.Buffer{}
-
 	// Iterate over input INI files
 	for _, inputPath := range inputPaths {
 		// Open the input INI file
-		inputFile, err := ini.Load(inputPath)
+		inputFile, err := ini.InsensitiveLoad(inputPath)
 		FailOnError(err, "failed to load INI")
-
-		// Iterate over sections in the input file
 		for _, section := range inputFile.Sections() {
-			outputBuffer.WriteString(fmt.Sprintf("[%s]\n", section.Name()))
-
-			// Iterate over keys in the section
-			for _, key := range section.Keys() {
-				outputBuffer.WriteString(fmt.Sprintf("%s = %s\n", key.Name(), key.Value()))
+			fmt.Print(len(outputBuffer.Bytes()))
+			if !checkIfConfigExist(section.Name(), outputBuffer) {
+				outputBuffer.WriteString(fmt.Sprintf("[%s]\n", section.Name()))
+				// Iterate over keys in the section
+				for _, key := range section.Keys() {
+					outputBuffer.WriteString(fmt.Sprintf("%s = %s\n", key.Name(), key.Value()))
+				}
+				outputBuffer.WriteString("\n")
 			}
-
-			outputBuffer.WriteString("\n")
 		}
-
 	}
 	return bytes.NewReader(outputBuffer.Bytes()), nil
+}
+
+func checkIfConfigExist(sectionName string, mergingConfig bytes.Buffer) bool {
+	if len(mergingConfig.Bytes()) == 0 {
+		return false
+	}
+	wordToRemove := "profile "
+	currentConf := strings.Replace(sectionName, wordToRemove, "", -1)
+	inputFile, err := ini.InsensitiveLoad(bytes.NewReader(mergingConfig.Bytes()))
+	FailOnError(err, "failed to load INI")
+	for _, section := range inputFile.Sections() {
+		inConfString := strings.Replace(section.Name(), wordToRemove, "", -1)
+		if currentConf == inConfString {
+			return true
+		}
+	}
+	return false
 }
