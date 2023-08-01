@@ -24,7 +24,7 @@ you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, *
   * [Windows](#windows)
   * [Linux](#linux)
   * [MacOS](#macos)
-  * [Container](#Container)
+  * [Container](#container)
 
 
 <img src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png" data-canonical-src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png"  width="500" height="200" />
