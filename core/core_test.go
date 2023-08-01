@@ -1,9 +1,11 @@
 package core
 
 import (
-	"fmt"
+	"bytes"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCheckEnvVarOrSitIt(t *testing.T) {
@@ -163,43 +165,81 @@ func TestCreateDirectory(t *testing.T) {
 }
 
 func TestMergeINIFiles(t *testing.T) {
-	t.Run("MergeMultipleINIFiles", func(t *testing.T) {
-		// Test case: Merge multiple INI files
-		inputPaths := []string{"../test/file1.ini", "../test/file2.ini", "../test/file0.ini"}
+	testCases := []struct {
+		name         string
+		inputPaths   []string
+		expectedData string
+	}{
+		{
+			name:         "Creds first and then configuration",
+			inputPaths:   []string{"../test/credentials", "../test/config"},
+			expectedData: "[default]\naws_access_key_id = myKey\naws_secret_access_key = myAccessKey\n\n[account1]\naws_access_key_id = account1Key\naws_secret_access_key = account1AccessKey\n\n[account2]\naws_access_key_id = account2Key\naws_secret_access_key = account2AccessKey\n\n",
+		},
+		{
+			name:         "Configuration and then Creds",
+			inputPaths:   []string{"../test/config", "../test/credentials"},
+			expectedData: "[default]\nregion = eu-west-1\n\n[profile account1]\nrole_arn = arn:aws:iam::123456789012:role/my-role\nsource_profile = default\n\n[profile account2]\nrole_arn = arn:aws:iam::125456389012:role/my-role\nsource_profile = default\n\n",
+		},
+	}
 
-		reader, err := MergeINIFiles(inputPaths)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := MergeINIFiles(tc.inputPaths)
+			if err != nil {
+				t.Fatalf("Error occurred: %v", err)
+			}
+			var actualDataBuf bytes.Buffer
+			if _, err := actualDataBuf.ReadFrom(result); err != nil {
+				t.Fatalf("Error reading merged data: %v", err)
+			}
+			actualData := actualDataBuf.String()
+			if actualData != tc.expectedData {
+				t.Errorf("Test case '%s' failed.\nExpected:\n%s\nGot:\n%s", tc.name, tc.expectedData, actualData)
+			}
+		})
+	}
+}
 
-		if err != nil {
-			t.Errorf("Error occurred while merging INI files: %v", err)
-		}
+func TestCheckIfConfigExist(t *testing.T) {
+	testCases := []struct {
+		name         string
+		inputString  string
+		newKey       string
+		expectedData bool
+	}{
+		{
+			name: "section dose not exist",
+			inputString: `[Section1]
+			key1 = value1
+			[Section2]
+			key2 = value2
+			`,
+			newKey:       "newAAccount3",
+			expectedData: false,
+		},
+		{
+			name: "section exist",
+			inputString: `[Section1]
+			key1 = value1
+			[Section2]
+			key2 = value2
+			`,
+			newKey:       "section1",
+			expectedData: true,
+		},
+		{
+			name:         "No file exist",
+			inputString:  ``,
+			newKey:       "section1",
+			expectedData: false,
+		},
+	}
 
-		expectedOutput := `[DEFAULT]
-Key1 = Value1
-Key2 = Value2
-
-[DEFAULT]
-Key3 = Value3
-
-[DEFAULT]
-Key6 = Value6
-`
-		buffer := make([]byte, len(expectedOutput))
-		_, err = reader.Read(buffer)
-		if err != nil {
-			t.Errorf("Error occurred while reading merged INI files: %v", err)
-		}
-		actualOutput := string(buffer)
-		if actualOutput != expectedOutput {
-			t.Errorf("Merged INI files do not match the expected output.\nExpected:\n%s\n\nActual:\n%s", expectedOutput, actualOutput)
-		}
-	})
-
-	t.Run("MergeNoINIFiles", func(t *testing.T) {
-		// Test case: No INI files to merge
-		inputPaths := []string{}
-		reader, _ := MergeINIFiles(inputPaths)
-		if reader.Len() != 0 {
-			t.Errorf("Merged INI files do not match the expected output.\nExpected:\n%s\n\nActual:\n%s", "", fmt.Sprint(reader.Len()))
-		}
-	})
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			existingIni := bytes.NewBufferString(tc.inputString)
+			testIfExist := checkIfConfigExist(tc.newKey, *existingIni)
+			assert.True(t, testIfExist == tc.expectedData, "Unexpected result for "+tc.name)
+		})
+	}
 }

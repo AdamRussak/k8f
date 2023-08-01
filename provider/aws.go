@@ -22,7 +22,7 @@ import (
 func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
-	profiles := GetLocalAwsProfiles()
+	profiles := c.GetLocalAwsProfiles()
 	addOnVersion := profiles[0].getVersion()
 	l := getLatestEKS(getEKSversionsList(addOnVersion))
 	log.Trace(profiles)
@@ -175,7 +175,7 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	c <- loc
 }
 
-func GetLocalAwsProfiles() []AwsProfiles {
+func (c CommandOptions) GetLocalAwsProfiles() []AwsProfiles {
 	var arr []AwsProfiles
 	mergeconf, err := core.MergeINIFiles([]string{config.DefaultSharedConfigFilename(), config.DefaultSharedCredentialsFilename()})
 	core.FailOnError(err, "failed to merge INI")
@@ -206,7 +206,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 	var arnContext string
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	p := c.FullAwsList()
-	awsProfiles := GetLocalAwsProfiles()
+	awsProfiles := c.GetLocalAwsProfiles()
 	for _, a := range p.Accounts {
 		r := make(chan LocalConfig)
 		for _, clus := range a.Clusters {
@@ -326,11 +326,11 @@ func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	//get Profiles//search this name in account
 	var f Cluster
-	profiles := GetLocalAwsProfiles()
+	profiles := c.GetLocalAwsProfiles()
 	c0 := make(chan Cluster)
 	// search each profile
 	for _, profile := range profiles {
-		go getAwsClusters(c0, profile, clusterToFind)
+		go c.getAwsClusters(c0, profile, clusterToFind)
 	}
 	for i := 0; i < len(profiles); i++ {
 		res := <-c0
@@ -343,11 +343,11 @@ func (c CommandOptions) GetSingleAWSCluster(clusterToFind string) Cluster {
 	//once it is found erturn info to the user
 }
 
-func getAwsClusters(c0 chan Cluster, profile AwsProfiles, clusterToFind string) {
+func (c CommandOptions) getAwsClusters(c0 chan Cluster, profile AwsProfiles, clusterToFind string) {
 	var re Cluster
 	log.Info(string("Using AWS profile: " + profile.Name))
 	regions := profile.listRegions()
-	profiles := GetLocalAwsProfiles()
+	profiles := c.GetLocalAwsProfiles()
 	addOnVersion := profiles[0].getVersion()
 	c2 := make(chan []Cluster)
 	for _, reg := range regions {
