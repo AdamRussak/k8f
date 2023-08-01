@@ -24,13 +24,19 @@ you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, *
   * [Windows](#windows)
   * [Linux](#linux)
   * [MacOS](#macos)
+  * [Container](#Container)
 
 
 <img src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png" data-canonical-src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png"  width="500" height="200" />
 
 > image created Using MidJorny<br>
+
 > 
 [![CodeQL](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml)  [![release-artifacts](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml) ![GitHub](https://img.shields.io/github/license/AdamRussak/k8f) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/AdamRussak/k8f) ![GitHub all releases](https://img.shields.io/github/downloads/AdamRussak/k8f/total) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f)
+<img alt="" src="https://img.shields.io/docker/pulls/unsoop/k8f?style=flat-square&logo=docker"/>
+<img alt="Issues" src="https://img.shields.io/github/issues/adamrussak/k8f?style=flat-square&labelColor=343b41"/>
+<img alt="Stars" src="https://img.shields.io/github/stars/adamrussak/k8f?style=flat-square&labelColor=343b41"/>
+
 
 
 [![Star History Chart](https://api.star-history.com/svg?repos=adamrussak/k8f&type=Date)](https://star-history.com/#adamrussak/k8f&Date)
@@ -48,14 +54,21 @@ you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, *
 - for AWS: install AWS cli and Profiles for each Account at `~/.aws/credentials`  and `~/.aws/config`
 - for GCP: Installed gcloud cli and logged in
 
-Supported Platform
------------
-- [ ] AWS  
-- [ ] Azure
-- [ ] GCP
->GCP currently only supports List command
-Commands
-------
+## Supported Platform
+
+
+| Provider | CLI      | Docker   |
+|----------|----------|----------|
+|   AWS    | &#x2611; | &#x2611; |
+|   Azure  | &#x2611; |          |
+|   GCP    | &#x2611; |          |
+
+### Known issues
+* GCP currently only supports List command
+* Azure accounts with MFA enabled can cuse failure 
+
+## Commands
+
 ###  list
 ```sh
 List all K8S in Azure/AWS or Both
@@ -127,8 +140,9 @@ Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
   -v, --verbose             verbose logging
 ```
-How to install
------------
+
+## How to install
+
 ### Windows
 Latest:
 ```ps
@@ -178,4 +192,14 @@ cd ~ && wget https://github.com/AdamRussak/k8f/releases/download/<version>/k8f_d
 mv k8f_darwin-arm64 ./k8f
 sudo cp ~/k8f /usr/local/bin/k8f
 sudo chmod 755 /usr/local/bin/k8f
+```
+
+### Container
+```sh
+# Basic
+docker run -v {path to .aws directory}:/home/nonroot/.aws/:ro unsoop/k8f:<version> <command>
+
+# Automation Queryable output
+OUTPUT=$(docker run -v {path to .aws directory}:/home/nonroot/.aws/:ro unsoop/k8f:<version> <command> 2> /dev/null | grep -o '{.*}')
+
 ```
