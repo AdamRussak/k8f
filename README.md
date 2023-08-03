@@ -33,6 +33,8 @@ you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, *
 
 > 
 [![CodeQL](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/codeql-analysis.yml)  [![release-artifacts](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml/badge.svg)](https://github.com/AdamRussak/k8f/actions/workflows/release-new-version.yaml) ![GitHub](https://img.shields.io/github/license/AdamRussak/k8f) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/AdamRussak/k8f) ![GitHub all releases](https://img.shields.io/github/downloads/AdamRussak/k8f/total) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdamRussak_k8f&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=AdamRussak_k8f)
+[![Docker Size](https://img.shields.io/docker/image-size/unsoop/k8f?label=Size&logo=Docker&color=0aa8d2&logoColor=fff)](https://hub.docker.com/r/unsoop/k8f)
+
 <img alt="" src="https://img.shields.io/docker/pulls/unsoop/k8f?style=flat-square&logo=docker"/>
 <img alt="Issues" src="https://img.shields.io/github/issues/adamrussak/k8f?style=flat-square&labelColor=343b41"/>
 <img alt="Stars" src="https://img.shields.io/github/stars/adamrussak/k8f?style=flat-square&labelColor=343b41"/>
