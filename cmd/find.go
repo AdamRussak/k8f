@@ -36,7 +36,9 @@ var findCmd = &cobra.Command{
 			core.FailOnError(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 		}
 		log.Debug(string("Outputing List as " + options.Output + " Format"))
-		fmt.Println(provider.PrintoutResults(p, options.Output))
+		output, err := options.PrintoutResults(p)
+		core.FailOnError(err, "failed to print results")
+		fmt.Println(output)
 	},
 }
 

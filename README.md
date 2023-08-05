@@ -81,8 +81,11 @@ Examples:
 k8f list {aws/azure/all}
 
 Flags:
-  -h, --help            help for list
-  -o, --output string   Set output type(json or yaml) (default "json")
+  -h, --help             help for list
+  -o, --output string    Set output type(json or yaml) (default "json")
+  -p, --path string      Set output path (default "./output")
+      --profile-select   Get UI to select single profile to connect
+  -s, --save             Get UI to select single profile to connect
 
 Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")

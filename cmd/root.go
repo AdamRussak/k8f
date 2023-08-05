@@ -22,6 +22,7 @@ var (
 	listOutput        = "json"
 	version           = tversion
 	confPath          = clientcmd.RecommendedHomeFile
+	listPath          = "./output"
 	rootCmd           = &cobra.Command{
 		Version: version,
 		Use:     "k8f",
