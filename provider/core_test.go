@@ -409,6 +409,7 @@ func TestStructOutput(t *testing.T) {
 }
 
 func TestGetYamlOrJsonOutput(t *testing.T) {
+	inputInfo := Provider{Provider: "aws", Accounts: []Account{{Name: "a", Clusters: []Cluster{{Name: "1", Version: "1.23", Latest: "1.27", Region: "eu-west-1"}}, TotalCount: 1}}}
 	testCases := []struct {
 		name       string
 		inpoutInfo interface{}
@@ -417,17 +418,17 @@ func TestGetYamlOrJsonOutput(t *testing.T) {
 	}{
 		{
 			name:       "a valid yaml struct",
-			inpoutInfo: Provider{Provider: "aws", Accounts: []Account{{Name: "a", Clusters: []Cluster{{Name: "1", Version: "1.23", Latest: "1.27", Region: "eu-west-1"}}, TotalCount: 1}}},
+			inpoutInfo: inputInfo,
 			Command:    CommandOptions{Output: "yaml"},
 		},
 		{
 			name:       "a valid json struct",
-			inpoutInfo: Provider{Provider: "aws", Accounts: []Account{{Name: "a", Clusters: []Cluster{{Name: "1", Version: "1.23", Latest: "1.27", Region: "eu-west-1"}}, TotalCount: 1}}},
+			inpoutInfo: inputInfo,
 			Command:    CommandOptions{Output: "json"},
 		},
 		{
 			name:       "Not a valid csv struct",
-			inpoutInfo: Provider{Provider: "aws", Accounts: []Account{{Name: "a", Clusters: []Cluster{{Name: "1", Version: "1.23", Latest: "1.27", Region: "eu-west-1"}}, TotalCount: 1}}},
+			inpoutInfo: inputInfo,
 			Command:    CommandOptions{Output: "csv"},
 		},
 	}
