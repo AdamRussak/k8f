@@ -173,26 +173,36 @@ func TestPrintoutResults(t *testing.T) {
 
 	t.Run("JSONOutput", func(t *testing.T) {
 		// Test case: JSON output
-		outputType := "json"
-		result := PrintoutResults(data, outputType)
+		c := CommandOptions{Output: "json"}
+		result, err := c.PrintoutResults(data)
+		if err != nil {
+			t.Errorf("Didnt expected an error, but got none.")
+		}
 		expected, _ := json.Marshal(data)
 		assert.Equal(t, string(expected), result, "Unexpected result for JSON output")
 	})
 
 	t.Run("YAMLOutput", func(t *testing.T) {
 		// Test case: YAML output
-		outputType := "yaml"
-		result := PrintoutResults(data, outputType)
+		c := CommandOptions{Output: "yaml"}
+		result, err := c.PrintoutResults(data)
+		if err != nil {
+			t.Errorf("Didnt expected an error, but got none.")
+		}
 		expected, _ := yaml.Marshal(data)
 		assert.Equal(t, string(expected), result, "Unexpected result for YAML output")
 	})
 
 	t.Run("UnsupportedOutput", func(t *testing.T) {
 		// Test case: Unsupported output type
-		outputType := "csv"
-		result := PrintoutResults(data, outputType)
-		expected := "Requested Output is not supported"
-		assert.Equal(t, expected, result, "Unexpected result for unsupported output type")
+		c := CommandOptions{Output: "csv"}
+		_, err := c.PrintoutResults(data)
+		if assert.Error(t, err) {
+			expectedError := "requested Output is not supported"
+			assert.Equal(t, expectedError, err.Error())
+		}
+		// expected := "Requested Output is not supported"
+		// assert.Equal(t, expected, result, "Unexpected result for unsupported output type")
 	})
 	// Add more test cases for other scenarios
 }
@@ -356,6 +366,83 @@ func TestGetBackupFileVersion(t *testing.T) {
 			// Test case: Perfect match, current version is the latest
 			result := c.GetBackupFileVersion()
 			assert.Equal(t, tc.expected, result, "Unexpected result for "+tc.name)
+		})
+	}
+}
+
+func TestStructOutput(t *testing.T) {
+	outputStruct := Provider{Provider: "aws", Accounts: []Account{Account{Name: "my-account", TotalCount: 1, Clusters: []Cluster{Cluster{Name: "my-cluster", Version: "1.21", Latest: "1.27", Region: "eu-west-1", Status: "Warning"}}}}}
+	testCases := []struct {
+		name       string
+		inpoutInfo interface{}
+		Command    CommandOptions
+		Path       string
+		Output     string
+	}{
+		{
+			name:       "json file Saved in current directory",
+			inpoutInfo: outputStruct,
+			Command:    CommandOptions{Output: "json", Path: "./output"},
+		},
+		{
+			name:       "Yaml file Saved in current directory",
+			inpoutInfo: outputStruct,
+			Command:    CommandOptions{Output: "yaml", Path: "./output"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := CommandOptions(tc.Command)
+			filename := c.Path + "." + c.Output
+			c.StructOutput(tc.inpoutInfo)
+			_, err := os.Stat(filename)
+			if err != nil {
+				t.Errorf("Expected file '%s' to be created, but got an error: %v", filename, err)
+			}
+			err = os.Remove(filename)
+			if err != nil {
+				fmt.Printf("Error deleting the file: %s\n", err)
+			}
+		})
+	}
+}
+
+func TestGetYamlOrJsonOutput(t *testing.T) {
+	inputInfo := Provider{Provider: "aws", Accounts: []Account{{Name: "a", Clusters: []Cluster{{Name: "1", Version: "1.23", Latest: "1.27", Region: "eu-west-1"}}, TotalCount: 1}}}
+	testCases := []struct {
+		name       string
+		inpoutInfo interface{}
+		Command    CommandOptions
+		Expecterd  string
+	}{
+		{
+			name:       "a valid yaml struct",
+			inpoutInfo: inputInfo,
+			Command:    CommandOptions{Output: "yaml"},
+		},
+		{
+			name:       "a valid json struct",
+			inpoutInfo: inputInfo,
+			Command:    CommandOptions{Output: "json"},
+		},
+		{
+			name:       "Not a valid csv struct",
+			inpoutInfo: inputInfo,
+			Command:    CommandOptions{Output: "csv"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := CommandOptions(tc.Command)
+			data, err := c.getYamlOrJsonOutput(tc.inpoutInfo)
+			if err != nil {
+				expectedError := "requested Output is not supported"
+				assert.Equal(t, expectedError, err.Error())
+			} else {
+				assert.IsType(t, []byte{}, data)
+			}
 		})
 	}
 }

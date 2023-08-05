@@ -25,6 +25,7 @@ type CommandOptions struct {
 	AwsClusterName  bool
 	ProfileName     string
 	ProfileSelector bool
+	SaveOutput      bool
 }
 
 // Azure /GCP

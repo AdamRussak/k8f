@@ -90,22 +90,27 @@ func HowManyVersionsBack(versionsList []string, currentVersion string) string {
 	return "Critical"
 }
 
-// printout format selection
-func PrintoutResults(p interface{}, output string) string {
+func (c CommandOptions) getYamlOrJsonOutput(p interface{}) ([]byte, error) {
 	var kJson []byte
+	var err error
 	log.Debug("start RunResult Func")
-	if output == "json" {
+	if c.Output == "json" {
 		log.Info("start Json Marshal")
 		kJson, _ = json.Marshal(p)
-	} else if output == "yaml" {
+	} else if c.Output == "yaml" {
 		log.Info("start YAML Marshal")
 		kJson, _ = yaml.Marshal(p)
 	} else {
-		return "Requested Output is not supported"
+		err = fmt.Errorf("requested Output is not supported")
 	}
 	log.Info("returning Output Marshal")
-	log.Debug("returning Output Marshal")
-	return string(kJson)
+	return kJson, err
+}
+
+// printout format selection
+func (c CommandOptions) PrintoutResults(p interface{}) (string, error) {
+	data, err := c.getYamlOrJsonOutput(p)
+	return string(data), err
 }
 
 // func to count ammount of Cluster in an account
@@ -132,7 +137,9 @@ func (c CommandOptions) CombineConfigs(configs AllConfig, arn string) {
 	}
 	if c.DryRun {
 		log.Debugf("Dry-run will Output a %s Output", c.Output)
-		fmt.Println(PrintoutResults(clientConfig, c.Output))
+		output, err := c.PrintoutResults(clientConfig)
+		core.FailOnError(err, "failed to printout results")
+		fmt.Println(output)
 	} else {
 		if c.Backup {
 			y, _ = yaml.Marshal(clientConfig)
@@ -261,4 +268,11 @@ func checkIfStructInit(u interface{}, key string) bool {
 		}
 	}
 	return false
+}
+
+func (c CommandOptions) StructOutput(inpoutInfo interface{}) {
+	data, err := c.getYamlOrJsonOutput(inpoutInfo)
+	core.FailOnError(err, "failed to get struct as "+c.Output)
+	err = os.WriteFile(c.Path+"."+c.Output, data, 0666)
+	core.FailOnError(err, "failed to save config")
 }

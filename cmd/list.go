@@ -64,13 +64,21 @@ var listCmd = &cobra.Command{
 			p = list
 		}
 		log.Debug(string("Outputing List as " + options.Output + " Format"))
-		fmt.Println(provider.PrintoutResults(p, options.Output))
+		if options.SaveOutput {
+			options.StructOutput(p)
+		} else {
+			output, err := options.PrintoutResults(p)
+			core.FailOnError(err, "failed to get printout result")
+			fmt.Println(output)
+		}
 	},
 }
 
 func init() {
 	listCmd.Flags().BoolVar(&o.ProfileSelector, "profile-select", false, "Get UI to select single profile to connect")
+	listCmd.Flags().BoolVarP(&o.SaveOutput, "save", "s", false, "Get UI to select single profile to connect")
 	listCmd.Flags().StringVarP(&o.Output, "output", "o", listOutput, "Set output type(json or yaml)")
+	listCmd.Flags().StringVarP(&o.Path, "path", "p", listPath, "Set output path")
 	rootCmd.AddCommand(listCmd)
 
 }

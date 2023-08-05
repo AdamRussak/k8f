@@ -44,7 +44,7 @@ var (
 
 func init() {
 	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "kubeconfig output type format(json or yaml)")
-	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "kubeconfig output path")
+	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "Set output path")
 	connectCmd.Flags().BoolVar(&o.ProfileSelector, "profile-select", false, "provides a UI to select a single profile to scan")
 	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force overwrite kubeconfig")
 	connectCmd.Flags().BoolVar(&o.DryRun, DryRun, false, "If true, only run a dry-run with cli output")
