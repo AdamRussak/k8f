@@ -26,6 +26,7 @@ type CommandOptions struct {
 	ProfileName     string
 	ProfileSelector bool
 	SaveOutput      bool
+	Validate        bool
 }
 
 // Azure /GCP

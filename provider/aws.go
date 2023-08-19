@@ -18,6 +18,33 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+// to check if the profile is valid or not we need to load the []AwsProfiles and check if the profile is a Assume role or credentials, and do a simple call to aws to validate it works
+func validateCredentials(creds []AwsProfiles) (string, error) {
+	log.Info("Validating AWS Credentials")
+	for _, profile := range creds {
+		var svc *sts.Client
+		var conf aws.Config
+		var err error
+		conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.Name))
+		if err != nil {
+			return profile.Name, err
+		}
+		if profile.IsRole {
+			conf.Credentials = stsAssumeRole(profile)
+			svc = sts.NewFromConfig(conf)
+		} else {
+			svc = sts.NewFromConfig(conf)
+		}
+		var input *sts.GetCallerIdentityInput = &sts.GetCallerIdentityInput{}
+		_, err = svc.GetCallerIdentity(context.Background(), input)
+		if err != nil {
+			return profile.Name, err
+		}
+	}
+	log.Info("AWS Credentials Validated")
+	return "", nil
+}
+
 // https://docs.aws.amazon.com/sdk-for-go/api/aws/credentials/stscreds/#:~:text=or%20service%20clients.-,Assume%20Role,-To%20assume%20an
 func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
@@ -60,7 +87,7 @@ func (p AwsProfiles) getVersion() *eks.DescribeAddonVersionsOutput {
 	conf, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.ConfProfile))
 	core.FailOnError(err, "Failed to get Version")
 	if p.IsRole {
-		conf.Credentials = stsAssumeRole(p, conf)
+		conf.Credentials = stsAssumeRole(p)
 		svc = eks.NewFromConfig(conf)
 	} else {
 		svc = eks.NewFromConfig(conf)
@@ -99,7 +126,7 @@ func (p AwsProfiles) getEksCurrentVersion(cluster string, profile AwsProfiles, r
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.ConfProfile))
 	core.FailOnError(err, awsErrorMessage)
 	if p.IsRole {
-		conf.Credentials = stsAssumeRole(p, conf)
+		conf.Credentials = stsAssumeRole(p)
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
 			o.Region = reg
 		})
@@ -126,7 +153,7 @@ func (p AwsProfiles) listRegions() []string {
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
 	core.FailOnError(err, awsErrorMessage)
 	if p.IsRole {
-		conf.Credentials = stsAssumeRole(p, conf)
+		conf.Credentials = stsAssumeRole(p)
 		svc = ec2.NewFromConfig(conf)
 	} else {
 		svc = ec2.NewFromConfig(conf)
@@ -149,7 +176,7 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.ConfProfile))
 	core.FailOnError(err, awsErrorMessage)
 	if profile.IsRole {
-		conf.Credentials = stsAssumeRole(profile, conf)
+		conf.Credentials = stsAssumeRole(profile)
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
 			o.Region = reg
 		})
@@ -193,9 +220,29 @@ func (c CommandOptions) GetLocalAwsProfiles() []AwsProfiles {
 			}
 		}
 	}
+	// add a if statement to check if to fail on validation error or not
+	fultyProfile, err := validateCredentials(arr)
+	arr = c.finalizeValidation(arr, fultyProfile, err)
 	kJson, _ := json.Marshal(arr)
 	log.Debugf("profile in use: %s", string(kJson))
 	return (arr) // Create JSON string response
+}
+
+func (c CommandOptions) finalizeValidation(arr []AwsProfiles, fultyProfile string, err error) []AwsProfiles {
+	if c.Validate {
+		core.FailOnError(err, credentialsValidationError+fultyProfile)
+	} else {
+		if err != nil {
+			log.Error(credentialsValidationError + fultyProfile)
+			for i, v := range arr {
+				if v.Name == fultyProfile {
+					arr = append(arr[:i], arr[i+1:]...)
+				}
+			}
+			log.Warn(fultyProfile + " was removed from the list of profiles")
+		}
+	}
+	return arr
 }
 
 // Connect Logic
@@ -219,7 +266,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 				conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(awsProfiles[inProfile].Name))
 				core.FailOnError(err, awsErrorMessage)
 				if awsProfiles[inProfile].IsRole {
-					conf.Credentials = stsAssumeRole(awsProfiles[inProfile], conf)
+					conf.Credentials = stsAssumeRole(awsProfiles[inProfile])
 					eksSvc = eks.NewFromConfig(conf, func(o *eks.Options) {
 						o.Region = clus.Region
 					})
@@ -377,7 +424,7 @@ func checkIfItsAssumeRole(keys []*ini.Key) (bool, string) {
 	return false, ""
 }
 
-func stsAssumeRole(awsProfile AwsProfiles, session aws.Config) *aws.CredentialsCache {
+func stsAssumeRole(awsProfile AwsProfiles) *aws.CredentialsCache {
 	roleSession := "default"
 	conf, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("us-east-1"),
