@@ -371,7 +371,7 @@ func TestGetBackupFileVersion(t *testing.T) {
 }
 
 func TestStructOutput(t *testing.T) {
-	outputStruct := Provider{Provider: "aws", Accounts: []Account{Account{Name: "my-account", TotalCount: 1, Clusters: []Cluster{Cluster{Name: "my-cluster", Version: "1.21", Latest: "1.27", Region: "eu-west-1", Status: "Warning"}}}}}
+	outputStruct := Provider{Provider: "aws", Accounts: []Account{{Name: "my-account", TotalCount: 1, Clusters: []Cluster{{Name: "my-cluster", Version: "1.21", Latest: "1.27", Region: "eu-west-1", Status: "Warning"}}}}}
 	testCases := []struct {
 		name       string
 		inpoutInfo interface{}
@@ -393,7 +393,7 @@ func TestStructOutput(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := CommandOptions(tc.Command)
+			var c CommandOptions = CommandOptions(tc.Command)
 			filename := c.Path + "." + c.Output
 			c.StructOutput(tc.inpoutInfo)
 			_, err := os.Stat(filename)

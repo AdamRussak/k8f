@@ -21,7 +21,7 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var list []provider.Provider
 		var p interface{}
-		options := newCommandStruct(o, args)
+		var options provider.CommandOptions = newCommandStruct(o, args)
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Debug("CommandOptions Used")
 		if len(args) == 1 && args[0] == "azure" {
@@ -37,13 +37,13 @@ var listCmd = &cobra.Command{
 			log.Debug("Starting All List")
 			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
 
-			c0 := make(chan provider.Provider)
+			var c0 = make(chan provider.Provider)
 			for _, s := range supportedProvider {
 				log.Debug(string("Starting " + s + " Provider"))
 				go runAll(c0, options, s)
 			}
 			for i := 0; i < len(supportedProvider); i++ {
-				res := <-c0
+				var res provider.Provider = <-c0
 				log.Trace(string("Recived A response from: " + supportedProvider[i]))
 				list = append(list, res)
 			}
@@ -51,13 +51,13 @@ var listCmd = &cobra.Command{
 		} else {
 			log.Debug("Starting All List")
 			log.Info("Supported Platform are:" + core.PrintOutStirng(supportedProvider))
-			c0 := make(chan provider.Provider)
+			var c0 = make(chan provider.Provider)
 			for _, s := range args {
 				log.Debug(string("Starting " + s + " Provider"))
 				go runAll(c0, options, s)
 			}
 			for i := 0; i < len(args); i++ {
-				res := <-c0
+				var res provider.Provider = <-c0
 				log.Trace(string("Recived A response from: " + args[i]))
 				list = append(list, res)
 			}
@@ -67,7 +67,7 @@ var listCmd = &cobra.Command{
 		if options.SaveOutput {
 			options.StructOutput(p)
 		} else {
-			output, err := options.PrintoutResults(p)
+			var output, err = options.PrintoutResults(p)
 			core.FailOnError(err, "failed to get printout result")
 			fmt.Println(output)
 		}
