@@ -21,7 +21,7 @@ var findCmd = &cobra.Command{
 	Example: findExample,
 	Run: func(cmd *cobra.Command, args []string) {
 		var p provider.Cluster
-		options := newCommandStruct(o, args)
+		var options provider.CommandOptions = newCommandStruct(o, args)
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Info("find called")
 		if args[0] == "azure" {
@@ -36,7 +36,7 @@ var findCmd = &cobra.Command{
 			core.FailOnError(errors.New("no Provider Selected"), "Selected Provider Not avilable (yet)")
 		}
 		log.Debug(string("Outputing List as " + options.Output + " Format"))
-		output, err := options.PrintoutResults(p)
+		var output, err = options.PrintoutResults(p)
 		core.FailOnError(err, "failed to print results")
 		fmt.Println(output)
 	},

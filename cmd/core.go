@@ -10,7 +10,7 @@ import (
 )
 
 func newCommandStruct(o FlagsOptions, args []string) provider.CommandOptions {
-	commandOptions := provider.CommandOptions{
+	var commandOptions provider.CommandOptions = provider.CommandOptions{
 		AwsRegion:       AwsRegion,
 		ForceMerge:      o.ForceMerge,
 		UiSize:          o.UiSize,
@@ -27,6 +27,7 @@ func newCommandStruct(o FlagsOptions, args []string) provider.CommandOptions {
 		AwsClusterName:  o.AwsClusterName,
 		ProfileSelector: o.ProfileSelector,
 		SaveOutput:      o.SaveOutput,
+		Validate:        o.Validate,
 	}
 
 	return commandOptions

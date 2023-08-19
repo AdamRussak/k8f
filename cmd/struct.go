@@ -16,4 +16,5 @@ type FlagsOptions struct {
 	AwsClusterName  bool   `json:"aws_cluster_name,omitempty"`
 	ProfileSelector bool   `json:"profile_selector,omitempty"`
 	SaveOutput      bool   `json:"save_output,omitempty"`
+	Validate        bool   `json:"validate,omitempty"`
 }

@@ -9,159 +9,260 @@ import (
 )
 
 func TestCheckEnvVarOrSitIt(t *testing.T) {
-	var key = "TEST"
-	var value = "updated"
-	t.Run("Var set and no change needed", func(t *testing.T) {
-		var origVal = "SET"
-		t.Setenv(key, origVal)
-		CheckEnvVarOrSitIt(key, value)
-		val, present := os.LookupEnv(key)
-		if !present || val != "SET" {
-			t.Fatalf(`Var(%s) = %s,should have been %s`, key, value, origVal)
-		}
-	})
-	t.Run("Var Not set updated", func(t *testing.T) {
-		CheckEnvVarOrSitIt(key, value)
-		val, present := os.LookupEnv(key)
-		if !present || val != value {
-			t.Fatalf(`Var(%s) = %s,should have been %s`, key, value, value)
-		}
-	})
+	testCases := []struct {
+		name     string
+		key      string
+		value    string
+		expected string
+	}{
+		{
+			name:     "Test_CheckEnvVarOrSitIt_EnvVarSet",
+			key:      "TEST",
+			value:    "updated",
+			expected: "SET",
+		},
+		{
+			name:     "Test_CheckEnvVarOrSitIt_EnvVarNotSet",
+			key:      "TEST",
+			value:    "updated",
+			expected: "updated",
+		},
+		{
+			name:     "Test_CheckEnvVarOrSitIt_EnvVarSetAndNoChangeNeeded",
+			key:      "TEST",
+			value:    "SET",
+			expected: "SET",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var origVal = "SET"
+			if tc.expected == origVal {
+				t.Setenv(tc.key, origVal)
+			}
+			CheckEnvVarOrSitIt(tc.key, tc.value)
+			val, present := os.LookupEnv(tc.key)
+			if !present || val != tc.expected {
+				t.Fatalf(`Var(%s) = %s,should have been %s`, tc.key, val, tc.expected)
+			}
+		})
+	}
 }
 
 func TestPrintOutStirng(t *testing.T) {
-	var shouldBe = " T e s t"
-
-	t.Run("Array prints out correct string", func(t *testing.T) {
-		var corerctArray = []string{"T", "e", "s", "t"}
-		testString := PrintOutStirng(corerctArray)
-		if testString != shouldBe {
-			t.Fatalf(`Test String should be '%s' but was actuly '%s'`, shouldBe, testString)
-		}
-	})
+	testCases := []struct {
+		name     string
+		input    []string
+		expected string
+	}{
+		{
+			name:     "EmptyArray",
+			input:    []string{},
+			expected: "",
+		},
+		{
+			name:     "OneItemArray",
+			input:    []string{"Test"},
+			expected: " Test",
+		},
+		{
+			name:     "TwoItemArray",
+			input:    []string{"Test", "Test"},
+			expected: " Test Test",
+		},
+		{
+			name:     "ThreeItemArray",
+			input:    []string{"Test", "Test", "Test"},
+			expected: " Test Test Test",
+		},
+		{
+			name:     "FourItemArray",
+			input:    []string{"Test", "Test", "Test", "Test"},
+			expected: " Test Test Test Test",
+		},
+		{
+			name:     "FiveItemArray",
+			input:    []string{"Test", "Test", "Test", "Test", "Test"},
+			expected: " Test Test Test Test Test",
+		},
+		{
+			name:     "SixItemArray",
+			input:    []string{"Test", "Test", "Test", "Test", "Test", "Test"},
+			expected: " Test Test Test Test Test Test",
+		},
+		{
+			name:     "SevenItemArray",
+			input:    []string{"Test", "Test", "Test", "Test", "Test", "Test", "Test"},
+			expected: " Test Test Test Test Test Test Test",
+		},
+		{
+			name:     "EightItemArray",
+			input:    []string{"Test", "Test", "Test", "Test", "Test", "Test", "Test", "Test"},
+			expected: " Test Test Test Test Test Test Test Test",
+		},
+		{
+			name:     "NineItemArray",
+			input:    []string{"Test", "Test", "Test", "Test", "Test", "Test", "Test", "Test", "Test"},
+			expected: " Test Test Test Test Test Test Test Test Test",
+		},
+		{
+			name:     "TenItemArray",
+			input:    []string{"Test", "Test", "Test", "Test", "Test", "Test", "Test", "Test", "Test", "Test"},
+			expected: " Test Test Test Test Test Test Test Test Test Test",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := PrintOutStirng(tc.input)
+			if result != tc.expected {
+				t.Fatalf(`PrintOutStirng(%s) = %s,should have been %s`, tc.input, result, tc.expected)
+			}
+		})
+	}
 }
 
 func TestIfXinY(t *testing.T) {
-	t.Run("StringExistsInSlice", func(t *testing.T) {
-		// Test case: String exists in the slice
-		x := "apple"
-		y := []string{"apple", "banana", "orange"}
-
-		result := IfXinY(x, y)
-
-		if !result {
-			t.Errorf("Expected %q to exist in the slice, but it doesn't", x)
-		}
-	})
-
-	t.Run("StringDoesNotExistInSlice", func(t *testing.T) {
-		// Test case: String does not exist in the slice
-		x := "grape"
-		y := []string{"apple", "banana", "orange"}
-
-		result := IfXinY(x, y)
-
-		if result {
-			t.Errorf("Expected %q not to exist in the slice, but it does", x)
-		}
-	})
-
-	t.Run("EmptySlice", func(t *testing.T) {
-		// Test case: Empty slice
-		x := "apple"
-		y := []string{}
-
-		result := IfXinY(x, y)
-
-		if result {
-			t.Errorf("Expected %q not to exist in the empty slice, but it does", x)
-		}
-	})
+	testCases := []struct {
+		name     string
+		x        string
+		y        []string
+		expected bool
+	}{
+		{
+			name:     "StringExistsInSlice",
+			x:        "apple",
+			y:        []string{"apple", "banana", "orange"},
+			expected: true,
+		},
+		{
+			name:     "StringDoesNotExistInSlice",
+			x:        "grape",
+			y:        []string{"apple", "banana", "orange"},
+			expected: false,
+		},
+		{
+			name:     "EmptySlice",
+			x:        "apple",
+			y:        []string{},
+			expected: false,
+		},
+		{
+			name:     "EmptyString",
+			x:        "",
+			y:        []string{"apple", "banana", "orange"},
+			expected: false,
+		},
+		{
+			name:     "EmptyStringAndEmptySlice",
+			x:        "",
+			y:        []string{},
+			expected: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var result bool = IfXinY(tc.x, tc.y)
+			if result != tc.expected {
+				t.Errorf("Expected %q in %q to be %v, but got %v", tc.x, tc.y, tc.expected, result)
+			}
+		})
+	}
 }
 
 func TestExists(t *testing.T) {
-	t.Run("PathExists", func(t *testing.T) {
-		// Test case: Path exists
-		path := "existing_file.txt"
-
-		// Create a temporary file
-		file, err := os.Create(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer func() {
-			file.Close()
-			os.Remove(path)
-		}()
-
-		exists := Exists(path)
-		if !exists {
-			t.Errorf("Exists(%q) = false; expected true", path)
-		}
-	})
-
-	t.Run("PathDoesNotExist", func(t *testing.T) {
-		// Test case: Path does not exist
-		path := "nonexistent_file.txt"
-
-		// Remove the file if it exists (cleanup from previous runs)
-		os.Remove(path)
-
-		exists := Exists(path)
-		if exists {
-			t.Errorf("Exists(%q) = true; expected false", path)
-		}
-	})
-
-	t.Run("PermissionDenied", func(t *testing.T) {
-		// Test case: Permission denied to access path
-		path := "/root/somefile.txt"
-
-		exists := Exists(path)
-		if exists {
-			t.Errorf("Exists(%q) = true; expected false", path)
-		}
-	})
+	testCases := []struct {
+		name     string
+		path     string
+		expected bool
+	}{
+		{
+			name:     "PathExists",
+			path:     "existing_file.txt",
+			expected: true,
+		},
+		{
+			name:     "PathDoesNotExist",
+			path:     "nonexistent_file.txt",
+			expected: false,
+		},
+		{
+			name:     "PermissionDenied",
+			path:     "/root/somefile.txt",
+			expected: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			//create a temporary file
+			if tc.expected {
+				file, err := os.Create(tc.path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer func() {
+					file.Close()
+					os.Remove(tc.path)
+				}()
+			} else {
+				os.Remove(tc.path)
+			}
+			var exists bool = Exists(tc.path)
+			if exists != tc.expected {
+				t.Errorf("Exists(%q) = %v; expected %v", tc.path, exists, tc.expected)
+			}
+		})
+	}
 }
 
 func TestCreateDirectory(t *testing.T) {
-	t.Run("DirectoryDoesNotExist", func(t *testing.T) {
-		// Test case: Directory already exists
-		dir := "new_directory/"
-		testPath := dir + "config"
-		os.RemoveAll(dir)
-		// Create a temporary directory
-		defer func() {
-			os.RemoveAll(dir)
-		}()
-		CreateDirectory(testPath)
-		// Verify that the directory still exists
-		_, err := os.Stat(dir)
-		if err != nil {
-			t.Errorf("Directory %q should exist, but got error: %v", dir, err)
-		}
-	})
+	const conf string = "/config"
+	testCases := []struct {
+		name          string
+		MainPath      string
+		SecondaryPath string
+		expected      bool
+	}{
+		{
+			name:          "DirectoryDoesNotExist",
+			MainPath:      "new_directory",
+			SecondaryPath: conf,
+			expected:      true,
+		},
+		{
+			name:          "DirectoryExists",
+			MainPath:      "existing_directory",
+			SecondaryPath: conf,
+			expected:      true,
+		},
+		{
+			name:          "PermissionDenied",
+			MainPath:      "/root",
+			SecondaryPath: "/somefile.txt",
+			expected:      false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			//create a temporary file
+			if tc.expected {
+				err := os.MkdirAll(tc.MainPath+tc.SecondaryPath, 0777)
+				if err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				os.RemoveAll(tc.MainPath + tc.SecondaryPath)
+				os.RemoveAll(tc.MainPath)
+			}
 
-	t.Run("DirectoryExists", func(t *testing.T) {
-		// Test case: Directory already exists
-		dir := "new_directory/"
-		testPath := dir + "config"
-		os.RemoveAll(dir)
-		// Create a temporary directory
-		err := os.Mkdir(dir, 0777)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer func() {
-			os.RemoveAll(dir)
-		}()
-		CreateDirectory(testPath)
-		// Verify that the directory still exists
-		_, err = os.Stat(dir)
-		if err != nil {
-			t.Errorf("Directory %q should exist, but got error: %v", dir, err)
-		}
-	})
+			var exists bool = Exists(tc.MainPath + tc.SecondaryPath)
+			if exists != tc.expected {
+				t.Errorf("Exists(%q) = %v; expected %v", tc.MainPath+tc.SecondaryPath, exists, tc.expected)
+			} else if tc.expected {
+				os.RemoveAll(tc.MainPath + tc.SecondaryPath)
+				os.RemoveAll(tc.MainPath)
+			}
+		})
+	}
 }
 
 func TestMergeINIFiles(t *testing.T) {

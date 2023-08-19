@@ -28,7 +28,7 @@ var (
 		Use:     "k8f",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			core.ToggleDebug()
-			err := argValidator(cmd, args)
+			var err error = argValidator(cmd, args)
 			core.FailOnError(err, "Validation failed")
 			return err
 		},
@@ -45,13 +45,14 @@ this tool supports Azure AKS and AWS EKS. For example:
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
+	var err error = rootCmd.Execute()
 	core.FailOnError(err, "error executing command")
 }
 
 func init() {
 	rootCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "Run the task as Dry-run, no action is done")
 	rootCmd.PersistentFlags().BoolVarP(&core.Verbosity, "verbose", "v", false, "verbose logging")
+	rootCmd.PersistentFlags().BoolVar(&o.Validate, "validate", false, "Fail on validation of the AWS credentals before running")
 	rootCmd.PersistentFlags().StringVar(&AwsRegion, "aws-region", AwsRegion, "Set Default AWS Region")
 	rootCmd.Flags().IntVar(&o.UiSize, "ui-size", 4, "number of list items to show in menu at once")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

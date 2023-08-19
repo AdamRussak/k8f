@@ -6,6 +6,7 @@ package cmd
 import (
 	"errors"
 	"k8f/core"
+	"k8f/provider"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,7 +20,7 @@ var (
 		Short:   connectShort,
 		Example: connectExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			options := newCommandStruct(o, args)
+			var options provider.CommandOptions = newCommandStruct(o, args)
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup && !options.Merge {
 				core.FailOnError(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
