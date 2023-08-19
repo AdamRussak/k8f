@@ -14,17 +14,20 @@ you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, *
 
 ## Table of Contents
 
-* [Prerequisite](#prerequisite)
-* [Supported Platform](#supported-platform)
-* [Commands](#commands)
-  * [List](#list)
-  * [Connect](#connect)
-  * [Find](#find)
-* [How to install](#how-to-install)
-  * [Windows](#windows)
-  * [Linux](#linux)
-  * [MacOS](#macos)
-  * [Container](#container)
+- [:sun\_behind\_large\_cloud: k8f :sun\_behind\_large\_cloud:](#sun_behind_large_cloud-k8f-sun_behind_large_cloud)
+  - [Table of Contents](#table-of-contents)
+  - [prerequisite](#prerequisite)
+  - [Supported Platform](#supported-platform)
+    - [Known issues](#known-issues)
+  - [Commands](#commands)
+    - [list](#list)
+    - [connect](#connect)
+    - [find](#find)
+  - [How to install](#how-to-install)
+    - [Windows](#windows)
+    - [Linux](#linux)
+    - [MacOS](#macos)
+    - [Container](#container)
 
 
 <img src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png" data-canonical-src="https://raw.githubusercontent.com/AdamRussak/public-images/main/k8f/k8f_logo.png"  width="500" height="200" />
@@ -89,6 +92,7 @@ Flags:
 
 Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
+      --validate            Fail on validation of the AWS credentals before running
   -v, --verbose             verbose logging
 ```
 
@@ -117,13 +121,14 @@ Flags:
       --merge              If true, add new K8s to the existing kubeconfig path
   -o, --output string      kubeconfig output type format(json or yaml) (default "yaml")
       --overwrite          If true, force overwrite kubeconfig
-  -p, --path string        kubeconfig output path (default "/home/adam/.kube/config")
+  -p, --path string        Set output path (default "/home/<user>/.kube/config")
       --profile-select     provides a UI to select a single profile to scan
       --role-name string   Set Role Name (Example: 'myRoleName')
   -s, --short-name         shorten EKS name from <account>:<region>:<cluster> to <region>:<cluster>
 
 Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
+      --validate            Fail on validation of the AWS credentals before running
   -v, --verbose             verbose logging
 ```
 
@@ -142,6 +147,7 @@ Flags:
 
 Global Flags:
       --aws-region string   Set Default AWS Region (default "eu-west-1")
+      --validate            Fail on validation of the AWS credentals before running
   -v, --verbose             verbose logging
 ```
 
