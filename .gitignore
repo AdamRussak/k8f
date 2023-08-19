@@ -7,3 +7,4 @@ testconfig/
 .mirrord/
 k8f*
 !k8f-list.jpg
+.devcontainer/
