@@ -51,9 +51,11 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().BoolVar(&o.DryRun, "dry-run", false, "Run the task as Dry-run, no action is done")
-	rootCmd.PersistentFlags().BoolVarP(&core.Verbosity, "verbose", "v", false, "verbose logging")
-	rootCmd.PersistentFlags().BoolVar(&o.Validate, "validate", false, "Fail on validation of the AWS credentals before running")
+	rootCmd.PersistentFlags().BoolVarP(&core.Verbosity, "verbose", "v", false, "verbose logging (default false)")
+	rootCmd.PersistentFlags().BoolVarP(&core.ErrorLevel, "quit", "q", false, "error-level logging, only errors are shown, very useful for scripts and automation (default false)")
+	rootCmd.PersistentFlags().BoolVar(&o.Validate, "validate", false, "Fail on validation of the AWS credentals before running the command (default false)")
 	rootCmd.PersistentFlags().StringVar(&AwsRegion, "aws-region", AwsRegion, "Set Default AWS Region")
 	rootCmd.Flags().IntVar(&o.UiSize, "ui-size", 4, "number of list items to show in menu at once")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.MarkFlagsMutuallyExclusive("verbose", "error-level")
 }

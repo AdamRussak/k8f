@@ -11,6 +11,7 @@ import (
 )
 
 var Verbosity bool
+var ErrorLevel bool
 
 func (f *PlainFormatter) Format(entry *log.Entry) ([]byte, error) {
 	return []byte(fmt.Sprintf("%s\n", entry.Message)), nil
@@ -33,16 +34,14 @@ func ToggleDebug() {
 	formatter.DisableUppercase = true
 	formatter.ForceColors = true
 	formatter.ForceFormatting = true
-
+	log.SetFormatter(formatter)
+	log.SetOutput(ansicolor.NewAnsiColorWriter(os.Stdout))
 	if Verbosity {
-		log.SetFormatter(formatter)
-		log.SetOutput(ansicolor.NewAnsiColorWriter(os.Stdout))
 		log.Info("Debug logs enabled")
 		log.SetLevel(log.TraceLevel)
-		// log.SetReportCaller(true)
+	} else if ErrorLevel {
+		log.SetLevel(log.ErrorLevel)
 	} else {
-		log.SetFormatter(formatter)
-		log.SetOutput(ansicolor.NewAnsiColorWriter(os.Stdout))
 		log.SetLevel(log.InfoLevel)
 	}
 }
