@@ -6,11 +6,11 @@
 
 **k8f** is a command-line tool designed to simplify and streamline Kubernetes cluster operations.<br>
 It provides a collection of useful commands and features that assist in managing and interacting with Kubernetes clusters efficiently.<br>
-The tool was desinged to scan all you're Azure and/or AWS Accounts for Kubernetes with a single command.<br>
+The tool was designed to scan all you're Azure and/or AWS Accounts for Kubernetes with a single command.<br>
 
 **What can it do??**<br>
-you can **Add** or **Update** EKS/AKS to you're kubeconfig file.<br>
-you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, **version** and **upgrade status**.
+you can **Add** or **Update** EKS/AKS to your kubeconfig file.<br>
+you can get you're EKS/AKS output with **k8s name**, **account**, **region**, **version**, and **upgrade status**.
 
 ## Table of Contents
 
@@ -68,8 +68,8 @@ you can get you're EKS/AKS output with: **k8s name**, **account**, **region**, *
 |   GCP    | &#x2611; |          |
 
 ### Known issues
-* GCP currently only supports List command
-* Azure accounts with MFA enabled can cuse failure 
+* GCP currently only supports the List command
+* Azure accounts with MFA enabled can cause failure 
 
 ## Commands
 
