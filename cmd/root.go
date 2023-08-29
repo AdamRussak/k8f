@@ -57,5 +57,5 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&AwsRegion, "aws-region", AwsRegion, "Set Default AWS Region")
 	rootCmd.Flags().IntVar(&o.UiSize, "ui-size", 4, "number of list items to show in menu at once")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.MarkFlagsMutuallyExclusive("verbose", "error-level")
+	rootCmd.MarkFlagsMutuallyExclusive("verbose", "quit")
 }
