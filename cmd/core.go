@@ -9,13 +9,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newCommandStruct(o FlagsOptions, args []string) provider.CommandOptions {
+func newCommandStruct(cmd *cobra.Command, o FlagsOptions, args []string) provider.CommandOptions {
+	var commandPath string
+	var commandOutput string
+	switch cmd.Use {
+	case "list":
+		commandPath = o.ListPath
+		commandOutput = o.ListOutput
+	default:
+		commandPath = o.Path
+		commandOutput = o.Output
+	}
 	var commandOptions provider.CommandOptions = provider.CommandOptions{
 		AwsRegion:       AwsRegion,
 		ForceMerge:      o.ForceMerge,
 		UiSize:          o.UiSize,
-		Path:            o.Path,
-		Output:          o.Output,
+		Path:            commandPath,
+		Output:          commandOutput,
 		Overwrite:       o.Overwrite,
 		Combined:        core.IfXinY(args[0], supportedProvider),
 		Merge:           o.Merge,

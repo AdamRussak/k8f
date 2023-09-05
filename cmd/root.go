@@ -18,8 +18,8 @@ var (
 	supportedProvider = []string{"azure", "aws", "gcp"}
 	argouments        = []string{"all"}
 	AwsRegion         = "eu-west-1"
-	configYAML        = "yaml"
-	listOutput        = "json"
+	defaultYAMLoutput = "yaml"
+	defaultJSONoutput = "json"
 	version           = tversion
 	confPath          = clientcmd.RecommendedHomeFile
 	listPath          = "./output"
