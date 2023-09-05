@@ -20,7 +20,7 @@ var (
 		Short:   connectShort,
 		Example: connectExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			var options provider.CommandOptions = newCommandStruct(o, args)
+			var options provider.CommandOptions = newCommandStruct(cmd, o, args)
 			log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 			if !options.Overwrite && core.Exists(options.Path) && !options.DryRun && !options.Backup && !options.Merge {
 				core.FailOnError(errors.New("flags error"), "Cant Run command as path exist and Overwrite is set to FALSE")
@@ -44,7 +44,7 @@ var (
 )
 
 func init() {
-	connectCmd.Flags().StringVarP(&o.Output, "output", "o", configYAML, "kubeconfig output type format(json or yaml)")
+	connectCmd.Flags().StringVarP(&o.Output, "output", "o", defaultYAMLoutput, "kubeconfig output type format(json or yaml)")
 	connectCmd.Flags().StringVarP(&o.Path, "path", "p", confPath, "Set output path")
 	connectCmd.Flags().BoolVar(&o.ProfileSelector, "profile-select", false, "provides a UI to select a single profile to scan")
 	connectCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, force overwrite kubeconfig")

@@ -2,7 +2,9 @@ package cmd
 
 type FlagsOptions struct {
 	Path            string `json:"path,omitempty"`
+	ListPath        string `json:"list_path,omitempty"`
 	Output          string `json:"output,omitempty"`
+	ListOutput      string `json:"list_output,omitempty"`
 	Overwrite       bool   `json:"overwrite,omitempty"`
 	Backup          bool   `json:"backup,omitempty"`
 	Merge           bool   `json:"merge,omitempty"`

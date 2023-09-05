@@ -21,7 +21,7 @@ var findCmd = &cobra.Command{
 	Example: findExample,
 	Run: func(cmd *cobra.Command, args []string) {
 		var p provider.Cluster
-		var options provider.CommandOptions = newCommandStruct(o, args)
+		var options provider.CommandOptions = newCommandStruct(cmd, o, args)
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Info("find called")
 		if args[0] == "azure" {

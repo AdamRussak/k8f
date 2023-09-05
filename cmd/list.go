@@ -21,7 +21,7 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var list []provider.Provider
 		var p interface{}
-		var options provider.CommandOptions = newCommandStruct(o, args)
+		var options provider.CommandOptions = newCommandStruct(cmd, o, args)
 		log.WithField("CommandOptions", log.Fields{"struct": core.DebugWithInfo(options)}).Debug("CommandOptions Struct Keys and Values: ")
 		log.Debug("CommandOptions Used")
 		if len(args) == 1 && args[0] == "azure" {
@@ -77,8 +77,8 @@ var listCmd = &cobra.Command{
 func init() {
 	listCmd.Flags().BoolVar(&o.ProfileSelector, "profile-select", false, "Get UI to select single profile to connect")
 	listCmd.Flags().BoolVarP(&o.SaveOutput, "save", "s", false, "Get UI to select single profile to connect")
-	listCmd.Flags().StringVarP(&o.Output, "output", "o", listOutput, "Set output type(json or yaml)")
-	listCmd.Flags().StringVarP(&o.Path, "path", "p", listPath, "Set output path")
+	listCmd.Flags().StringVarP(&o.ListOutput, "output", "o", defaultJSONoutput, "Set output type(json or yaml)")
+	listCmd.Flags().StringVarP(&o.ListPath, "path", "p", listPath, "Set output path")
 	rootCmd.AddCommand(listCmd)
 
 }
