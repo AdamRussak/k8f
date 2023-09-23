@@ -7,6 +7,7 @@ import (
 	"errors"
 	"k8f/core"
 	"k8f/provider"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -28,6 +29,16 @@ var (
 			if !core.Exists(options.Path) {
 				core.CreateDirectory(options.Path)
 				log.Warn("Path directorys were created")
+			}
+			if !core.Exists(options.Path) && (options.Backup || options.Merge) {
+				fileCreateConfirm := provider.BoolUI("--backup/--merge option was used but "+options.Path+
+					" does not exist. Choose True to create empty file, if False is chosen backup/merge will fail", options)
+				if fileCreateConfirm == "True" {
+					err := os.WriteFile(options.Path, []byte(""), 0666)
+					core.FailOnError(err, "failed to save config")
+				} else {
+					core.FailOnError(errors.New("flags error"), "Cant Run command as path does not exist and Backup or Merge is set to True")
+				}
 			}
 			if args[0] == "azure" {
 				options.ConnectAllAks()
