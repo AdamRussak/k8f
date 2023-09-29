@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"k8f/core"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -251,6 +252,7 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 	var contexts []Contexts
 	var clusters []Clusters
 	var arnContext string
+	var distinctArnContexts []string
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	p := c.FullAwsList()
 	awsProfiles := c.GetLocalAwsProfiles()
@@ -286,7 +288,15 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 		}
 		for i := 0; i < len(a.Clusters); i++ {
 			result := <-r
+			// below check ensures we do not let duplicate clusters/contexts/users
+			// get into the final configuration in case if there are different
+			// aws profiles configured to assume the same role, because any kind of
+			// a duplicate (cluster, context, user) makes kubectl crash
+			if slices.Contains(distinctArnContexts, result.Context.Cluster) {
+				continue
+			}
 			arnContext = result.Context.Cluster
+			distinctArnContexts = append(distinctArnContexts, result.Context.Cluster)
 			auth = append(auth, Users{Name: arnContext, User: result.Authinfo})
 			contexts = append(contexts, Contexts{Name: arnContext, Context: result.Context})
 			clusters = append(clusters, Clusters{Name: arnContext, Cluster: result.Cluster})
