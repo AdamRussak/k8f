@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"k8f/core"
 	"regexp"
-	"slices"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -288,11 +287,18 @@ func (c CommandOptions) ConnectAllEks() AllConfig {
 		}
 		for i := 0; i < len(a.Clusters); i++ {
 			result := <-r
+			duplicationFound := false
 			// below check ensures we do not let duplicate clusters/contexts/users
 			// get into the final configuration in case if there are different
 			// aws profiles configured to assume the same role, because any kind of
 			// a duplicate (cluster, context, user) makes kubectl crash
-			if slices.Contains(distinctArnContexts, result.Context.Cluster) {
+			for _, s := range distinctArnContexts {
+				if s == result.Context.Cluster {
+					duplicationFound = true
+					break
+				}
+			}
+			if duplicationFound {
 				continue
 			}
 			arnContext = result.Context.Cluster
