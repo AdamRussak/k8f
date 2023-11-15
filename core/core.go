@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -86,6 +87,12 @@ func MergeINIFiles(inputPaths []string) (*bytes.Reader, error) {
 	outputBuffer := bytes.Buffer{}
 	// Iterate over input INI files
 	for _, inputPath := range inputPaths {
+		if !Exists(inputPath) && strings.Contains(inputPath, "credentials") {
+			FailOnError(errors.New("https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html"), "AWS File `"+inputPath+"` is miss-configured, please fix it and run again")
+		} else if !Exists(inputPath) {
+			log.Warning("\tAWS File `"+inputPath+"` is miss-configured, some of your account might not show.\n\t please fix it and run again: ", "https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html")
+			continue
+		}
 		// Open the input INI file
 		inputFile, err := ini.InsensitiveLoad(inputPath)
 		FailOnError(err, "failed to load INI")
