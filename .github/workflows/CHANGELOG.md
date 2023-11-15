@@ -11,4 +11,5 @@
 ## Bugfix
 
 - fixed no INI in path failes the task
+- updated packages with security issues.
 <!-- ## Braking changes -->
