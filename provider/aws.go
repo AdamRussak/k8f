@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"k8f/core"
 	"regexp"
 	"strings"
@@ -50,6 +51,9 @@ func (c CommandOptions) FullAwsList() Provider {
 	var f []Account
 	core.CheckEnvVarOrSitIt("AWS_REGION", c.AwsRegion)
 	profiles := c.GetLocalAwsProfiles()
+	if len(profiles) == 0 {
+		core.FailOnError(errors.New("no profiles to run with"), "process failed with Error")
+	}
 	addOnVersion := profiles[0].getVersion()
 	l := getLatestEKS(getEKSversionsList(addOnVersion))
 	log.Trace(profiles)
