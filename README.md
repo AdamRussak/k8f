@@ -41,10 +41,6 @@ you can get you're EKS/AKS output with **k8s name**, **account**, **region**, **
 <img alt="Issues" src="https://img.shields.io/github/issues/adamrussak/k8f?style=flat-square&labelColor=343b41"/>
 <img alt="Stars" src="https://img.shields.io/github/stars/adamrussak/k8f?style=flat-square&labelColor=343b41"/>
 
-
-
-[![Star History Chart](https://api.star-history.com/svg?repos=adamrussak/k8f&type=Date)](https://star-history.com/#adamrussak/k8f&Date)
-
 [badge-info]: https://raw.githubusercontent.com/AdamRussak/public-images/main/badges/info.svg 'Info'
 
 > ![badge-info][badge-info]<br>
