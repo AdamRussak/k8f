@@ -97,7 +97,7 @@ func MergeINIFiles(inputPaths []string) (*bytes.Reader, error) {
 		inputFile, err := ini.InsensitiveLoad(inputPath)
 		FailOnError(err, "failed to load INI")
 		for _, section := range inputFile.Sections() {
-			if !checkIfConfigExist(section.Name(), outputBuffer) {
+			if !checkIfConfigExist(section.Name(), outputBuffer) && len(section.Keys()) != 0 {
 				outputBuffer.WriteString(fmt.Sprintf("[%s]\n", section.Name()))
 				// Iterate over keys in the section
 				for _, key := range section.Keys() {
