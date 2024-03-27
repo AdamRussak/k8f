@@ -27,6 +27,8 @@ you can get you're EKS/AKS output with **k8s name**, **account**, **region**, **
     - [Windows](#windows)
     - [Linux](#linux)
     - [MacOS](#macos)
+      - [Arm Processor](#arm-processor)
+      - [Intel Processor](#intel-processor)
     - [Container](#container)
 
 
