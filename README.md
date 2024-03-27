@@ -185,6 +185,7 @@ sudo cp ~/k8f /usr/local/bin/k8f
 sudo chmod 755 /usr/local/bin/k8f
 ```
 ### MacOS
+#### Arm processor
 Latest:
 ```sh
 cd ~ && wget https://github.com/AdamRussak/k8f/releases/latest/download/k8f_darwin-arm64
@@ -196,6 +197,21 @@ Version:
 ```sh
 cd ~ && wget https://github.com/AdamRussak/k8f/releases/download/<version>/k8f_darwin-arm64
 mv k8f_darwin-arm64 ./k8f
+sudo cp ~/k8f /usr/local/bin/k8f
+sudo chmod 755 /usr/local/bin/k8f
+```
+#### Intel processor
+Latest:
+```sh
+cd ~ && wget https://github.com/AdamRussak/k8f/releases/latest/download/k8f_darwin-amd64
+mv k8f_darwin-amd64 ./k8f
+sudo cp ~/k8f /usr/local/bin/k8f
+sudo chmod 755 /usr/local/bin/k8f
+```
+Version:
+```sh
+cd ~ && wget https://github.com/AdamRussak/k8f/releases/download/<version>/k8f_darwin-amd64
+mv k8f_darwin-amd64 ./k8f
 sudo cp ~/k8f /usr/local/bin/k8f
 sudo chmod 755 /usr/local/bin/k8f
 ```
