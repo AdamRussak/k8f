@@ -19,5 +19,5 @@
     managed: true
     qualityGateStatus: OK
   relations:
-    repo: AdamRussak/k8f
-    group: AdamRussak/k8f
+    repo: k8f
+    group: null
