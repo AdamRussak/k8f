@@ -1,0 +1,23 @@
+- identifier: k8f
+  title: k8f
+  team: []
+  icon: DefaultBlueprint
+  blueprint: sonarQubeProject
+  properties:
+    organization: string
+    link: https://sonarqube.mylab.geekgalaxy.com/dashboard?id=AdamRussak_k8f_AYi6D0uVa-POq_Tc4jQY
+    lastAnalysisDate: '2025-03-13T06:52:01.299Z'
+    numberOfBugs: 0
+    numberOfCodeSmells: 0
+    numberOfVulnerabilities: 0
+    numberOfHotSpots: 0
+    numberOfDuplications: 0
+    coverage: 0
+    mainBranch: string
+    tags: []
+    revision: string
+    managed: false
+    qualityGateStatus: OK
+  relations:
+    repo: related_entity_identifier
+    group: related_entity_identifier
