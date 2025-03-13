@@ -18,6 +18,3 @@
     revision: string
     managed: true
     qualityGateStatus: OK
-  relations:
-    repo: null
-    group: null
