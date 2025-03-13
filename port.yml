@@ -1,4 +1,4 @@
-- identifier: k8f_sonarr
+- identifier: AdamRussak/k8f
   title: k8f SonarQube
   team: []
   icon: DefaultBlueprint
@@ -19,5 +19,5 @@
     managed: true
     qualityGateStatus: OK
   relations:
-    repo: k8f
+    repo: null
     group: null
