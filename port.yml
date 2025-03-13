@@ -21,24 +21,3 @@
   relations:
     repo: AdamRussak/k8f
     group: AdamRussak/k8f
-- identifier: k8f_sonnar_issues
-  title: k8f_sonnar_issues
-  team: []
-  icon: DefaultBlueprint
-  blueprint: sonarQubeIssue
-  properties:
-    type: CODE_SMELL
-    severity: MAJOR
-    link: https://sonarqube.mylab.geekgalaxy.com/project/issues?id=AdamRussak_k8f_AYi6D0uVa-POq_Tc4jQY&issueStatuses=OPEN%2CCONFIRMED
-    status: OPEN
-    assignees: string
-    tags: []
-    createdAt: '2025-03-13T06:59:23.635Z'
-    effort: string
-    message: string
-    qualities: []
-  relations:
-    author: related_entity_identifier
-    sonarQubeProject: related_entity_identifier
-    service: related_entity_identifier
-    assignee: related_entity_identifier
