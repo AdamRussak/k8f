@@ -4,7 +4,7 @@
 
 ### Changes
 <!-- ### Known Issues -->
-
+- moved to Go 1.24
 ### Known Issues
 <!-- ## Contributors -->
 
