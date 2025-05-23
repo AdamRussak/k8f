@@ -29,7 +29,7 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 
 ## Write bug reports with detail, background, and sample code
 Write bug reports with detail, background, and sample code
-[This is an example](http://stackoverflow.com/q/12488905/180626) of a good bug report, and [this is a bad one](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html).
+[This is an example](http://stackoverflow.com/q/12488905/180626) of a good bug report.
 
 **Great Bug Reports** tend to have:
 
