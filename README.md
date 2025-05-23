@@ -23,6 +23,7 @@ you can get you're EKS/AKS output with **k8s name**, **account**, **region**, **
     - [list](#list)
     - [connect](#connect)
     - [find](#find)
+  - [Contributing](#contributing)
   - [How to install](#how-to-install)
     - [Windows](#windows)
     - [Linux](#linux)
@@ -148,6 +149,10 @@ Global Flags:
       --validate            Fail on validation of the AWS credentals before running
   -v, --verbose             verbose logging
 ```
+
+## Contributing
+
+We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started, report bugs, and submit pull requests.
 
 ## How to install
 
