@@ -28,7 +28,7 @@ In short, when you submit code changes, your submissions are understood to be un
 We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/AdamRussak/k8f/issues/new); it's that easy!
 
 ## Write bug reports with detail, background, and sample code
-[This is an example](http://stackoverflow.com/q/12488905/180626) of a good bug report, and [this is a bad one](http://stackoverflow.com/q/12488905/180626).
+See [this example](http://stackoverflow.com/q/12488905/180626) of a good bug report, and read [this article](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html) for guidance on writing effective bug reports and understanding common pitfalls.
 
 **Great Bug Reports** tend to have:
 
