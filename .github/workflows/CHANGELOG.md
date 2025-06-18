@@ -4,12 +4,10 @@
 
 ### Changes
 <!-- ### Known Issues -->
-- moved to Go 1.24
 ### Known Issues
 <!-- ## Contributors -->
 
 ## Bugfix
 
-- fixed no INI in path failes the task
-- updated packages with security issues.
+- fixed error handeling for aws list regions and profiles by @ulielitay #47 
 <!-- ## Braking changes -->
