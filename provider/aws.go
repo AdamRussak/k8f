@@ -171,10 +171,10 @@ func (p AwsProfiles) listRegions() []string {
 		log.Warnf("Skipping profile %s: failed to get region info: %v", p.Name, err)
 		return reg
 	}
+	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
 	for _, r := range result.Regions {
 		reg = append(reg, *r.RegionName)
 	}
-	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
 
 	return reg
 }
