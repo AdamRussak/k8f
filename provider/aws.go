@@ -167,7 +167,6 @@ func (p AwsProfiles) listRegions() []string {
 	}
 	input := &ec2.DescribeRegionsInput{}
 	result, err := svc.DescribeRegions(context.TODO(), input)
-	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
 	if err != nil {
 		log.Warnf("Skipping profile %s: failed to get region info: %v", p.Name, err)
 		return reg
@@ -175,6 +174,8 @@ func (p AwsProfiles) listRegions() []string {
 	for _, r := range result.Regions {
 		reg = append(reg, *r.RegionName)
 	}
+	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
+
 	return reg
 }
 
