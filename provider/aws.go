@@ -155,7 +155,10 @@ func (p AwsProfiles) listRegions() []string {
 	var conf aws.Config
 	var err error
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(p.Name))
-	core.FailOnError(err, awsErrorMessage)
+	if err != nil {
+		log.Warnf("Skipping profile %s: failed to load config for region listing: %v", p.Name, err)
+		return reg
+	}
 	if p.IsRole {
 		conf.Credentials = stsAssumeRole(p)
 		svc = ec2.NewFromConfig(conf)
@@ -164,11 +167,15 @@ func (p AwsProfiles) listRegions() []string {
 	}
 	input := &ec2.DescribeRegionsInput{}
 	result, err := svc.DescribeRegions(context.TODO(), input)
+	if err != nil {
+		log.Warnf("Skipping profile %s: failed to get region info: %v", p.Name, err)
+		return reg
+	}
 	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
-	core.FailOnError(err, "Failed Get Region info")
 	for _, r := range result.Regions {
 		reg = append(reg, *r.RegionName)
 	}
+
 	return reg
 }
 
@@ -178,7 +185,11 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	var conf aws.Config
 	var err error
 	conf, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile.ConfProfile))
-	core.FailOnError(err, awsErrorMessage)
+	if err != nil {
+		log.Warnf("Skipping region %s for profile %s: failed to load config: %v", reg, profile.Name, err)
+		c <- loc
+		return
+	}
 	if profile.IsRole {
 		conf.Credentials = stsAssumeRole(profile)
 		svc = eks.NewFromConfig(conf, func(o *eks.Options) {
@@ -191,7 +202,11 @@ func printOutResult(reg string, latest string, profile AwsProfiles, addons *eks.
 	}
 	input := &eks.ListClustersInput{}
 	result, err := svc.ListClusters(context.TODO(), input)
-	core.FailOnError(err, "Failed to list Clusters")
+	if err != nil {
+		log.Warnf("Skipping region %s for profile %s: failed to list clusters: %v", reg, profile.Name, err)
+		c <- loc
+		return
+	}
 	log.Debug(string("We are In Region: " + reg + " Profile " + profile.Name))
 	if len(result.Clusters) > 0 {
 		c3 := make(chan []string)
