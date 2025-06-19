@@ -173,7 +173,7 @@ func (p AwsProfiles) listRegions() []string {
 	}
 	log.Debugf("Using profile: %s, ARN: %s, IsRole:%t", p.Name, p.Arn, p.IsRole)
 	for _, r := range result.Regions {
-		if r.OptInStatus != nil && (*r.OptInStatus == "opted-in" || *r.OptInStatus == "not-required") {
+		if r.OptInStatus != nil && (*r.OptInStatus == "opted-in" || *r.OptInStatus == "opt-in-not-required") {
 			reg = append(reg, *r.RegionName)
 		}
 	}
