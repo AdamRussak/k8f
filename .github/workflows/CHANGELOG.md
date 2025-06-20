@@ -3,6 +3,7 @@
 ## Release Notes
 
 ### Changes
+- improve handeling aws regions list for opted out regions #46 by @mlgitdev
 <!-- ### Known Issues -->
 ### Known Issues
 <!-- ## Contributors -->
